@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vertex AI Image Recognition Tester</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="/static/css/style.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Header -->
+            <div class="col-12">
+                <div class="header text-center py-4">
+                    <h1><i class="fas fa-robot text-primary"></i> Vertex AI Image Recognition Tester</h1>
+                    <p class="text-muted">Test your custom object detection model with real-time predictions</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Left Panel - Controls -->
+            <div class="col-lg-4 col-md-5">
+                <div class="control-panel">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0"><i class="fas fa-cogs"></i> Model Parameters</h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="uploadForm" enctype="multipart/form-data">
+                                <!-- Image Upload -->
+                                <div class="mb-3">
+                                    <label for="imageInput" class="form-label">
+                                        <i class="fas fa-image"></i> Select Image
+                                    </label>
+                                    <input type="file" class="form-control" id="imageInput" name="image" 
+                                           accept="image/*" required>
+                                    <div class="form-text">Supported formats: JPG, PNG, GIF (max 16MB)</div>
+                                </div>
+
+                                <!-- Parameters -->
+                                <div class="mb-3">
+                                    <label for="confidenceThreshold" class="form-label">
+                                        <i class="fas fa-bullseye"></i> Confidence Threshold
+                                    </label>
+                                    <input type="range" class="form-range" id="confidenceThreshold" 
+                                           name="confidenceThreshold" min="0" max="1" step="0.01" value="0.5">
+                                    <div class="d-flex justify-content-between">
+                                        <small>0.0</small>
+                                        <span id="confidenceValue">0.50</span>
+                                        <small>1.0</small>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="iouThreshold" class="form-label">
+                                        <i class="fas fa-vector-square"></i> IoU Threshold
+                                    </label>
+                                    <input type="range" class="form-range" id="iouThreshold" 
+                                           name="iouThreshold" min="0" max="1" step="0.01" value="0.5">
+                                    <div class="d-flex justify-content-between">
+                                        <small>0.0</small>
+                                        <span id="iouValue">0.50</span>
+                                        <small>1.0</small>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="maxPredictions" class="form-label">
+                                        <i class="fas fa-list-ol"></i> Max Predictions
+                                    </label>
+                                    <input type="number" class="form-control" id="maxPredictions" 
+                                           name="maxPredictions" min="1" max="1000" value="100">
+                                </div>
+
+                                <!-- Submit Button -->
+                                <button type="submit" class="btn btn-primary btn-lg w-100" id="submitBtn">
+                                    <i class="fas fa-play"></i> Run Detection
+                                </button>
+                            </form>
+
+                            <!-- Loading Indicator -->
+                            <div id="loadingIndicator" class="text-center mt-3" style="display: none;">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <p class="mt-2 text-muted">Processing image with Vertex AI...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Results Summary -->
+                    <div class="card shadow-sm mt-3" id="resultsCard" style="display: none;">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Detection Results</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <h4 id="totalPredictions">0</h4>
+                                    <small class="text-muted">Total Objects</small>
+                                </div>
+                                <div class="col-6">
+                                    <h4 id="processingTime">0s</h4>
+                                    <small class="text-muted">Processing Time</small>
+                                </div>
+                            </div>
+                            
+                            <hr>
+                            
+                            <h6><i class="fas fa-tags"></i> Class Distribution</h6>
+                            <div id="classCounts" class="mt-2">
+                                <!-- Class counts will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel - Image Display -->
+            <div class="col-lg-8 col-md-7">
+                <div class="image-panel">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-secondary text-white">
+                            <h5 class="mb-0"><i class="fas fa-eye"></i> Image Preview & Results</h5>
+                        </div>
+                        <div class="card-body text-center">
+                            <div id="imageContainer">
+                                <div class="placeholder-image">
+                                    <i class="fas fa-image fa-3x text-muted"></i>
+                                    <p class="text-muted mt-2">Upload an image to get started</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Modal -->
+    <div class="modal fade" id="errorModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title"><i class="fas fa-exclamation-triangle"></i> Error</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="errorMessage"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

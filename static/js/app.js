@@ -78,7 +78,7 @@ function handleFormSubmit(event) {
     const startTime = Date.now();
     
     // Submit form data
-    fetch('/upload', {
+    fetch('/api/upload', {
         method: 'POST',
         body: formData
     })
