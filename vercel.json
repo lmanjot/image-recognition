@@ -23,15 +23,5 @@
       "src": "/(.*)",
       "dest": "/index.html"
     }
-  ],
-  "functions": {
-    "api/upload.py": {
-      "maxDuration": 30
-    }
-  },
-  "env": {
-    "GOOGLE_CLOUD_PROJECT": "@google-cloud-project",
-    "VERTEX_ENDPOINT_ID": "@vertex-endpoint-id",
-    "VERTEX_LOCATION": "@vertex-location"
-  }
+  ]
 }
