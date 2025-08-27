@@ -248,8 +248,29 @@ def call_vertex_ai_endpoint(image_bytes, confidence_threshold, iou_threshold, ma
                     vertex_predictions = result['predictions'][0]
                     print(f"🔍 Raw Vertex AI predictions[0]: {json.dumps(vertex_predictions, indent=2)}")
                     
+                    # Check if this is the array-based format (bboxes, confidences, displayNames)
+                    if isinstance(vertex_predictions, dict) and 'bboxes' in vertex_predictions:
+                        print(f"📋 Found array-based format with {len(vertex_predictions['bboxes'])} predictions")
+                        
+                        bboxes = vertex_predictions.get('bboxes', [])
+                        confidences = vertex_predictions.get('confidences', [])
+                        display_names = vertex_predictions.get('displayNames', [])
+                        
+                        # Ensure all arrays have the same length
+                        min_length = min(len(bboxes), len(confidences), len(display_names))
+                        print(f"📏 Processing {min_length} predictions")
+                        
+                        for i in range(min_length):
+                            prediction = {
+                                'displayName': display_names[i] if i < len(display_names) else 'Unknown',
+                                'confidence': confidences[i] if i < len(confidences) else 0.0,
+                                'bbox': bboxes[i] if i < len(bboxes) else [0, 0, 0, 0]
+                            }
+                            print(f"✅ Parsed prediction {i}: {json.dumps(prediction, indent=2)}")
+                            predictions.append(prediction)
+                    
                     # Handle different possible response formats
-                    if isinstance(vertex_predictions, list):
+                    elif isinstance(vertex_predictions, list):
                         print(f"📋 Predictions is a list with {len(vertex_predictions)} items")
                         for i, pred in enumerate(vertex_predictions):
                             print(f"🔍 Processing prediction {i}: {json.dumps(pred, indent=2)}")
