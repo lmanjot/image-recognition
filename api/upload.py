@@ -197,15 +197,14 @@ def call_vertex_ai_endpoint(image_bytes, confidence_threshold, iou_threshold, ma
         endpoint_url = f"https://{location}-aiplatform.googleapis.com/v1/projects/{project_id}/locations/{location}/endpoints/{endpoint_id}:predict"
         print(f"  - Endpoint URL: {endpoint_url}")
         
-        # Prepare the request payload
+        # Prepare the request payload - using correct Vertex AI format
         payload = {
             "instances": [{
-                "image": {
-                    "bytesBase64Encoded": base64.b64encode(image_bytes).decode('utf-8')
-                }
+                "content": base64.b64encode(image_bytes).decode('utf-8')
             }],
             "parameters": {
                 "confidenceThreshold": confidence_threshold,
+                "iouThreshold": iou_threshold,
                 "maxPredictions": max_predictions
             }
         }
@@ -239,16 +238,36 @@ def call_vertex_ai_endpoint(image_bytes, confidence_threshold, iou_threshold, ma
             # Parse the predictions from the response
             predictions = []
             if 'predictions' in result and result['predictions']:
-                for pred in result['predictions'][0]:
-                    if isinstance(pred, dict):
-                        predictions.append(pred)
-                    else:
-                        # Handle different response formats
-                        predictions.append({
-                            'displayName': getattr(pred, 'displayName', 'Unknown'),
-                            'confidence': getattr(pred, 'confidence', 0.0),
-                            'bbox': getattr(pred, 'bbox', [0, 0, 0, 0])
-                        })
+                # Vertex AI returns predictions in a specific format
+                vertex_predictions = result['predictions'][0]
+                print(f"🔍 Raw Vertex AI response: {json.dumps(vertex_predictions, indent=2)}")
+                
+                # Handle different possible response formats
+                if isinstance(vertex_predictions, list):
+                    for pred in vertex_predictions:
+                        if isinstance(pred, dict):
+                            # Extract prediction data
+                            prediction = {
+                                'displayName': pred.get('displayName', pred.get('class', 'Unknown')),
+                                'confidence': pred.get('confidence', pred.get('score', 0.0)),
+                                'bbox': pred.get('bbox', pred.get('boundingBox', [0, 0, 0, 0]))
+                            }
+                            predictions.append(prediction)
+                        else:
+                            # Handle object format
+                            predictions.append({
+                                'displayName': getattr(pred, 'displayName', getattr(pred, 'class', 'Unknown')),
+                                'confidence': getattr(pred, 'confidence', getattr(pred, 'score', 0.0)),
+                                'bbox': getattr(pred, 'bbox', getattr(pred, 'boundingBox', [0, 0, 0, 0]))
+                            })
+                else:
+                    # Single prediction or different format
+                    print(f"⚠️ Unexpected prediction format: {type(vertex_predictions)}")
+                    predictions.append({
+                        'displayName': 'Unknown',
+                        'confidence': 0.0,
+                        'bbox': [0, 0, 0, 0]
+                    })
             
             print(f"🎯 Parsed {len(predictions)} predictions from Vertex AI")
             return predictions
