@@ -120,10 +120,10 @@
                                         <i class="fas fa-bullseye"></i> Confidence Threshold
                                     </label>
                                     <input type="range" class="form-range" id="confidenceThreshold" 
-                                           name="confidenceThreshold" min="0" max="1" step="0.01" value="0.5">
+                                           name="confidenceThreshold" min="0" max="1" step="0.01" value="0.3">
                                     <div class="d-flex justify-content-between">
                                         <small>0.0</small>
-                                        <span id="confidenceValue">0.50</span>
+                                        <span id="confidenceValue">0.30</span>
                                         <small>1.0</small>
                                     </div>
                                 </div>
@@ -133,10 +133,10 @@
                                         <i class="fas fa-vector-square"></i> IoU Threshold
                                     </label>
                                     <input type="range" class="form-range" id="iouThreshold" 
-                                           name="iouThreshold" min="0" max="1" step="0.01" value="0.5">
+                                           name="iouThreshold" min="0" max="1" step="0.01" value="0.1">
                                     <div class="d-flex justify-content-between">
                                         <small>0.0</small>
-                                        <span id="iouValue">0.50</span>
+                                        <span id="iouValue">0.10</span>
                                         <small>1.0</small>
                                     </div>
                                 </div>
@@ -172,13 +172,17 @@
                         </div>
                         <div class="card-body">
                             <div class="row text-center">
-                                <div class="col-6">
+                                <div class="col-4">
                                     <h4 id="totalPredictions">0</h4>
                                     <small class="text-muted">Total Objects</small>
                                 </div>
-                                <div class="col-6">
+                                <div class="col-4">
                                     <h4 id="processingTime">0s</h4>
                                     <small class="text-muted">Processing Time</small>
+                                </div>
+                                <div class="col-4">
+                                    <h6 id="modelStatus" class="text-info">Vertex AI</h6>
+                                    <small class="text-muted">Model Used</small>
                                 </div>
                             </div>
                             
@@ -329,6 +333,12 @@
             
             document.getElementById('totalPredictions').textContent = data.total_predictions;
             document.getElementById('processingTime').textContent = processingTime + 's';
+            
+            // Display model status
+            if (data.model_used) {
+                document.getElementById('modelStatus').textContent = data.model_used;
+                document.getElementById('modelStatus').className = data.model_used === 'Vertex AI' ? 'text-success' : 'text-warning';
+            }
             
             displayClassCounts(data.class_counts);
             document.getElementById('resultsCard').style.display = 'block';

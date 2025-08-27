@@ -9,16 +9,30 @@ import io
 from PIL import Image, ImageDraw, ImageFont
 import numpy as np
 
-# For now, we'll use mock data since Google Cloud libraries can be problematic on Vercel
-GOOGLE_CLOUD_AVAILABLE = False
+# Try to import Google Cloud libraries
+try:
+    from google.cloud import aiplatform
+    from google.auth import default
+    GOOGLE_CLOUD_AVAILABLE = True
+except ImportError:
+    GOOGLE_CLOUD_AVAILABLE = False
 
-# Configure Google Cloud credentials (these will be set via environment variables)
+# Configure Google Cloud credentials
 project_id = os.getenv('GOOGLE_CLOUD_PROJECT', '27458468732')
 endpoint_id = os.getenv('VERTEX_ENDPOINT_ID', '3349211374252195840')
 location = os.getenv('VERTEX_LOCATION', 'europe-west4')
 
+# Initialize Vertex AI if available
+if GOOGLE_CLOUD_AVAILABLE:
+    try:
+        aiplatform.init(project=project_id, location=location)
+        print(f"✅ Vertex AI initialized successfully for project {project_id}")
+    except Exception as e:
+        print(f"❌ Failed to initialize Vertex AI: {e}")
+        GOOGLE_CLOUD_AVAILABLE = False
+
 def get_mock_predictions():
-    """Return mock predictions for testing when Vertex AI is not available"""
+    """Return mock predictions as fallback when Vertex AI is not available"""
     return [
         {
             'displayName': 'person',
@@ -39,8 +53,56 @@ def get_mock_predictions():
 
 def predict_image_object_detection(image_bytes, confidence_threshold, iou_threshold, max_predictions):
     """Call Vertex AI endpoint for image object detection"""
-    # For now, always return mock data to ensure Vercel deployment works
-    return get_mock_predictions()
+    if not GOOGLE_CLOUD_AVAILABLE:
+        print("⚠️ Google Cloud not available, using mock data")
+        return get_mock_predictions()
+    
+    try:
+        print(f"🔍 Calling Vertex AI endpoint: {endpoint_id}")
+        print(f"📊 Parameters: confidence={confidence_threshold}, IoU={iou_threshold}, max={max_predictions}")
+        
+        endpoint = aiplatform.Endpoint(endpoint_name=endpoint_id)
+        
+        # Prepare prediction request
+        prediction_request = {
+            'instances': [{
+                'image': {
+                    'bytesBase64Encoded': base64.b64encode(image_bytes).decode('utf-8')
+                }
+            }],
+            'parameters': {
+                'confidenceThreshold': confidence_threshold,
+                'maxPredictions': max_predictions
+            }
+        }
+        
+        # Make prediction
+        print("🚀 Sending request to Vertex AI...")
+        response = endpoint.predict(prediction_request)
+        print("✅ Received response from Vertex AI")
+        
+        # Extract predictions from response
+        predictions = []
+        if hasattr(response, 'predictions') and response.predictions:
+            print(f"📈 Processing {len(response.predictions[0])} predictions")
+            for pred in response.predictions[0]:
+                if isinstance(pred, dict):
+                    predictions.append(pred)
+                else:
+                    # Handle different response formats
+                    predictions.append({
+                        'displayName': getattr(pred, 'displayName', 'Unknown'),
+                        'confidence': getattr(pred, 'confidence', 0.0),
+                        'bbox': getattr(pred, 'bbox', [0, 0, 0, 0])
+                    })
+        
+        print(f"🎯 Final predictions: {len(predictions)} objects detected")
+        return predictions
+        
+    except Exception as e:
+        print(f"❌ Error calling Vertex AI: {e}")
+        print("🔄 Falling back to mock data")
+        return get_mock_predictions()
 
 def create_annotated_image(image_bytes, predictions):
     """Create an annotated image with bounding boxes and labels"""
@@ -84,7 +146,7 @@ def create_annotated_image(image_bytes, predictions):
         return f"data:image/jpeg;base64,{img_str}"
         
     except Exception as e:
-        print(f"Error creating annotated image: {e}")
+        print(f"❌ Error creating annotated image: {e}")
         return None
 
 def parse_multipart_data(body, content_type):
@@ -97,10 +159,10 @@ def parse_multipart_data(body, content_type):
             environ={'REQUEST_METHOD': 'POST'}
         )
         
-        # Extract form data
+        # Extract form data with new defaults
         image_file = form.getfirst('image')
-        confidence_threshold = float(form.getfirst('confidenceThreshold', 0.5))
-        iou_threshold = float(form.getfirst('iouThreshold', 0.5))
+        confidence_threshold = float(form.getfirst('confidenceThreshold', 0.3))  # Default: 0.3
+        iou_threshold = float(form.getfirst('iouThreshold', 0.1))  # Default: 0.1
         max_predictions = int(form.getfirst('maxPredictions', 100))
         
         return {
@@ -110,7 +172,7 @@ def parse_multipart_data(body, content_type):
             'max_predictions': max_predictions
         }
     except Exception as e:
-        print(f"Error parsing multipart data: {e}")
+        print(f"❌ Error parsing multipart data: {e}")
         return None
 
 class handler(BaseHTTPRequestHandler):
@@ -135,13 +197,15 @@ class handler(BaseHTTPRequestHandler):
             iou_threshold = form_data['iou_threshold']
             max_predictions = form_data['max_predictions']
             
+            print(f"🖼️ Processing image with parameters: conf={confidence_threshold}, IoU={iou_threshold}, max={max_predictions}")
+            
             # Convert image file to bytes
             if hasattr(form_data['image'], 'file'):
                 image_bytes = form_data['image'].file.read()
             else:
                 image_bytes = form_data['image']
             
-            # Call prediction function (currently returns mock data)
+            # Call Vertex AI for prediction
             predictions = predict_image_object_detection(
                 image_bytes, 
                 confidence_threshold, 
@@ -162,19 +226,22 @@ class handler(BaseHTTPRequestHandler):
                 class_name = pred.get('displayName', 'Unknown')
                 class_counts[class_name] = class_counts.get(class_name, 0) + 1
             
+            print(f"📊 Results: {len(predictions)} objects, classes: {list(class_counts.keys())}")
+            
             # Send success response
             response_data = {
                 'success': True,
                 'annotated_image': annotated_image_data,
                 'predictions': predictions,
                 'class_counts': class_counts,
-                'total_predictions': len(predictions)
+                'total_predictions': len(predictions),
+                'model_used': 'Vertex AI' if GOOGLE_CLOUD_AVAILABLE else 'Mock Data'
             }
             
             self.send_success_response(response_data)
             
         except Exception as e:
-            print(f"Error processing request: {e}")
+            print(f"❌ Error processing request: {e}")
             self.send_error_response(str(e), 500)
     
     def do_OPTIONS(self):
