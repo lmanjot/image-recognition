@@ -8,7 +8,79 @@
     <title>Vertex AI Image Recognition Tester</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="/static/css/style.css" rel="stylesheet">
+    <style>
+        /* Essential CSS for functionality */
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin-bottom: 2rem;
+            border-radius: 0 0 20px 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .card {
+            border: none;
+            border-radius: 15px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .form-range {
+            height: 6px;
+            background: #e9ecef;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+        }
+        
+        #imageContainer {
+            min-height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #imageContainer img {
+            max-width: 100%;
+            max-height: 600px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .placeholder-image {
+            padding: 4rem 2rem;
+            color: #6c757d;
+        }
+        
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+        }
+        
+        .class-count-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .class-count {
+            background: #667eea;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+    </style>
 </head>
 <body>
     <div class="container-fluid">
@@ -161,6 +233,150 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="/static/js/app.js"></script>
+    <script>
+        // Essential JavaScript for functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+        });
+
+        function initializeApp() {
+            setupEventListeners();
+            updateRangeDisplays();
+        }
+
+        function setupEventListeners() {
+            const uploadForm = document.getElementById('uploadForm');
+            uploadForm.addEventListener('submit', handleFormSubmit);
+            
+            const confidenceSlider = document.getElementById('confidenceThreshold');
+            const iouSlider = document.getElementById('iouThreshold');
+            
+            confidenceSlider.addEventListener('input', function() {
+                document.getElementById('confidenceValue').textContent = parseFloat(this.value).toFixed(2);
+            });
+            
+            iouSlider.addEventListener('input', function() {
+                document.getElementById('iouValue').textContent = parseFloat(this.value).toFixed(2);
+            });
+            
+            const imageInput = document.getElementById('imageInput');
+            imageInput.addEventListener('change', handleImagePreview);
+        }
+
+        function updateRangeDisplays() {
+            const confidenceSlider = document.getElementById('confidenceThreshold');
+            const iouSlider = document.getElementById('iouThreshold');
+            
+            document.getElementById('confidenceValue').textContent = parseFloat(confidenceSlider.value).toFixed(2);
+            document.getElementById('iouValue').textContent = parseFloat(iouSlider.value).toFixed(2);
+        }
+
+        function handleImagePreview(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    displayImage(e.target.result);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function displayImage(imageData) {
+            const container = document.getElementById('imageContainer');
+            container.innerHTML = `<img src="${imageData}" alt="Uploaded image" class="img-fluid">`;
+        }
+
+        function handleFormSubmit(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(event.target);
+            const imageFile = document.getElementById('imageInput').files[0];
+            
+            if (!imageFile) {
+                showError('Please select an image file.');
+                return;
+            }
+            
+            showLoading(true);
+            const startTime = Date.now();
+            
+            fetch('/api/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                showLoading(false);
+                
+                if (data.success) {
+                    const processingTime = ((Date.now() - startTime) / 1000).toFixed(2);
+                    displayResults(data, processingTime);
+                } else {
+                    showError(data.error || 'An error occurred during processing.');
+                }
+            })
+            .catch(error => {
+                showLoading(false);
+                console.error('Error:', error);
+                showError('Network error occurred. Please try again.');
+            });
+        }
+
+        function displayResults(data, processingTime) {
+            const container = document.getElementById('imageContainer');
+            container.innerHTML = `<img src="${data.annotated_image}" alt="Annotated image with detections" class="img-fluid">`;
+            
+            document.getElementById('totalPredictions').textContent = data.total_predictions;
+            document.getElementById('processingTime').textContent = processingTime + 's';
+            
+            displayClassCounts(data.class_counts);
+            document.getElementById('resultsCard').style.display = 'block';
+        }
+
+        function displayClassCounts(classCounts) {
+            const container = document.getElementById('classCounts');
+            container.innerHTML = '';
+            
+            if (Object.keys(classCounts).length === 0) {
+                container.innerHTML = '<p class="text-muted">No objects detected</p>';
+                return;
+            }
+            
+            const sortedClasses = Object.entries(classCounts)
+                .sort(([,a], [,b]) => b - a);
+            
+            sortedClasses.forEach(([className, count]) => {
+                const classItem = document.createElement('div');
+                classItem.className = 'class-count-item';
+                classItem.innerHTML = `
+                    <span class="class-name">${className}</span>
+                    <span class="class-count">${count}</span>
+                `;
+                container.appendChild(classItem);
+            });
+        }
+
+        function showLoading(show) {
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            const submitBtn = document.getElementById('submitBtn');
+            
+            if (show) {
+                loadingIndicator.style.display = 'block';
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+            } else {
+                loadingIndicator.style.display = 'none';
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-play"></i> Run Detection';
+            }
+        }
+
+        function showError(message) {
+            const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
+            document.getElementById('errorMessage').textContent = message;
+            errorModal.show();
+        }
+    </script>
 </body>
 </html>
