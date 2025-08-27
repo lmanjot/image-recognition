@@ -15,8 +15,10 @@ try:
     from cryptography.hazmat.primitives import hashes, serialization
     from cryptography.hazmat.primitives.asymmetric import rsa, padding
     CRYPTOGRAPHY_AVAILABLE = True
-except ImportError:
+    print("✅ Cryptography library loaded successfully")
+except ImportError as e:
     CRYPTOGRAPHY_AVAILABLE = False
+    print(f"❌ Cryptography library not available: {e}")
 
 # Configure Google Cloud credentials
 project_id = os.getenv('GOOGLE_CLOUD_PROJECT', '27458468732')
@@ -30,6 +32,14 @@ VERTEX_AI_ENABLED = all([
     os.getenv('VERTEX_LOCATION'),
     os.getenv('GOOGLE_CREDENTIALS')
 ])
+
+print(f"🔍 Environment check:")
+print(f"  - GOOGLE_CLOUD_PROJECT: {os.getenv('GOOGLE_CLOUD_PROJECT', 'NOT SET')}")
+print(f"  - VERTEX_ENDPOINT_ID: {os.getenv('VERTEX_ENDPOINT_ID', 'NOT SET')}")
+print(f"  - VERTEX_LOCATION: {os.getenv('VERTEX_LOCATION', 'NOT SET')}")
+print(f"  - GOOGLE_CREDENTIALS: {'SET' if os.getenv('GOOGLE_CREDENTIALS') else 'NOT SET'}")
+print(f"  - CRYPTOGRAPHY_AVAILABLE: {CRYPTOGRAPHY_AVAILABLE}")
+print(f"  - VERTEX_AI_ENABLED: {VERTEX_AI_ENABLED}")
 
 def get_mock_predictions():
     """Return mock predictions as fallback when Vertex AI is not available"""
@@ -58,16 +68,22 @@ def create_jwt_token(credentials_json):
         return None
     
     try:
+        print("🔐 Creating JWT token...")
+        
         # Parse the credentials JSON
         credentials = json.loads(credentials_json)
         private_key_pem = credentials['private_key']
         client_email = credentials['client_email']
+        
+        print(f"  - Client email: {client_email}")
+        print(f"  - Private key length: {len(private_key_pem)} characters")
         
         # Load the private key
         private_key = serialization.load_pem_private_key(
             private_key_pem.encode(),
             password=None
         )
+        print("  - Private key loaded successfully")
         
         # Create JWT header
         header = {
@@ -84,6 +100,8 @@ def create_jwt_token(credentials_json):
             "exp": now + 3600,  # 1 hour
             "iat": now
         }
+        
+        print(f"  - JWT payload created: {payload}")
         
         # Encode header and payload
         header_b64 = base64.urlsafe_b64encode(json.dumps(header).encode()).rstrip(b'=').decode()
@@ -105,16 +123,20 @@ def create_jwt_token(credentials_json):
         # Create the complete JWT
         jwt_token = f"{header_b64}.{payload_b64}.{signature_b64}"
         
-        print("✅ JWT token created successfully")
+        print(f"✅ JWT token created successfully (length: {len(jwt_token)})")
         return jwt_token
         
     except Exception as e:
         print(f"❌ Error creating JWT token: {e}")
+        import traceback
+        traceback.print_exc()
         return None
 
 def get_google_access_token(credentials_json):
     """Get Google Cloud access token using service account credentials"""
     try:
+        print("🔑 Getting Google Cloud access token...")
+        
         # Create JWT token
         jwt_token = create_jwt_token(credentials_json)
         if not jwt_token:
@@ -129,6 +151,7 @@ def get_google_access_token(credentials_json):
         }
         
         print("🔄 Exchanging JWT for access token...")
+        print(f"  - Token URL: {token_url}")
         
         # Make request to Google OAuth2 token endpoint
         response = requests.post(
@@ -137,11 +160,16 @@ def get_google_access_token(credentials_json):
             timeout=30
         )
         
+        print(f"  - Response status: {response.status_code}")
+        print(f"  - Response headers: {dict(response.headers)}")
+        
         if response.status_code == 200:
             result = response.json()
+            print(f"  - Response body: {json.dumps(result, indent=2)}")
+            
             access_token = result.get('access_token')
             if access_token:
-                print("✅ Access token obtained successfully")
+                print(f"✅ Access token obtained successfully (length: {len(access_token)})")
                 return access_token
             else:
                 print("❌ No access token in response")
@@ -153,13 +181,18 @@ def get_google_access_token(credentials_json):
         
     except Exception as e:
         print(f"❌ Error getting access token: {e}")
+        import traceback
+        traceback.print_exc()
         return None
 
 def call_vertex_ai_endpoint(image_bytes, confidence_threshold, iou_threshold, max_predictions, access_token):
     """Make actual API call to Vertex AI endpoint"""
     try:
+        print("🚀 Making API call to Vertex AI endpoint...")
+        
         # Construct the Vertex AI endpoint URL
         endpoint_url = f"https://{location}-aiplatform.googleapis.com/v1/projects/{project_id}/locations/{location}/endpoints/{endpoint_id}:predict"
+        print(f"  - Endpoint URL: {endpoint_url}")
         
         # Prepare the request payload
         payload = {
@@ -174,14 +207,15 @@ def call_vertex_ai_endpoint(image_bytes, confidence_threshold, iou_threshold, ma
             }
         }
         
+        print(f"  - Payload: {json.dumps(payload, indent=2)}")
+        
         # Set up headers with authorization
         headers = {
             "Authorization": f"Bearer {access_token}",
             "Content-Type": "application/json"
         }
         
-        print(f"🚀 Calling Vertex AI endpoint: {endpoint_url}")
-        print(f"📊 Payload: {json.dumps(payload, indent=2)}")
+        print(f"  - Headers: {json.dumps(headers, indent=2)}")
         
         # Make the actual API call
         response = requests.post(
@@ -190,6 +224,9 @@ def call_vertex_ai_endpoint(image_bytes, confidence_threshold, iou_threshold, ma
             headers=headers,
             timeout=30
         )
+        
+        print(f"  - Response status: {response.status_code}")
+        print(f"  - Response headers: {dict(response.headers)}")
         
         if response.status_code == 200:
             print("✅ Vertex AI API call successful")
@@ -219,17 +256,25 @@ def call_vertex_ai_endpoint(image_bytes, confidence_threshold, iou_threshold, ma
             
     except Exception as e:
         print(f"❌ Error calling Vertex AI endpoint: {e}")
+        import traceback
+        traceback.print_exc()
         return None
 
 def predict_image_object_detection_rest(image_bytes, confidence_threshold, iou_threshold, max_predictions):
     """Call Vertex AI endpoint using REST API (lightweight approach)"""
+    print(f"\n🔍 Starting Vertex AI prediction process...")
+    print(f"  - Image size: {len(image_bytes)} bytes")
+    print(f"  - Confidence threshold: {confidence_threshold}")
+    print(f"  - IoU threshold: {iou_threshold}")
+    print(f"  - Max predictions: {max_predictions}")
+    
     if not VERTEX_AI_ENABLED:
         print("⚠️ Vertex AI not configured, using mock data")
+        print("  - Missing environment variables")
         return get_mock_predictions()
     
     try:
         print("🔍 Vertex AI configured - attempting real API call")
-        print(f"📊 Parameters: confidence={confidence_threshold}, IoU={iou_threshold}, max={max_predictions}")
         
         # Get the service account credentials from environment
         credentials_json = os.getenv('GOOGLE_CREDENTIALS')
@@ -238,6 +283,7 @@ def predict_image_object_detection_rest(image_bytes, confidence_threshold, iou_t
             return get_mock_predictions()
         
         print("✅ Credentials found in environment")
+        print(f"  - Credentials length: {len(credentials_json)} characters")
         
         # Get access token
         access_token = get_google_access_token(credentials_json)
@@ -258,6 +304,9 @@ def predict_image_object_detection_rest(image_bytes, confidence_threshold, iou_t
         
         if predictions:
             print("🎉 Real Vertex AI predictions received!")
+            print(f"  - Number of predictions: {len(predictions)}")
+            for i, pred in enumerate(predictions):
+                print(f"    {i+1}. {pred.get('displayName', 'Unknown')} - {pred.get('confidence', 0.0):.3f}")
             return predictions
         else:
             print("⚠️ Vertex AI call failed, falling back to mock data")
@@ -265,6 +314,8 @@ def predict_image_object_detection_rest(image_bytes, confidence_threshold, iou_t
         
     except Exception as e:
         print(f"❌ Error calling Vertex AI: {e}")
+        import traceback
+        traceback.print_exc()
         print("🔄 Falling back to mock data")
         return get_mock_predictions()
 
