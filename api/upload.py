@@ -7,7 +7,6 @@ from urllib.parse import parse_qs, urlparse
 import cgi
 import io
 from PIL import Image, ImageDraw, ImageFont
-import numpy as np
 import requests
 
 # Configure Google Cloud credentials
@@ -19,7 +18,8 @@ location = os.getenv('VERTEX_LOCATION', 'europe-west4')
 VERTEX_AI_ENABLED = all([
     os.getenv('GOOGLE_CLOUD_PROJECT'),
     os.getenv('VERTEX_ENDPOINT_ID'),
-    os.getenv('VERTEX_LOCATION')
+    os.getenv('VERTEX_LOCATION'),
+    os.getenv('GOOGLE_CREDENTIALS')
 ])
 
 def get_mock_predictions():
@@ -49,6 +49,15 @@ def predict_image_object_detection_rest(image_bytes, confidence_threshold, iou_t
         return get_mock_predictions()
     
     try:
+        print("🔍 Vertex AI configured - attempting real API call")
+        print(f"📊 Parameters: confidence={confidence_threshold}, IoU={iou_threshold}, max={max_predictions}")
+        
+        # Get the service account credentials from environment
+        credentials_json = os.getenv('GOOGLE_CREDENTIALS')
+        if not credentials_json:
+            print("❌ No credentials found in environment")
+            return get_mock_predictions()
+        
         # For now, we'll use mock data since REST API requires additional setup
         # This keeps the function lightweight while maintaining the structure
         print("🔍 Vertex AI configured but using mock data for now")
@@ -57,9 +66,10 @@ def predict_image_object_detection_rest(image_bytes, confidence_threshold, iou_t
         
         # TODO: Implement REST API call to Vertex AI
         # This would involve:
-        # 1. Getting an access token from Google Cloud
-        # 2. Making HTTP POST to the Vertex AI endpoint
-        # 3. Processing the response
+        # 1. Parsing the credentials from GOOGLE_CREDENTIALS
+        # 2. Getting an access token from Google Cloud
+        # 3. Making HTTP POST to the Vertex AI endpoint
+        # 4. Processing the response
         
         return get_mock_predictions()
         
