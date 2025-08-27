@@ -25,21 +25,24 @@ project_id = os.getenv('GOOGLE_CLOUD_PROJECT', '27458468732')
 endpoint_id = os.getenv('VERTEX_ENDPOINT_ID', '3349211374252195840')
 location = os.getenv('VERTEX_LOCATION', 'europe-west4')
 
-# Check if we have the necessary environment variables for real API calls
-VERTEX_AI_ENABLED = all([
-    os.getenv('GOOGLE_CLOUD_PROJECT'),
-    os.getenv('VERTEX_ENDPOINT_ID'),
-    os.getenv('VERTEX_LOCATION'),
-    os.getenv('GOOGLE_CREDENTIALS')
-])
-
-print(f"🔍 Environment check:")
-print(f"  - GOOGLE_CLOUD_PROJECT: {os.getenv('GOOGLE_CLOUD_PROJECT', 'NOT SET')}")
-print(f"  - VERTEX_ENDPOINT_ID: {os.getenv('VERTEX_ENDPOINT_ID', 'NOT SET')}")
-print(f"  - VERTEX_LOCATION: {os.getenv('VERTEX_LOCATION', 'NOT SET')}")
-print(f"  - GOOGLE_CREDENTIALS: {'SET' if os.getenv('GOOGLE_CREDENTIALS') else 'NOT SET'}")
-print(f"  - CRYPTOGRAPHY_AVAILABLE: {CRYPTOGRAPHY_AVAILABLE}")
-print(f"  - VERTEX_AI_ENABLED: {VERTEX_AI_ENABLED}")
+def check_vertex_ai_enabled():
+    """Check if Vertex AI is properly configured - called at runtime"""
+    enabled = all([
+        os.getenv('GOOGLE_CLOUD_PROJECT'),
+        os.getenv('VERTEX_ENDPOINT_ID'),
+        os.getenv('VERTEX_LOCATION'),
+        os.getenv('GOOGLE_CREDENTIALS')
+    ])
+    
+    print(f"🔍 Runtime environment check:")
+    print(f"  - GOOGLE_CLOUD_PROJECT: {os.getenv('GOOGLE_CLOUD_PROJECT', 'NOT SET')}")
+    print(f"  - VERTEX_ENDPOINT_ID: {os.getenv('VERTEX_ENDPOINT_ID', 'NOT SET')}")
+    print(f"  - VERTEX_LOCATION: {os.getenv('VERTEX_LOCATION', 'NOT SET')}")
+    print(f"  - GOOGLE_CREDENTIALS: {'SET' if os.getenv('GOOGLE_CREDENTIALS') else 'NOT SET'}")
+    print(f"  - CRYPTOGRAPHY_AVAILABLE: {CRYPTOGRAPHY_AVAILABLE}")
+    print(f"  - VERTEX_AI_ENABLED: {enabled}")
+    
+    return enabled
 
 def get_mock_predictions():
     """Return mock predictions as fallback when Vertex AI is not available"""
@@ -268,7 +271,10 @@ def predict_image_object_detection_rest(image_bytes, confidence_threshold, iou_t
     print(f"  - IoU threshold: {iou_threshold}")
     print(f"  - Max predictions: {max_predictions}")
     
-    if not VERTEX_AI_ENABLED:
+    # Check Vertex AI configuration at runtime
+    vertex_ai_enabled = check_vertex_ai_enabled()
+    
+    if not vertex_ai_enabled:
         print("⚠️ Vertex AI not configured, using mock data")
         print("  - Missing environment variables")
         return get_mock_predictions()
@@ -450,7 +456,7 @@ class handler(BaseHTTPRequestHandler):
             print(f"📊 Results: {len(predictions)} objects, classes: {list(class_counts.keys())}")
             
             # Determine model status
-            model_used = "Vertex AI" if VERTEX_AI_ENABLED else "Mock Data"
+            model_used = "Vertex AI" if check_vertex_ai_enabled() else "Mock Data"
             
             # Send success response
             response_data = {
