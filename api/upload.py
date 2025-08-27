@@ -8,6 +8,15 @@ import cgi
 import io
 from PIL import Image, ImageDraw, ImageFont
 import requests
+import time
+
+# Try to import cryptography for JWT signing
+try:
+    from cryptography.hazmat.primitives import hashes, serialization
+    from cryptography.hazmat.primitives.asymmetric import rsa, padding
+    CRYPTOGRAPHY_AVAILABLE = True
+except ImportError:
+    CRYPTOGRAPHY_AVAILABLE = False
 
 # Configure Google Cloud credentials
 project_id = os.getenv('GOOGLE_CLOUD_PROJECT', '27458468732')
@@ -42,6 +51,176 @@ def get_mock_predictions():
         }
     ]
 
+def create_jwt_token(credentials_json):
+    """Create a JWT token for Google Cloud authentication"""
+    if not CRYPTOGRAPHY_AVAILABLE:
+        print("⚠️ Cryptography library not available, cannot create JWT")
+        return None
+    
+    try:
+        # Parse the credentials JSON
+        credentials = json.loads(credentials_json)
+        private_key_pem = credentials['private_key']
+        client_email = credentials['client_email']
+        
+        # Load the private key
+        private_key = serialization.load_pem_private_key(
+            private_key_pem.encode(),
+            password=None
+        )
+        
+        # Create JWT header
+        header = {
+            "alg": "RS256",
+            "typ": "JWT"
+        }
+        
+        # Create JWT payload
+        now = int(time.time())
+        payload = {
+            "iss": client_email,
+            "scope": "https://www.googleapis.com/auth/cloud-platform",
+            "aud": "https://oauth2.googleapis.com/token",
+            "exp": now + 3600,  # 1 hour
+            "iat": now
+        }
+        
+        # Encode header and payload
+        header_b64 = base64.urlsafe_b64encode(json.dumps(header).encode()).rstrip(b'=').decode()
+        payload_b64 = base64.urlsafe_b64encode(json.dumps(payload).encode()).rstrip(b'=').decode()
+        
+        # Create the data to sign
+        data_to_sign = f"{header_b64}.{payload_b64}"
+        
+        # Sign the data
+        signature = private_key.sign(
+            data_to_sign.encode(),
+            padding.PKCS1v15(),
+            hashes.SHA256()
+        )
+        
+        # Encode the signature
+        signature_b64 = base64.urlsafe_b64encode(signature).rstrip(b'=').decode()
+        
+        # Create the complete JWT
+        jwt_token = f"{header_b64}.{payload_b64}.{signature_b64}"
+        
+        print("✅ JWT token created successfully")
+        return jwt_token
+        
+    except Exception as e:
+        print(f"❌ Error creating JWT token: {e}")
+        return None
+
+def get_google_access_token(credentials_json):
+    """Get Google Cloud access token using service account credentials"""
+    try:
+        # Create JWT token
+        jwt_token = create_jwt_token(credentials_json)
+        if not jwt_token:
+            print("❌ Failed to create JWT token")
+            return None
+        
+        # Exchange JWT for access token
+        token_url = "https://oauth2.googleapis.com/token"
+        token_data = {
+            "grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer",
+            "assertion": jwt_token
+        }
+        
+        print("🔄 Exchanging JWT for access token...")
+        
+        # Make request to Google OAuth2 token endpoint
+        response = requests.post(
+            token_url,
+            data=token_data,
+            timeout=30
+        )
+        
+        if response.status_code == 200:
+            result = response.json()
+            access_token = result.get('access_token')
+            if access_token:
+                print("✅ Access token obtained successfully")
+                return access_token
+            else:
+                print("❌ No access token in response")
+                return None
+        else:
+            print(f"❌ Failed to get access token: {response.status_code}")
+            print(f"📄 Response: {response.text}")
+            return None
+        
+    except Exception as e:
+        print(f"❌ Error getting access token: {e}")
+        return None
+
+def call_vertex_ai_endpoint(image_bytes, confidence_threshold, iou_threshold, max_predictions, access_token):
+    """Make actual API call to Vertex AI endpoint"""
+    try:
+        # Construct the Vertex AI endpoint URL
+        endpoint_url = f"https://{location}-aiplatform.googleapis.com/v1/projects/{project_id}/locations/{location}/endpoints/{endpoint_id}:predict"
+        
+        # Prepare the request payload
+        payload = {
+            "instances": [{
+                "image": {
+                    "bytesBase64Encoded": base64.b64encode(image_bytes).decode('utf-8')
+                }
+            }],
+            "parameters": {
+                "confidenceThreshold": confidence_threshold,
+                "maxPredictions": max_predictions
+            }
+        }
+        
+        # Set up headers with authorization
+        headers = {
+            "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/json"
+        }
+        
+        print(f"🚀 Calling Vertex AI endpoint: {endpoint_url}")
+        print(f"📊 Payload: {json.dumps(payload, indent=2)}")
+        
+        # Make the actual API call
+        response = requests.post(
+            endpoint_url,
+            json=payload,
+            headers=headers,
+            timeout=30
+        )
+        
+        if response.status_code == 200:
+            print("✅ Vertex AI API call successful")
+            result = response.json()
+            print(f"📈 Response: {json.dumps(result, indent=2)}")
+            
+            # Parse the predictions from the response
+            predictions = []
+            if 'predictions' in result and result['predictions']:
+                for pred in result['predictions'][0]:
+                    if isinstance(pred, dict):
+                        predictions.append(pred)
+                    else:
+                        # Handle different response formats
+                        predictions.append({
+                            'displayName': getattr(pred, 'displayName', 'Unknown'),
+                            'confidence': getattr(pred, 'confidence', 0.0),
+                            'bbox': getattr(pred, 'bbox', [0, 0, 0, 0])
+                        })
+            
+            print(f"🎯 Parsed {len(predictions)} predictions from Vertex AI")
+            return predictions
+        else:
+            print(f"❌ Vertex AI API call failed: {response.status_code}")
+            print(f"📄 Response: {response.text}")
+            return None
+            
+    except Exception as e:
+        print(f"❌ Error calling Vertex AI endpoint: {e}")
+        return None
+
 def predict_image_object_detection_rest(image_bytes, confidence_threshold, iou_threshold, max_predictions):
     """Call Vertex AI endpoint using REST API (lightweight approach)"""
     if not VERTEX_AI_ENABLED:
@@ -58,20 +237,31 @@ def predict_image_object_detection_rest(image_bytes, confidence_threshold, iou_t
             print("❌ No credentials found in environment")
             return get_mock_predictions()
         
-        # For now, we'll use mock data since REST API requires additional setup
-        # This keeps the function lightweight while maintaining the structure
-        print("🔍 Vertex AI configured but using mock data for now")
-        print("📊 Parameters: confidence={}, IoU={}, max={}".format(
-            confidence_threshold, iou_threshold, max_predictions))
+        print("✅ Credentials found in environment")
         
-        # TODO: Implement REST API call to Vertex AI
-        # This would involve:
-        # 1. Parsing the credentials from GOOGLE_CREDENTIALS
-        # 2. Getting an access token from Google Cloud
-        # 3. Making HTTP POST to the Vertex AI endpoint
-        # 4. Processing the response
+        # Get access token
+        access_token = get_google_access_token(credentials_json)
+        if not access_token:
+            print("❌ Failed to get access token")
+            return get_mock_predictions()
         
-        return get_mock_predictions()
+        print("✅ Access token obtained")
+        
+        # Make actual API call to Vertex AI
+        predictions = call_vertex_ai_endpoint(
+            image_bytes, 
+            confidence_threshold, 
+            iou_threshold, 
+            max_predictions, 
+            access_token
+        )
+        
+        if predictions:
+            print("🎉 Real Vertex AI predictions received!")
+            return predictions
+        else:
+            print("⚠️ Vertex AI call failed, falling back to mock data")
+            return get_mock_predictions()
         
     except Exception as e:
         print(f"❌ Error calling Vertex AI: {e}")
@@ -79,7 +269,7 @@ def predict_image_object_detection_rest(image_bytes, confidence_threshold, iou_t
         return get_mock_predictions()
 
 def predict_image_object_detection(image_bytes, confidence_threshold, iou_threshold, max_predictions):
-    """Main prediction function - currently uses mock data but ready for real API"""
+    """Main prediction function - now calls real Vertex AI when configured"""
     return predict_image_object_detection_rest(
         image_bytes, confidence_threshold, iou_threshold, max_predictions
     )
