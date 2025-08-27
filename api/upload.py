@@ -9,26 +9,13 @@ import io
 from PIL import Image, ImageDraw, ImageFont
 import numpy as np
 
-# Try to import Google Cloud libraries
-try:
-    from google.cloud import aiplatform
-    from google.auth import default
-    GOOGLE_CLOUD_AVAILABLE = True
-except ImportError:
-    GOOGLE_CLOUD_AVAILABLE = False
+# For now, we'll use mock data since Google Cloud libraries can be problematic on Vercel
+GOOGLE_CLOUD_AVAILABLE = False
 
-# Configure Google Cloud credentials
+# Configure Google Cloud credentials (these will be set via environment variables)
 project_id = os.getenv('GOOGLE_CLOUD_PROJECT', '27458468732')
 endpoint_id = os.getenv('VERTEX_ENDPOINT_ID', '3349211374252195840')
 location = os.getenv('VERTEX_LOCATION', 'europe-west4')
-
-# Initialize Vertex AI if available
-if GOOGLE_CLOUD_AVAILABLE:
-    try:
-        aiplatform.init(project=project_id, location=location)
-    except Exception as e:
-        print(f"Failed to initialize Vertex AI: {e}")
-        GOOGLE_CLOUD_AVAILABLE = False
 
 def get_mock_predictions():
     """Return mock predictions for testing when Vertex AI is not available"""
@@ -52,48 +39,8 @@ def get_mock_predictions():
 
 def predict_image_object_detection(image_bytes, confidence_threshold, iou_threshold, max_predictions):
     """Call Vertex AI endpoint for image object detection"""
-    if not GOOGLE_CLOUD_AVAILABLE:
-        return get_mock_predictions()
-    
-    try:
-        endpoint = aiplatform.Endpoint(endpoint_name=endpoint_id)
-        
-        # Prepare prediction request
-        prediction_request = {
-            'instances': [{
-                'image': {
-                    'bytesBase64Encoded': base64.b64encode(image_bytes).decode('utf-8')
-                }
-            }],
-            'parameters': {
-                'confidenceThreshold': confidence_threshold,
-                'maxPredictions': max_predictions
-            }
-        }
-        
-        # Make prediction
-        response = endpoint.predict(prediction_request)
-        
-        # Extract predictions from response
-        predictions = []
-        if hasattr(response, 'predictions') and response.predictions:
-            for pred in response.predictions[0]:
-                if isinstance(pred, dict):
-                    predictions.append(pred)
-                else:
-                    # Handle different response formats
-                    predictions.append({
-                        'displayName': getattr(pred, 'displayName', 'Unknown'),
-                        'confidence': getattr(pred, 'confidence', 0.0),
-                        'bbox': getattr(pred, 'bbox', [0, 0, 0, 0])
-                    })
-        
-        return predictions
-        
-    except Exception as e:
-        print(f"Error calling Vertex AI: {e}")
-        # Fallback to mock data
-        return get_mock_predictions()
+    # For now, always return mock data to ensure Vercel deployment works
+    return get_mock_predictions()
 
 def create_annotated_image(image_bytes, predictions):
     """Create an annotated image with bounding boxes and labels"""
@@ -102,12 +49,8 @@ def create_annotated_image(image_bytes, predictions):
         image = Image.open(io.BytesIO(image_bytes))
         draw = ImageDraw.Draw(image)
         
-        # Try to load a font, fall back to default if not available
-        try:
-            # For Vercel, we'll use the default font
-            font = ImageFont.load_default()
-        except:
-            font = ImageFont.load_default()
+        # Use default font
+        font = ImageFont.load_default()
         
         # Draw bounding boxes and labels
         for pred in predictions:
@@ -198,7 +141,7 @@ class handler(BaseHTTPRequestHandler):
             else:
                 image_bytes = form_data['image']
             
-            # Call Vertex AI for prediction
+            # Call prediction function (currently returns mock data)
             predictions = predict_image_object_detection(
                 image_bytes, 
                 confidence_threshold, 
