@@ -230,47 +230,61 @@ def call_vertex_ai_endpoint(image_bytes, confidence_threshold, iou_threshold, ma
         print(f"  - Response status: {response.status_code}")
         print(f"  - Response headers: {dict(response.headers)}")
         
-        if response.status_code == 200:
-            print("✅ Vertex AI API call successful")
-            result = response.json()
-            print(f"📈 Response: {json.dumps(result, indent=2)}")
-            
-            # Parse the predictions from the response
-            predictions = []
-            if 'predictions' in result and result['predictions']:
-                # Vertex AI returns predictions in a specific format
-                vertex_predictions = result['predictions'][0]
-                print(f"🔍 Raw Vertex AI response: {json.dumps(vertex_predictions, indent=2)}")
+                    if response.status_code == 200:
+                print("✅ Vertex AI API call successful")
+                result = response.json()
                 
-                # Handle different possible response formats
-                if isinstance(vertex_predictions, list):
-                    for pred in vertex_predictions:
-                        if isinstance(pred, dict):
-                            # Extract prediction data
-                            prediction = {
-                                'displayName': pred.get('displayName', pred.get('class', 'Unknown')),
-                                'confidence': pred.get('confidence', pred.get('score', 0.0)),
-                                'bbox': pred.get('bbox', pred.get('boundingBox', [0, 0, 0, 0]))
-                            }
-                            predictions.append(prediction)
-                        else:
-                            # Handle object format
-                            predictions.append({
-                                'displayName': getattr(pred, 'displayName', getattr(pred, 'class', 'Unknown')),
-                                'confidence': getattr(pred, 'confidence', getattr(pred, 'score', 0.0)),
-                                'bbox': getattr(pred, 'bbox', getattr(pred, 'boundingBox', [0, 0, 0, 0]))
-                            })
+                # Log the COMPLETE response for debugging
+                print("=" * 80)
+                print("🔍 COMPLETE VERTEX AI RESPONSE:")
+                print("=" * 80)
+                print(json.dumps(result, indent=2))
+                print("=" * 80)
+                
+                # Parse the predictions from the response
+                predictions = []
+                if 'predictions' in result and result['predictions']:
+                    # Vertex AI returns predictions in a specific format
+                    vertex_predictions = result['predictions'][0]
+                    print(f"🔍 Raw Vertex AI predictions[0]: {json.dumps(vertex_predictions, indent=2)}")
+                    
+                    # Handle different possible response formats
+                    if isinstance(vertex_predictions, list):
+                        print(f"📋 Predictions is a list with {len(vertex_predictions)} items")
+                        for i, pred in enumerate(vertex_predictions):
+                            print(f"🔍 Processing prediction {i}: {json.dumps(pred, indent=2)}")
+                            if isinstance(pred, dict):
+                                # Extract prediction data
+                                prediction = {
+                                    'displayName': pred.get('displayName', pred.get('class', 'Unknown')),
+                                    'confidence': pred.get('confidence', pred.get('score', 0.0)),
+                                    'bbox': pred.get('bbox', pred.get('boundingBox', [0, 0, 0, 0]))
+                                }
+                                print(f"✅ Parsed prediction {i}: {json.dumps(prediction, indent=2)}")
+                                predictions.append(prediction)
+                            else:
+                                # Handle object format
+                                print(f"⚠️ Prediction {i} is not a dict: {type(pred)}")
+                                predictions.append({
+                                    'displayName': getattr(pred, 'displayName', getattr(pred, 'class', 'Unknown')),
+                                    'confidence': getattr(pred, 'confidence', getattr(pred, 'score', 0.0)),
+                                    'bbox': getattr(pred, 'bbox', getattr(pred, 'boundingBox', [0, 0, 0, 0]))
+                                })
+                    else:
+                        # Single prediction or different format
+                        print(f"⚠️ Unexpected prediction format: {type(vertex_predictions)}")
+                        print(f"🔍 Content: {json.dumps(vertex_predictions, indent=2)}")
+                        predictions.append({
+                            'displayName': 'Unknown',
+                            'confidence': 0.0,
+                            'bbox': [0, 0, 0, 0]
+                        })
                 else:
-                    # Single prediction or different format
-                    print(f"⚠️ Unexpected prediction format: {type(vertex_predictions)}")
-                    predictions.append({
-                        'displayName': 'Unknown',
-                        'confidence': 0.0,
-                        'bbox': [0, 0, 0, 0]
-                    })
-            
-            print(f"🎯 Parsed {len(predictions)} predictions from Vertex AI")
-            return predictions
+                    print("⚠️ No 'predictions' key found in response")
+                    print(f"🔍 Available keys: {list(result.keys())}")
+                
+                print(f"🎯 Final parsed {len(predictions)} predictions: {json.dumps(predictions, indent=2)}")
+                return predictions
         else:
             print(f"❌ Vertex AI API call failed: {response.status_code}")
             print(f"📄 Response: {response.text}")
