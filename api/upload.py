@@ -9,16 +9,11 @@ import io
 from PIL import Image, ImageDraw, ImageFont
 import requests
 import time
+import google.auth
+from google.auth.transport.requests import Request
+from google.oauth2 import service_account
 
-# Try to import cryptography for JWT signing
-try:
-    from cryptography.hazmat.primitives import hashes, serialization
-    from cryptography.hazmat.primitives.asymmetric import rsa, padding
-    CRYPTOGRAPHY_AVAILABLE = True
-    print("✅ Cryptography library loaded successfully")
-except ImportError as e:
-    CRYPTOGRAPHY_AVAILABLE = False
-    print(f"❌ Cryptography library not available: {e}")
+# Google Auth library for better performance
 
 # Configure Google Cloud credentials
 project_id = os.getenv('GOOGLE_CLOUD_PROJECT', '27458468732')
@@ -39,7 +34,7 @@ def check_vertex_ai_enabled():
     print(f"  - VERTEX_ENDPOINT_ID: {os.getenv('VERTEX_ENDPOINT_ID', 'NOT SET')}")
     print(f"  - VERTEX_LOCATION: {os.getenv('VERTEX_LOCATION', 'NOT SET')}")
     print(f"  - GOOGLE_CREDENTIALS: {'SET' if os.getenv('GOOGLE_CREDENTIALS') else 'NOT SET'}")
-    print(f"  - CRYPTOGRAPHY_AVAILABLE: {CRYPTOGRAPHY_AVAILABLE}")
+
     print(f"  - VERTEX_AI_ENABLED: {enabled}")
     
     return enabled
@@ -64,128 +59,47 @@ def get_mock_predictions():
         }
     ]
 
-def create_jwt_token(credentials_json):
-    """Create a JWT token for Google Cloud authentication"""
-    if not CRYPTOGRAPHY_AVAILABLE:
-        print("⚠️ Cryptography library not available, cannot create JWT")
-        return None
-    
-    try:
-        print("🔐 Creating JWT token...")
-        
-        # Parse the credentials JSON
-        credentials = json.loads(credentials_json)
-        private_key_pem = credentials['private_key']
-        client_email = credentials['client_email']
-        
-        print(f"  - Client email: {client_email}")
-        print(f"  - Private key length: {len(private_key_pem)} characters")
-        
-        # Load the private key
-        private_key = serialization.load_pem_private_key(
-            private_key_pem.encode(),
-            password=None
-        )
-        print("  - Private key loaded successfully")
-        
-        # Create JWT header
-        header = {
-            "alg": "RS256",
-            "typ": "JWT"
-        }
-        
-        # Create JWT payload
-        now = int(time.time())
-        payload = {
-            "iss": client_email,
-            "scope": "https://www.googleapis.com/auth/cloud-platform",
-            "aud": "https://oauth2.googleapis.com/token",
-            "exp": now + 3600,  # 1 hour
-            "iat": now
-        }
-        
-        print(f"  - JWT payload created: {payload}")
-        
-        # Encode header and payload
-        header_b64 = base64.urlsafe_b64encode(json.dumps(header).encode()).rstrip(b'=').decode()
-        payload_b64 = base64.urlsafe_b64encode(json.dumps(payload).encode()).rstrip(b'=').decode()
-        
-        # Create the data to sign
-        data_to_sign = f"{header_b64}.{payload_b64}"
-        
-        # Sign the data
-        signature = private_key.sign(
-            data_to_sign.encode(),
-            padding.PKCS1v15(),
-            hashes.SHA256()
-        )
-        
-        # Encode the signature
-        signature_b64 = base64.urlsafe_b64encode(signature).rstrip(b'=').decode()
-        
-        # Create the complete JWT
-        jwt_token = f"{header_b64}.{payload_b64}.{signature_b64}"
-        
-        print(f"✅ JWT token created successfully (length: {len(jwt_token)})")
-        return jwt_token
-        
-    except Exception as e:
-        print(f"❌ Error creating JWT token: {e}")
-        import traceback
-        traceback.print_exc()
-        return None
+# JWT token creation removed - now using Google Auth library for better performance
+
+# Global cache for access token to improve performance
+_access_token_cache = None
+_access_token_expiry = 0
 
 def get_google_access_token(credentials_json):
-    """Get Google Cloud access token using service account credentials"""
+    """Get Google access token with caching for performance"""
+    global _access_token_cache, _access_token_expiry
+    
+    # Check if we have a valid cached token (tokens typically last 1 hour)
+    current_time = time.time()
+    if _access_token_cache and current_time < _access_token_expiry:
+        print("✅ Using cached access token")
+        return _access_token_cache
+    
     try:
-        print("🔑 Getting Google Cloud access token...")
+        print("🔄 Generating new access token...")
         
-        # Create JWT token
-        jwt_token = create_jwt_token(credentials_json)
-        if not jwt_token:
-            print("❌ Failed to create JWT token")
-            return None
+        # Parse the service account credentials
+        credentials_info = json.loads(credentials_json)
         
-        # Exchange JWT for access token
-        token_url = "https://oauth2.googleapis.com/token"
-        token_data = {
-            "grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer",
-            "assertion": jwt_token
-        }
-        
-        print("🔄 Exchanging JWT for access token...")
-        print(f"  - Token URL: {token_url}")
-        
-        # Make request to Google OAuth2 token endpoint
-        response = requests.post(
-            token_url,
-            data=token_data,
-            timeout=30
+        # Create credentials object
+        credentials = service_account.Credentials.from_service_account_info(
+            credentials_info,
+            scopes=['https://www.googleapis.com/auth/cloud-platform']
         )
         
-        print(f"  - Response status: {response.status_code}")
-        print(f"  - Response headers: {dict(response.headers)}")
+        # Get the access token
+        credentials.refresh(Request())
+        access_token = credentials.token
         
-        if response.status_code == 200:
-            result = response.json()
-            print(f"  - Response body: {json.dumps(result, indent=2)}")
-            
-            access_token = result.get('access_token')
-            if access_token:
-                print(f"✅ Access token obtained successfully (length: {len(access_token)})")
-                return access_token
-            else:
-                print("❌ No access token in response")
-                return None
-        else:
-            print(f"❌ Failed to get access token: {response.status_code}")
-            print(f"📄 Response: {response.text}")
-            return None
+        # Cache the token with expiry (set to 50 minutes to be safe)
+        _access_token_cache = access_token
+        _access_token_expiry = current_time + (50 * 60)  # 50 minutes
+        
+        print("✅ New access token generated and cached")
+        return access_token
         
     except Exception as e:
         print(f"❌ Error getting access token: {e}")
-        import traceback
-        traceback.print_exc()
         return None
 
 def call_vertex_ai_endpoint(image_bytes, confidence_threshold, iou_threshold, max_predictions, access_token):
@@ -325,7 +239,7 @@ def predict_image_object_detection_rest(image_bytes, confidence_threshold, iou_t
     print(f"  - IoU threshold: {iou_threshold}")
     print(f"  - Max predictions: {max_predictions}")
     
-    # Check Vertex AI configuration at runtime
+    # Check Vertex AI configuration at runtime (only once)
     vertex_ai_enabled = check_vertex_ai_enabled()
     
     if not vertex_ai_enabled:
@@ -345,7 +259,7 @@ def predict_image_object_detection_rest(image_bytes, confidence_threshold, iou_t
         print("✅ Credentials found in environment")
         print(f"  - Credentials length: {len(credentials_json)} characters")
         
-        # Get access token
+        # Get access token (this is the main performance bottleneck)
         access_token = get_google_access_token(credentials_json)
         if not access_token:
             print("❌ Failed to get access token")
@@ -380,7 +294,8 @@ def predict_image_object_detection_rest(image_bytes, confidence_threshold, iou_t
         return get_mock_predictions()
 
 def predict_image_object_detection(image_bytes, confidence_threshold, iou_threshold, max_predictions):
-    """Main prediction function - now calls real Vertex AI when configured"""
+    """Main prediction function - optimized to reduce redundant calls"""
+    # Single call to the REST function - no more redundant calls
     return predict_image_object_detection_rest(
         image_bytes, confidence_threshold, iou_threshold, max_predictions
     )
