@@ -6,34 +6,39 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vertex AI Image Recognition Tester</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         /* Essential CSS for functionality */
         body {
-            background-color: #f8f9fa;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #fafafa;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             min-height: 100vh;
+            color: #333333;
         }
         
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #4d65ff 0%, #6b7cff 100%);
             color: white;
             margin-bottom: 2rem;
             border-radius: 0 0 20px 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 20px rgba(77, 101, 255, 0.15);
         }
         
         .card {
             border: none;
-            border-radius: 15px;
+            border-radius: 16px;
             overflow: hidden;
             transition: all 0.3s ease;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            background: white;
         }
         
         .card:hover {
-            box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
             transform: translateY(-2px);
         }
         
@@ -42,15 +47,24 @@
             background: #e9ecef;
         }
         
+        .form-range::-webkit-slider-thumb {
+            background: #4d65ff;
+            box-shadow: 0 2px 6px rgba(77, 101, 255, 0.3);
+        }
+        
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #4d65ff 0%, #6b7cff 100%);
             border: none;
             transition: all 0.3s ease;
+            border-radius: 12px;
+            font-weight: 600;
+            padding: 12px 24px;
         }
         
         .btn-primary:hover {
             transform: translateY(-1px);
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 6px 20px rgba(77, 101, 255, 0.3);
+            background: linear-gradient(135deg, #3d55ef 0%, #5b6cef 100%);
         }
         
         .image-container {
@@ -59,9 +73,9 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: #f8f9fa;
-            border-radius: 10px;
-            border: 2px dashed #dee2e6;
+            background: #fafafa;
+            border-radius: 16px;
+            border: 2px dashed #e0e0e0;
             transition: all 0.3s ease;
         }
         
@@ -73,8 +87,8 @@
         .image-container img {
             max-width: 100%;
             max-height: 600px;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
             transition: all 0.3s ease;
         }
         
@@ -84,13 +98,14 @@
         
         .placeholder-image {
             padding: 4rem 2rem;
-            color: #6c757d;
+            color: #666;
             text-align: center;
         }
         
         .spinner-border {
             width: 3rem;
             height: 3rem;
+            color: #4d65ff;
         }
         
         .class-count-item {
@@ -98,18 +113,18 @@
             justify-content: space-between;
             align-items: center;
             padding: 0.75rem 0;
-            border-bottom: 1px solid #e9ecef;
+            border-bottom: 1px solid #f0f0f0;
             transition: all 0.2s ease;
         }
         
         .class-count-item:hover {
-            background-color: #f8f9fa;
+            background-color: #f8f9ff;
             padding-left: 0.5rem;
-            border-radius: 5px;
+            border-radius: 8px;
         }
         
         .class-count {
-            background: #667eea;
+            background: linear-gradient(135deg, #4d65ff 0%, #6b7cff 100%);
             color: white;
             padding: 0.25rem 0.75rem;
             border-radius: 20px;
@@ -134,21 +149,22 @@
         }
         
         .status-vertex {
-            background: linear-gradient(135deg, #28a745, #20c997);
+            background: linear-gradient(135deg, #10b981, #059669);
             color: white;
         }
         
         .status-mock {
-            background: linear-gradient(135deg, #ffc107, #fd7e14);
+            background: linear-gradient(135deg, #f59e0b, #d97706);
             color: white;
         }
         
         .performance-metrics {
-            background: linear-gradient(135deg, #6f42c1, #e83e8c);
+            background: linear-gradient(135deg, #4d65ff 0%, #6b7cff 100%);
             color: white;
-            border-radius: 15px;
+            border-radius: 16px;
             padding: 1.5rem;
             margin-bottom: 1.5rem;
+            box-shadow: 0 4px 20px rgba(77, 101, 255, 0.15);
         }
         
         .metric-item {
@@ -164,6 +180,28 @@
         .metric-label {
             font-size: 0.875rem;
             opacity: 0.9;
+        }
+        
+        .card-header.bg-primary {
+            background: linear-gradient(135deg, #4d65ff 0%, #6b7cff 100%) !important;
+        }
+        
+        .card-header.bg-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+        }
+        
+        .card-header.bg-secondary {
+            background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%) !important;
+        }
+        
+        .form-control:focus {
+            border-color: #4d65ff;
+            box-shadow: 0 0 0 0.2rem rgba(77, 101, 255, 0.25);
+        }
+        
+        .form-label {
+            color: #333333;
+            font-weight: 600;
         }
         
         /* Responsive improvements */
@@ -255,6 +293,11 @@
                                 <!-- Submit Button -->
                                 <button type="submit" class="btn btn-primary btn-lg w-100" id="submitBtn">
                                     <i class="fas fa-play"></i> Run Detection
+                                </button>
+                                
+                                <!-- Test Connection Button -->
+                                <button type="button" class="btn btn-outline-secondary w-100 mt-2" id="testConnectionBtn">
+                                    <i class="fas fa-wifi"></i> Test Connection
                                 </button>
                             </form>
 
@@ -377,6 +420,70 @@
             
             const imageInput = document.getElementById('imageInput');
             imageInput.addEventListener('change', handleImagePreview);
+            
+            const testConnectionBtn = document.getElementById('testConnectionBtn');
+            testConnectionBtn.addEventListener('click', testConnection);
+        }
+
+        function testConnection() {
+            const btn = document.getElementById('testConnectionBtn');
+            const originalText = btn.innerHTML;
+            
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testing...';
+            
+            fetch('/api/upload', {
+                method: 'GET'
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                btn.innerHTML = '<i class="fas fa-check"></i> Connected!';
+                btn.className = 'btn btn-success w-100 mt-2';
+                
+                // Show connection info
+                showConnectionInfo(data);
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.className = 'btn btn-outline-secondary w-100 mt-2';
+                    btn.disabled = false;
+                }, 3000);
+            })
+            .catch(error => {
+                btn.innerHTML = '<i class="fas fa-times"></i> Failed';
+                btn.className = 'btn btn-danger w-100 mt-2';
+                
+                showError(`Connection test failed: ${error.message}`);
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.className = 'btn btn-outline-secondary w-100 mt-2';
+                    btn.disabled = false;
+                }, 3000);
+            });
+        }
+
+        function showConnectionInfo(data) {
+            const modal = new bootstrap.Modal(document.getElementById('errorModal'));
+            document.getElementById('errorModal').querySelector('.modal-header').className = 'modal-header bg-success text-white';
+            document.getElementById('errorModal').querySelector('.modal-title').innerHTML = '<i class="fas fa-check-circle"></i> Connection Successful';
+            document.getElementById('errorMessage').innerHTML = `
+                <div class="text-success">
+                    <p><strong>✅ API is responding correctly!</strong></p>
+                    <ul class="list-unstyled">
+                        <li>• Status: ${data.status}</li>
+                        <li>• Google Auth: ${data.google_auth_available ? 'Available' : 'Not Available'}</li>
+                        <li>• Vertex AI: ${data.vertex_ai_enabled ? 'Configured' : 'Not Configured'}</li>
+                    </ul>
+                    <p class="text-muted mt-2">You can now upload images for recognition.</p>
+                </div>
+            `;
+            modal.show();
         }
 
         function setupDragAndDrop() {
@@ -446,11 +553,31 @@
             showLoading(true);
             const startTime = Date.now();
             
+            // First test the connection
             fetch('/api/upload', {
-                method: 'POST',
-                body: formData
+                method: 'GET'
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`API not responding: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(healthData => {
+                console.log('API Health Check:', healthData);
+                
+                // Now make the actual upload request
+                return fetch('/api/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Upload failed: ${response.status} ${response.statusText}`);
+                }
+                return response.json();
+            })
             .then(data => {
                 showLoading(false);
                 
@@ -464,7 +591,12 @@
             .catch(error => {
                 showLoading(false);
                 console.error('Error:', error);
-                showError('Network error occurred. Please try again.');
+                
+                if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+                    showError('Network error: Unable to connect to the server. Please check your internet connection and try again.');
+                } else {
+                    showError(`Error: ${error.message}`);
+                }
             });
         }
 

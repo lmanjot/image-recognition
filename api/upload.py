@@ -9,11 +9,16 @@ import io
 from PIL import Image, ImageDraw, ImageFont
 import requests
 import time
-import google.auth
-from google.auth.transport.requests import Request
-from google.oauth2 import service_account
 
-# Google Auth library for better performance
+# Only import Google Auth if available (reduces bundle size)
+try:
+    import google.auth
+    from google.auth.transport.requests import Request
+    from google.oauth2 import service_account
+    GOOGLE_AUTH_AVAILABLE = True
+except ImportError:
+    GOOGLE_AUTH_AVAILABLE = False
+    print("⚠️ Google Auth not available - using mock mode")
 
 # Configure Google Cloud credentials
 project_id = os.getenv('GOOGLE_CLOUD_PROJECT', '27458468732')
@@ -22,6 +27,10 @@ location = os.getenv('VERTEX_LOCATION', 'europe-west4')
 
 def check_vertex_ai_enabled():
     """Check if Vertex AI is properly configured - called at runtime"""
+    if not GOOGLE_AUTH_AVAILABLE:
+        print("⚠️ Google Auth library not available")
+        return False
+        
     enabled = all([
         os.getenv('GOOGLE_CLOUD_PROJECT'),
         os.getenv('VERTEX_ENDPOINT_ID'),
@@ -34,7 +43,7 @@ def check_vertex_ai_enabled():
     print(f"  - VERTEX_ENDPOINT_ID: {os.getenv('VERTEX_ENDPOINT_ID', 'NOT SET')}")
     print(f"  - VERTEX_LOCATION: {os.getenv('VERTEX_LOCATION', 'NOT SET')}")
     print(f"  - GOOGLE_CREDENTIALS: {'SET' if os.getenv('GOOGLE_CREDENTIALS') else 'NOT SET'}")
-
+    print(f"  - GOOGLE_AUTH_AVAILABLE: {GOOGLE_AUTH_AVAILABLE}")
     print(f"  - VERTEX_AI_ENABLED: {enabled}")
     
     return enabled
@@ -67,6 +76,10 @@ _access_token_expiry = 0
 
 def get_google_access_token(credentials_json):
     """Get Google access token with caching for performance"""
+    if not GOOGLE_AUTH_AVAILABLE:
+        print("❌ Google Auth library not available")
+        return None
+        
     global _access_token_cache, _access_token_expiry
     
     # Check if we have a valid cached token (tokens typically last 1 hour)
@@ -372,6 +385,27 @@ def parse_multipart_data(body, content_type):
         return None
 
 class handler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        """Handle GET requests for health checks and testing"""
+        if self.path == '/api/upload' or self.path == '/api/upload/':
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.send_header('Access-Control-Allow-Methods', 'POST, OPTIONS, GET')
+            self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+            self.end_headers()
+            
+            response_data = {
+                'status': 'healthy',
+                'message': 'Image recognition API is running',
+                'google_auth_available': GOOGLE_AUTH_AVAILABLE,
+                'vertex_ai_enabled': check_vertex_ai_enabled()
+            }
+            
+            response_json = json.dumps(response_data)
+            self.wfile.write(response_json.encode('utf-8'))
+            return
+    
     def do_POST(self):
         try:
             # Get content length and type
