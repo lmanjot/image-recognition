@@ -304,6 +304,15 @@
             background-color: var(--primary-color) !important;
         }
         
+        .badge.bg-secondary {
+            background-color: #555555 !important;
+        }
+        
+        .badge.bg-light {
+            background-color: #cccccc !important;
+            color: #333333 !important;
+        }
+        
         /* Table styling */
         .table {
             margin-bottom: 0;
@@ -463,24 +472,30 @@
                             <h5><i class="fas fa-table"></i> Detection Results</h5>
                         </div>
                         <div class="card-body">
-                            <div class="text-center mb-3">
-                                <h4 class="text-primary mb-0" id="totalPredictions">0</h4>
-                                <small class="text-muted">Total Objects Detected</small>
-                            </div>
-                            
-                            <div class="table-responsive">
-                                <table class="table table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th>Class</th>
-                                            <th>Count</th>
-                                            <th>Confidence</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="detectionResultsTable">
-                                        <!-- Results will be populated here -->
-                                    </tbody>
-                                </table>
+                            <div class="row align-items-center">
+                                <!-- Left: Total Count -->
+                                <div class="col-md-4 text-center">
+                                    <h1 class="text-primary mb-0" id="totalPredictions">0</h1>
+                                    <small class="text-muted">Total Objects Detected</small>
+                                </div>
+                                
+                                <!-- Right: Details Table -->
+                                <div class="col-md-8">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>Class</th>
+                                                    <th>Count</th>
+                                                    <th>Confidence</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="detectionResultsTable">
+                                                <!-- Results will be populated here -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -745,6 +760,15 @@
             
             // Update detection results table
             updateDetectionResultsTable(data.predictions);
+            
+            // Update total count to show 0 if no real predictions
+            const hasRealPredictions = data.predictions && data.predictions.length > 0 && 
+                data.predictions.some(pred => pred.confidence && pred.confidence > 0);
+            
+            if (!hasRealPredictions) {
+                const totalPredictionsEl = document.getElementById('totalPredictions');
+                if (totalPredictionsEl) totalPredictionsEl.textContent = '0';
+            }
         }
 
 
@@ -753,7 +777,11 @@
             const tableBody = document.getElementById('detectionResultsTable');
             if (!tableBody) return;
             
-            if (!predictions || predictions.length === 0) {
+            // Check if we have real predictions or if it's mock data
+            const hasRealPredictions = predictions && predictions.length > 0 && 
+                predictions.some(pred => pred.confidence && pred.confidence > 0);
+            
+            if (!hasRealPredictions) {
                 tableBody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">No objects detected</td></tr>';
                 return;
             }
@@ -764,15 +792,18 @@
                 const className = pred.displayName || 'Unknown';
                 const confidence = pred.confidence || 0;
                 
-                if (!classData[className]) {
-                    classData[className] = {
-                        count: 0,
-                        totalConfidence: 0
-                    };
+                // Only include predictions with valid confidence scores
+                if (confidence > 0) {
+                    if (!classData[className]) {
+                        classData[className] = {
+                            count: 0,
+                            totalConfidence: 0
+                        };
+                    }
+                    
+                    classData[className].count++;
+                    classData[className].totalConfidence += confidence;
                 }
-                
-                classData[className].count++;
-                classData[className].totalConfidence += confidence;
             });
             
             // Create table rows
@@ -784,7 +815,7 @@
                     <tr>
                         <td><strong>${className}</strong></td>
                         <td><span class="badge bg-secondary">${data.count}</span></td>
-                        <td><span class="badge bg-primary">${avgConfidence}</span></td>
+                        <td><span class="badge bg-light">${avgConfidence}</span></td>
                     </tr>
                 `;
             });
