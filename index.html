@@ -21,11 +21,11 @@
         }
         
         .header {
-            background-color: #4d65ff;
+            background-color: #C79653;
             color: white;
             margin-bottom: 2rem;
             border-radius: 0 0 20px 20px;
-            box-shadow: 0 4px 20px rgba(77, 101, 255, 0.15);
+            box-shadow: 0 4px 20px rgba(199, 150, 83, 0.15);
         }
         
         .card {
@@ -48,18 +48,18 @@
         }
         
         .form-range::-webkit-slider-thumb {
-            background-color: #4d65ff;
-            box-shadow: 0 2px 6px rgba(77, 101, 255, 0.3);
+            background-color: #C79653;
+            box-shadow: 0 2px 6px rgba(199, 150, 83, 0.3);
         }
         
         .form-range::-moz-range-thumb {
-            background-color: #4d65ff;
+            background-color: #C79653;
             border: none;
         }
         
         .btn-primary {
-            background-color: #4d65ff !important;
-            border-color: #4d65ff !important;
+            background-color: #C79653 !important;
+            border-color: #C79653 !important;
             transition: all 0.3s ease;
             border-radius: 12px;
             font-weight: 600;
@@ -67,16 +67,16 @@
         }
         
         .btn-primary:hover {
-            background-color: #3d55ef !important;
-            border-color: #3d55ef !important;
+            background-color: #b88643 !important;
+            border-color: #b88643 !important;
             transform: translateY(-1px);
-            box-shadow: 0 6px 20px rgba(77, 101, 255, 0.3);
+            box-shadow: 0 6px 20px rgba(199, 150, 83, 0.3);
         }
         
         .btn-primary:focus {
-            background-color: #4d65ff !important;
-            border-color: #4d65ff !important;
-            box-shadow: 0 0 0 0.25rem rgba(77, 101, 255, 0.25);
+            background-color: #C79653 !important;
+            border-color: #C79653 !important;
+            box-shadow: 0 0 0 0.25rem rgba(199, 150, 83, 0.25);
         }
         
         .image-container {
@@ -117,7 +117,7 @@
         .spinner-border {
             width: 3rem;
             height: 3rem;
-            color: #4d65ff;
+            color: #C79653;
         }
         
         .class-count-item {
@@ -130,13 +130,13 @@
         }
         
         .class-count-item:hover {
-            background-color: #f8f9ff;
+            background-color: #fef9f4;
             padding-left: 0.5rem;
             border-radius: 8px;
         }
         
         .class-count {
-            background-color: #4d65ff;
+            background-color: #C79653;
             color: white;
             padding: 0.25rem 0.75rem;
             border-radius: 20px;
@@ -154,8 +154,8 @@
         }
         
         .form-control:focus {
-            border-color: #4d65ff;
-            box-shadow: 0 0 0 0.2rem rgba(77, 101, 255, 0.25);
+            border-color: #C79653;
+            box-shadow: 0 0 0 0.2rem rgba(199, 150, 83, 0.25);
         }
         
         .form-label {
@@ -165,7 +165,7 @@
         
         /* Text colors */
         .text-primary {
-            color: #4d65ff !important;
+            color: #C79653 !important;
         }
         
         .text-muted {
@@ -174,7 +174,7 @@
         
         /* Badge colors */
         .badge.bg-primary {
-            background-color: #4d65ff !important;
+            background-color: #C79653 !important;
         }
         
         /* Progress bar */
@@ -559,7 +559,7 @@
             if (!data.annotated_image || data.annotated_image === 'null' || data.annotated_image === 'undefined') {
                 console.error('Invalid annotated image data:', data.annotated_image);
                 
-                // Show original image without overlays
+                // Show original image
                 const originalImage = getOriginalImageData();
                 if (originalImage) {
                     container.innerHTML = `<img src="${originalImage}" alt="Original image" class="img-fluid">`;

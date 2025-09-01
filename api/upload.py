@@ -368,8 +368,8 @@ def create_annotated_image(image_bytes, predictions):
                     print(f"   ⚠️ Invalid bbox coordinates, skipping")
                     continue
                     
-                # Draw bounding box with Mara.care blue color
-                box_color = (77, 101, 255)  # #4d65ff
+                # Draw bounding box with Mara.care gold color
+                box_color = (199, 150, 83)  # #C79653
                 draw.rectangle([x1, y1, x2, y2], outline=box_color, width=3)
                 
                 # Draw label background
@@ -383,7 +383,7 @@ def create_annotated_image(image_bytes, predictions):
                 # Draw label background with semi-transparent effect
                 label_width = bbox_text[2] - bbox_text[0] + 10
                 label_height = bbox_text[3] - bbox_text[1] + 10
-                label_bg = Image.new('RGBA', (label_width, label_height), (77, 101, 255, 200))
+                label_bg = Image.new('RGBA', (label_width, label_height), (199, 150, 83, 200))
                 image.paste(label_bg, (bbox_text[0] - 5, bbox_text[1] - 5), label_bg)
                 
                 # Draw label text

@@ -42,9 +42,8 @@ The API has been optimized to reduce deployment size:
 ## 🎨 Design System
 
 ### Color Palette (Mara.care inspired):
-- **Primary Blue**: `#4d65ff` - Main brand color
-- **Secondary Blue**: `#6b7cff` - Accent color  
-- **Gold**: `#C79653` - Highlight color
+- **Primary Gold**: `#C79653` - Main brand color
+- **Secondary Gold**: `#b88643` - Accent color  
 - **Dark Gray**: `#333333` - Text color
 - **Light Gray**: `#fafafa` - Background color
 
