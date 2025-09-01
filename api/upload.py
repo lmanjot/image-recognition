@@ -314,71 +314,18 @@ def predict_image_object_detection(image_bytes, confidence_threshold, iou_thresh
     )
 
 def create_annotated_image(image_bytes, predictions):
-    """Create an annotated image with bounding boxes and labels"""
+    """Return the original image without any annotations"""
     try:
-        print(f"🎨 Creating annotated image with {len(predictions)} predictions")
+        print(f"🎨 Returning original image (no annotations)")
         
-        # Open image from bytes
-        image = Image.open(io.BytesIO(image_bytes))
+        # Just return the original image as base64
+        img_str = base64.b64encode(image_bytes).decode('utf-8')
         
-        print(f"📏 Image dimensions: {image.size}")
-        
-        # Process predictions but don't draw anything
-        for i, pred in enumerate(predictions):
-            bbox = pred.get('bbox', [0, 0, 0, 0])
-            class_name = pred.get('displayName', 'Unknown')
-            confidence = pred.get('confidence', 0.0)
-            
-            print(f"🔍 Prediction {i+1}: {class_name} (conf: {confidence:.3f})")
-            print(f"   Raw bbox: {bbox}")
-            
-            # Vertex AI bounding box format: [y_min, x_min, y_max, x_max] (normalized 0-1)
-            # Convert to [x_min, y_min, x_max, y_max] format
-            if len(bbox) == 4:
-                # Handle different possible formats
-                if bbox[0] <= bbox[2] and bbox[1] <= bbox[3]:
-                    # Already in [x_min, y_min, x_max, y_max] format
-                    x_min, y_min, x_max, y_max = bbox
-                else:
-                    # Convert from [y_min, x_min, y_max, x_max] to [x_min, y_min, x_max, y_max]
-                    y_min, x_min, y_max, x_max = bbox
-                
-                # Ensure coordinates are within 0-1 range
-                x_min = max(0, min(1, x_min))
-                y_min = max(0, min(1, y_min))
-                x_max = max(0, min(1, x_max))
-                y_max = max(0, min(1, y_max))
-                
-                # Convert to pixel coordinates
-                width, height = image.size
-                x1 = int(x_min * width)
-                y1 = int(y_min * height)
-                x2 = int(x_max * width)
-                y2 = int(y_max * height)
-                
-                print(f"   Converted bbox: x_min={x_min:.3f}, y_min={y_min:.3f}, x_max={x_max:.3f}, y_max={y_max:.3f}")
-                print(f"   Pixel bbox: [{x1}, {y1}, {x2}, {y2}]")
-                
-                # Validate coordinates
-                if x1 >= x2 or y1 >= y2:
-                    print(f"   ⚠️ Invalid bbox coordinates, skipping")
-                    continue
-                    
-                # No bounding boxes or annotations - just return the original image
-            else:
-                print(f"   ⚠️ Invalid bbox format, expected 4 values, got {len(bbox)}")
-                continue
-        
-        # Convert to base64 for sending to frontend
-        buffer = io.BytesIO()
-        image.save(buffer, format='JPEG', quality=95)
-        img_str = base64.b64encode(buffer.getvalue()).decode('utf-8')
-        
-        print(f"✅ Annotated image created successfully: {len(img_str)} characters")
+        print(f"✅ Original image returned successfully")
         return f"data:image/jpeg;base64,{img_str}"
         
     except Exception as e:
-        print(f"❌ Error creating annotated image: {e}")
+        print(f"❌ Error processing image: {str(e)}")
         import traceback
         traceback.print_exc()
         return None
