@@ -12,27 +12,16 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        /* Mara.care inspired color scheme */
-        :root {
-            --mara-blue: #4d65ff;
-            --mara-blue-light: #6b7cff;
-            --mara-gold: #C79653;
-            --mara-dark: #333333;
-            --mara-light: #fafafa;
-            --mara-gray: #666666;
-            --mara-border: #e0e0e0;
-        }
-        
         /* Essential CSS for functionality */
         body {
-            background-color: var(--mara-light);
+            background-color: #fafafa;
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             min-height: 100vh;
-            color: var(--mara-dark);
+            color: #333333;
         }
         
         .header {
-            background: linear-gradient(135deg, var(--mara-blue) 0%, var(--mara-blue-light) 100%);
+            background-color: #4d65ff;
             color: white;
             margin-bottom: 2rem;
             border-radius: 0 0 20px 20px;
@@ -59,18 +48,18 @@
         }
         
         .form-range::-webkit-slider-thumb {
-            background: var(--mara-blue);
+            background-color: #4d65ff;
             box-shadow: 0 2px 6px rgba(77, 101, 255, 0.3);
         }
         
         .form-range::-moz-range-thumb {
-            background: var(--mara-blue);
+            background-color: #4d65ff;
             border: none;
         }
         
         .btn-primary {
-            background: linear-gradient(135deg, var(--mara-blue) 0%, var(--mara-blue-light) 100%);
-            border: none;
+            background-color: #4d65ff !important;
+            border-color: #4d65ff !important;
             transition: all 0.3s ease;
             border-radius: 12px;
             font-weight: 600;
@@ -78,13 +67,15 @@
         }
         
         .btn-primary:hover {
+            background-color: #3d55ef !important;
+            border-color: #3d55ef !important;
             transform: translateY(-1px);
             box-shadow: 0 6px 20px rgba(77, 101, 255, 0.3);
-            background: linear-gradient(135deg, #3d55ef 0%, #5b6cef 100%);
         }
         
         .btn-primary:focus {
-            background: linear-gradient(135deg, var(--mara-blue) 0%, var(--mara-blue-light) 100%);
+            background-color: #4d65ff !important;
+            border-color: #4d65ff !important;
             box-shadow: 0 0 0 0.25rem rgba(77, 101, 255, 0.25);
         }
         
@@ -94,9 +85,9 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: var(--mara-light);
+            background: #fafafa;
             border-radius: 16px;
-            border: 2px dashed var(--mara-border);
+            border: 2px dashed #e0e0e0;
             transition: all 0.3s ease;
         }
         
@@ -119,14 +110,14 @@
         
         .placeholder-image {
             padding: 4rem 2rem;
-            color: var(--mara-gray);
+            color: #666;
             text-align: center;
         }
         
         .spinner-border {
             width: 3rem;
             height: 3rem;
-            color: var(--mara-blue);
+            color: #4d65ff;
         }
         
         .class-count-item {
@@ -145,7 +136,7 @@
         }
         
         .class-count {
-            background: linear-gradient(135deg, var(--mara-blue) 0%, var(--mara-blue-light) 100%);
+            background-color: #4d65ff;
             color: white;
             padding: 0.25rem 0.75rem;
             border-radius: 20px;
@@ -162,45 +153,28 @@
             margin-top: 2rem;
         }
         
-        .status-indicator {
-            padding: 0.5rem 1rem;
-            border-radius: 25px;
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
-        
-        .status-vertex {
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: white;
-        }
-        
-        .status-mock {
-            background: linear-gradient(135deg, #f59e0b, #d97706);
-            color: white;
-        }
-        
         .form-control:focus {
-            border-color: var(--mara-blue);
+            border-color: #4d65ff;
             box-shadow: 0 0 0 0.2rem rgba(77, 101, 255, 0.25);
         }
         
         .form-label {
-            color: var(--mara-dark);
+            color: #333333;
             font-weight: 600;
         }
         
         /* Text colors */
         .text-primary {
-            color: var(--mara-blue) !important;
+            color: #4d65ff !important;
         }
         
         .text-muted {
-            color: var(--mara-gray) !important;
+            color: #666 !important;
         }
         
         /* Badge colors */
         .badge.bg-primary {
-            background-color: var(--mara-blue) !important;
+            background-color: #4d65ff !important;
         }
         
         /* Progress bar */
@@ -223,48 +197,6 @@
         
         .alert i {
             margin-right: 0.5rem;
-        }
-        
-        /* Table improvements */
-        .table {
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-        
-        .table thead th {
-            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-            border: none;
-            font-weight: 600;
-            color: #475569;
-        }
-        
-        .table tbody td {
-            border-color: #f1f5f9;
-            vertical-align: middle;
-        }
-        
-        .table-hover tbody tr:hover {
-            background-color: #f8f9ff;
-        }
-        
-        /* Coordinate visualization */
-        .coordinate-visualization {
-            position: relative;
-            width: 60px;
-            height: 40px;
-            background: #f8f9fa;
-            border: 1px solid #e9ecef;
-            border-radius: 6px;
-            overflow: hidden;
-        }
-        
-        .coord-box {
-            position: absolute;
-            background: var(--mara-blue);
-            border: 1px solid white;
-            border-radius: 2px;
-            opacity: 0.8;
         }
         
         /* Table improvements */
@@ -294,70 +226,6 @@
             .image-panel {
                 padding-left: 1rem;
             }
-        }
-
-        /* Force Mara.care color scheme - override Bootstrap */
-        .btn-primary {
-            background-color: #4d65ff !important;
-            border-color: #4d65ff !important;
-        }
-        
-        .btn-primary:hover {
-            background-color: #3d55ef !important;
-            border-color: #3d55ef !important;
-        }
-        
-        .text-primary {
-            color: #4d65ff !important;
-        }
-        
-        .bg-primary {
-            background-color: #4d65ff !important;
-        }
-        
-        .badge.bg-primary {
-            background-color: #4d65ff !important;
-        }
-        
-        .card-header.bg-primary {
-            background-color: #4d65ff !important;
-        }
-        
-        .card-header.bg-success {
-            background-color: #10b981 !important;
-        }
-        
-        .card-header.bg-secondary {
-            background-color: #6b7280 !important;
-        }
-        
-        /* Form controls */
-        .form-control:focus {
-            border-color: #4d65ff !important;
-            box-shadow: 0 0 0 0.2rem rgba(77, 101, 255, 0.25) !important;
-        }
-        
-        .form-range::-webkit-slider-thumb {
-            background-color: #4d65ff !important;
-        }
-        
-        .form-range::-moz-range-thumb {
-            background-color: #4d65ff !important;
-        }
-        
-        /* Header gradient */
-        .header {
-            background: linear-gradient(135deg, #4d65ff 0%, #6b7cff 100%) !important;
-        }
-        
-        /* Performance metrics */
-        .performance-metrics {
-            background: linear-gradient(135deg, #4d65ff 0%, #6b7cff 100%) !important;
-        }
-        
-        /* Class count badges */
-        .class-count {
-            background: linear-gradient(135deg, #4d65ff 0%, #6b7cff 100%) !important;
         }
     </style>
 </head>
@@ -691,134 +559,59 @@
             if (!data.annotated_image || data.annotated_image === 'null' || data.annotated_image === 'undefined') {
                 console.error('Invalid annotated image data:', data.annotated_image);
                 
-                // Show original image with client-side overlay
+                // Show original image without overlays
                 const originalImage = getOriginalImageData();
                 if (originalImage) {
-                    container.innerHTML = `
-                        <div class="position-relative">
-                            <img src="${originalImage}" alt="Original image" class="img-fluid" id="originalImage">
-                            <div id="overlayContainer" class="position-absolute top-0 start-0 w-100 h-100"></div>
-                        </div>
-                    `;
-                    
-                    // Create client-side bounding box overlays
-                    createClientSideOverlays(data.predictions);
+                    container.innerHTML = `<img src="${originalImage}" alt="Original image" class="img-fluid">`;
                 } else {
                     container.innerHTML = `
                         <div class="alert alert-warning">
                             <i class="fas fa-exclamation-triangle"></i>
-                            <strong>Warning:</strong> Could not generate annotated image. 
-                            Showing original image with detection results below.
+                            <strong>Warning:</strong> Could not generate annotated image.
                         </div>
                     `;
                 }
             } else {
-                // Show only the annotated image (not side by side)
+                // Show only the annotated image
                 container.innerHTML = `<img src="${data.annotated_image}" alt="Annotated image with detections" class="img-fluid">`;
             }
             
             container.classList.add('has-image');
             
-            // Update metrics
-            document.getElementById('totalPredictions').textContent = data.total_predictions;
-            document.getElementById('processingTime').textContent = processingTime + 's';
+            // Update metrics safely
+            const totalPredictionsEl = document.getElementById('totalPredictions');
+            const processingTimeEl = document.getElementById('processingTime');
+            const runtimeDisplayEl = document.getElementById('runtimeDisplay');
             
-            // Show runtime display below the button
-            document.getElementById('runtimeDisplay').style.display = 'block';
+            if (totalPredictionsEl) totalPredictionsEl.textContent = data.total_predictions;
+            if (processingTimeEl) processingTimeEl.textContent = processingTime + 's';
+            if (runtimeDisplayEl) runtimeDisplayEl.style.display = 'block';
             
-            // Update model status with better styling
-            const modelStatus = document.getElementById('modelStatus');
-            if (data.model_used === 'Vertex AI') {
-                modelStatus.textContent = 'Vertex AI';
-                modelStatus.className = 'badge bg-primary';
-            } else {
-                modelStatus.textContent = 'Mock Data';
-                modelStatus.className = 'badge bg-secondary';
+            // Update model status safely
+            const modelStatusEl = document.getElementById('modelStatus');
+            if (modelStatusEl) {
+                if (data.model_used === 'Vertex AI') {
+                    modelStatusEl.textContent = 'Vertex AI';
+                    modelStatusEl.className = 'badge bg-primary';
+                } else {
+                    modelStatusEl.textContent = 'Mock Data';
+                    modelStatusEl.className = 'badge bg-secondary';
+                }
             }
             
-            // Show detection details on the right side
-            document.getElementById('detectionDetailsCard').style.display = 'block';
-            document.getElementById('noDetectionsPlaceholder').style.display = 'none';
+            // Show detection details on the right side safely
+            const detectionDetailsCard = document.getElementById('detectionDetailsCard');
+            const noDetectionsPlaceholder = document.getElementById('noDetectionsPlaceholder');
+            const resultsCard = document.getElementById('resultsCard');
             
-            // Populate detection table
-            displayDetectionTable(data.predictions);
+            if (detectionDetailsCard) detectionDetailsCard.style.display = 'block';
+            if (noDetectionsPlaceholder) noDetectionsPlaceholder.style.display = 'none';
+            if (resultsCard) resultsCard.style.display = 'block';
             
-            displayClassCounts(data.class_counts);
-            document.getElementById('resultsCard').style.display = 'block';
-        }
-
-        function createClientSideOverlays(predictions) {
-            const overlayContainer = document.getElementById('overlayContainer');
-            if (!overlayContainer || !predictions) return;
-            
-            predictions.forEach((pred, index) => {
-                const bbox = pred.bbox || [0, 0, 0, 0];
-                const class_name = pred.displayName || 'Unknown';
-                const confidence = pred.confidence || 0.0;
-                
-                console.log(`Creating overlay for ${class_name}:`, bbox);
-                
-                // Vertex AI bounding box format: [y_min, x_min, y_max, x_max] (normalized 0-1)
-                // Convert to [x_min, y_min, x_max, y_max] format
-                let x_min, y_min, x_max, y_max;
-                
-                if (bbox.length === 4) {
-                    if (bbox[0] <= bbox[2] && bbox[1] <= bbox[3]) {
-                        // Already in [x_min, y_min, x_max, y_max] format
-                        [x_min, y_min, x_max, y_max] = bbox;
-                    } else {
-                        // Convert from [y_min, x_min, y_max, x_max] to [x_min, y_min, x_max, y_max]
-                        [y_min, x_min, y_max, x_max] = bbox;
-                    }
-                    
-                    // Ensure coordinates are within 0-1 range
-                    x_min = Math.max(0, Math.min(1, x_min));
-                    y_min = Math.max(0, Math.min(1, y_min));
-                    x_max = Math.max(0, Math.min(1, x_max));
-                    y_max = Math.max(0, Math.min(1, y_max));
-                    
-                    console.log(`Converted coordinates: x_min=${x_min}, y_min=${y_min}, x_max=${x_max}, y_max=${y_max}`);
-                    
-                    // Create bounding box overlay
-                    const box = document.createElement('div');
-                    box.className = 'overlay-box';
-                    box.style.cssText = `
-                        position: absolute;
-                        left: ${x_min * 100}%;
-                        top: ${y_min * 100}%;
-                        width: ${(x_max - x_min) * 100}%;
-                        height: ${(y_max - y_min) * 100}%;
-                        border: 3px solid #4d65ff;
-                        background: rgba(77, 101, 255, 0.1);
-                        pointer-events: none;
-                        z-index: 5;
-                    `;
-                    
-                    // Create label
-                    const label = document.createElement('div');
-                    label.className = 'overlay-label';
-                    label.style.cssText = `
-                        position: absolute;
-                        left: ${x_min * 100}%;
-                        top: ${Math.max(0, y_min * 100 - 30)}%;
-                        background: #4d65ff;
-                        color: white;
-                        padding: 4px 8px;
-                        border-radius: 4px;
-                        font-size: 12px;
-                        font-weight: 600;
-                        white-space: nowrap;
-                        pointer-events: none;
-                        z-index: 10;
-                    `;
-                    label.textContent = `${class_name}: ${(confidence * 100).toFixed(1)}%`;
-                    
-                    overlayContainer.appendChild(box);
-                    overlayContainer.appendChild(label);
-                } else {
-                    console.warn(`Invalid bbox format for ${class_name}:`, bbox);
-                }
-            });
+            // Populate detection data safely
+            if (data.predictions) {
+                displayClassCounts(data.class_counts);
+            }
         }
 
         function getOriginalImageData() {
@@ -828,63 +621,6 @@
                 return URL.createObjectURL(imageInput.files[0]);
             }
             return '';
-        }
-
-        function displayDetectionTable(predictions) {
-            const tableBody = document.getElementById('detectionTableBody');
-            tableBody.innerHTML = '';
-            
-            if (!predictions || predictions.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">No objects detected</td></tr>';
-                return;
-            }
-            
-            predictions.forEach((pred, index) => {
-                const row = document.createElement('tr');
-                
-                // Format coordinates for display
-                const bbox = pred.bbox || [0, 0, 0, 0];
-                const coordDisplay = formatCoordinates(bbox);
-                
-                row.innerHTML = `
-                    <td><span class="badge bg-primary">${index + 1}</span></td>
-                    <td>
-                        <strong>${pred.displayName || 'Unknown'}</strong>
-                        <br><small class="text-muted">${coordDisplay}</small>
-                    </td>
-                    <td>
-                        <div class="d-flex align-items-center">
-                            <div class="progress flex-grow-1 me-2" style="height: 6px;">
-                                <div class="progress-bar bg-success" style="width: ${(pred.confidence * 100).toFixed(1)}%"></div>
-                            </div>
-                            <small class="text-muted">${(pred.confidence * 100).toFixed(1)}%</small>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="coordinate-visualization">
-                            <div class="coord-box" style="
-                                left: ${bbox[0] * 100}%; 
-                                top: ${bbox[1] * 100}%; 
-                                width: ${(bbox[2] - bbox[0]) * 100}%; 
-                                height: ${(bbox[3] - bbox[1]) * 100}%;
-                            "></div>
-                        </div>
-                    </td>
-                `;
-                tableBody.appendChild(row);
-            });
-        }
-
-        function formatCoordinates(bbox) {
-            if (!bbox || bbox.length !== 4) return 'No coordinates';
-            
-            // Convert normalized coordinates to percentages for display
-            const x1 = (bbox[0] * 100).toFixed(1);
-            const y1 = (bbox[1] * 100).toFixed(1);
-            const x2 = (bbox[2] * 100).toFixed(1);
-            const y2 = (bbox[3] * 100).toFixed(1);
-            
-            return `(${x1}%, ${y1}%) to (${x2}%, ${y2}%)`;
         }
 
         function displayClassCounts(classCounts) {
