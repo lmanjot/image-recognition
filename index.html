@@ -13,19 +13,24 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         /* Essential CSS for functionality */
+        :root {
+            --bs-primary-rgb: 51, 51, 51;
+            --bs-bg-opacity: 1;
+        }
+        
         body {
-            background-color: #fafafa;
+            background-color: #f7f5e7;
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             min-height: 100vh;
             color: #333333;
         }
         
         .header {
-            background-color: #C79653;
+            background-color: #333333;
             color: white;
             margin-bottom: 2rem;
             border-radius: 0 0 20px 20px;
-            box-shadow: 0 4px 20px rgba(199, 150, 83, 0.15);
+            box-shadow: 0 4px 20px rgba(51, 51, 51, 0.15);
         }
         
         .card {
@@ -48,18 +53,18 @@
         }
         
         .form-range::-webkit-slider-thumb {
-            background-color: #C79653;
-            box-shadow: 0 2px 6px rgba(199, 150, 83, 0.3);
+            background-color: #333333;
+            box-shadow: 0 2px 6px rgba(51, 51, 51, 0.3);
         }
         
         .form-range::-moz-range-thumb {
-            background-color: #C79653;
+            background-color: #333333;
             border: none;
         }
         
         .btn-primary {
-            background-color: #C79653 !important;
-            border-color: #C79653 !important;
+            background-color: #333333 !important;
+            border-color: #333333 !important;
             transition: all 0.3s ease;
             border-radius: 12px;
             font-weight: 600;
@@ -67,16 +72,16 @@
         }
         
         .btn-primary:hover {
-            background-color: #b88643 !important;
-            border-color: #b88643 !important;
+            background-color: #555555 !important;
+            border-color: #555555 !important;
             transform: translateY(-1px);
-            box-shadow: 0 6px 20px rgba(199, 150, 83, 0.3);
+            box-shadow: 0 6px 20px rgba(51, 51, 51, 0.3);
         }
         
         .btn-primary:focus {
-            background-color: #C79653 !important;
-            border-color: #C79653 !important;
-            box-shadow: 0 0 0 0.25rem rgba(199, 150, 83, 0.25);
+            background-color: #333333 !important;
+            border-color: #333333 !important;
+            box-shadow: 0 0 0 0.25rem rgba(51, 51, 51, 0.25);
         }
         
         .image-container {
@@ -85,7 +90,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: #fafafa;
+            background: #f7f5e7;
             border-radius: 16px;
             border: 2px dashed #e0e0e0;
             transition: all 0.3s ease;
@@ -101,11 +106,6 @@
             max-height: 600px;
             border-radius: 12px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
-        }
-        
-        .image-container img:hover {
-            transform: scale(1.02);
         }
         
         .placeholder-image {
@@ -117,7 +117,7 @@
         .spinner-border {
             width: 3rem;
             height: 3rem;
-            color: #C79653;
+            color: #333333;
         }
         
         .class-count-item {
@@ -136,7 +136,7 @@
         }
         
         .class-count {
-            background-color: #C79653;
+            background-color: #333333;
             color: white;
             padding: 0.25rem 0.75rem;
             border-radius: 20px;
@@ -154,8 +154,8 @@
         }
         
         .form-control:focus {
-            border-color: #C79653;
-            box-shadow: 0 0 0 0.2rem rgba(199, 150, 83, 0.25);
+            border-color: #333333;
+            box-shadow: 0 0 0 0.2rem rgba(51, 51, 51, 0.25);
         }
         
         .form-label {
@@ -165,7 +165,7 @@
         
         /* Text colors */
         .text-primary {
-            color: #C79653 !important;
+            color: #333333 !important;
         }
         
         .text-muted {
@@ -174,7 +174,7 @@
         
         /* Badge colors */
         .badge.bg-primary {
-            background-color: #C79653 !important;
+            background-color: #333333 !important;
         }
         
         /* Progress bar */
@@ -319,18 +319,7 @@
                         </div>
                     </div>
 
-                    <!-- Results Summary -->
-                    <div class="card shadow-sm mt-4" id="resultsCard" style="display: none;">
-                        <div class="card-header bg-success text-white">
-                            <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Model Status</h5>
-                        </div>
-                        <div class="card-body text-center">
-                            <div class="mb-3">
-                                <h6 class="text-muted mb-2">Model Used</h6>
-                                <span id="modelStatus" class="badge bg-primary fs-6">Mock Data</span>
-                            </div>
-                        </div>
-                    </div>
+
                 </div>
             </div>
 
@@ -587,17 +576,7 @@
             if (processingTimeEl) processingTimeEl.textContent = processingTime + 's';
             if (runtimeDisplayEl) runtimeDisplayEl.style.display = 'block';
             
-            // Update model status safely
-            const modelStatusEl = document.getElementById('modelStatus');
-            if (modelStatusEl) {
-                if (data.model_used === 'Vertex AI') {
-                    modelStatusEl.textContent = 'Vertex AI';
-                    modelStatusEl.className = 'badge bg-primary';
-                } else {
-                    modelStatusEl.textContent = 'Mock Data';
-                    modelStatusEl.className = 'badge bg-secondary';
-                }
-            }
+
             
             // Show detection details on the right side safely
             const detectionDetailsCard = document.getElementById('detectionDetailsCard');

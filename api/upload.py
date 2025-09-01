@@ -6,7 +6,7 @@ from http.server import BaseHTTPRequestHandler
 from urllib.parse import parse_qs, urlparse
 import cgi
 import io
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image
 import requests
 import time
 
@@ -320,14 +320,10 @@ def create_annotated_image(image_bytes, predictions):
         
         # Open image from bytes
         image = Image.open(io.BytesIO(image_bytes))
-        draw = ImageDraw.Draw(image)
-        
-        # Use default font
-        font = ImageFont.load_default()
         
         print(f"📏 Image dimensions: {image.size}")
         
-        # Draw bounding boxes and labels
+        # Process predictions but don't draw anything
         for i, pred in enumerate(predictions):
             bbox = pred.get('bbox', [0, 0, 0, 0])
             class_name = pred.get('displayName', 'Unknown')
@@ -368,37 +364,7 @@ def create_annotated_image(image_bytes, predictions):
                     print(f"   ⚠️ Invalid bbox coordinates, skipping")
                     continue
                     
-                # Draw bounding box with Mara.care gold color
-                box_color = (199, 150, 83)  # #C79653
-                draw.rectangle([x1, y1, x2, y2], outline=box_color, width=3)
-                
-                # Draw label background
-                label = f"{class_name}: {confidence:.2f}"
-                bbox_text = draw.textbbox((x1, y1 - 25), label, font=font)
-                
-                # Ensure label doesn't go off the top of the image
-                label_y = max(0, y1 - 25)
-                bbox_text = draw.textbbox((x1, label_y), label, font=font)
-                
-                # Draw label background with semi-transparent effect
-                label_width = bbox_text[2] - bbox_text[0] + 10
-                label_height = bbox_text[3] - bbox_text[1] + 10
-                label_bg = Image.new('RGBA', (label_width, label_height), (199, 150, 83, 200))
-                image.paste(label_bg, (bbox_text[0] - 5, bbox_text[1] - 5), label_bg)
-                
-                # Draw label text
-                draw.text((x1, label_y), label, fill='white', font=font)
-                
-                # Add corner indicators for better visibility
-                corner_size = 8
-                # Top-left corner
-                draw.rectangle([x1, y1, x1 + corner_size, y1 + corner_size], fill=box_color)
-                # Top-right corner
-                draw.rectangle([x2 - corner_size, y1, x2, y1 + corner_size], fill=box_color)
-                # Bottom-left corner
-                draw.rectangle([x1, y2 - corner_size, x1 + corner_size, y2], fill=box_color)
-                # Bottom-right corner
-                draw.rectangle([x2 - corner_size, y2 - corner_size, x2, y2], fill=box_color)
+                # No bounding boxes or annotations - just return the original image
             else:
                 print(f"   ⚠️ Invalid bbox format, expected 4 values, got {len(bbox)}")
                 continue
