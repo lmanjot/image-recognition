@@ -230,7 +230,7 @@ def call_vertex_ai_endpoint(image_bytes, confidence_threshold, iou_threshold, ma
         print(f"  - Response status: {response.status_code}")
         print(f"  - Response headers: {dict(response.headers)}")
         
-                    if response.status_code == 200:
+        if response.status_code == 200:
                 print("✅ Vertex AI API call successful")
                 result = response.json()
                 
