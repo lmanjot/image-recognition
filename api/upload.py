@@ -316,6 +316,8 @@ def predict_image_object_detection(image_bytes, confidence_threshold, iou_thresh
 def create_annotated_image(image_bytes, predictions):
     """Create an annotated image with bounding boxes and labels"""
     try:
+        print(f"🎨 Creating annotated image with {len(predictions)} predictions")
+        
         # Open image from bytes
         image = Image.open(io.BytesIO(image_bytes))
         draw = ImageDraw.Draw(image)
@@ -323,29 +325,66 @@ def create_annotated_image(image_bytes, predictions):
         # Use default font
         font = ImageFont.load_default()
         
+        print(f"📏 Image dimensions: {image.size}")
+        
         # Draw bounding boxes and labels
-        for pred in predictions:
+        for i, pred in enumerate(predictions):
             bbox = pred.get('bbox', [0, 0, 0, 0])
             class_name = pred.get('displayName', 'Unknown')
             confidence = pred.get('confidence', 0.0)
             
+            print(f"🔍 Prediction {i+1}: {class_name} (conf: {confidence:.3f})")
+            print(f"   Raw bbox: {bbox}")
+            
             # Convert normalized coordinates to pixel coordinates
+            # bbox format: [x1, y1, x2, y2] where x1,y1 is top-left, x2,y2 is bottom-right
             width, height = image.size
+            
+            # Ensure bbox values are within 0-1 range
+            bbox = [max(0, min(1, coord)) for coord in bbox]
+            
             x1 = int(bbox[0] * width)
             y1 = int(bbox[1] * height)
             x2 = int(bbox[2] * width)
             y2 = int(bbox[3] * height)
             
-            # Draw bounding box
-            draw.rectangle([x1, y1, x2, y2], outline='red', width=3)
+            print(f"   Pixel bbox: [{x1}, {y1}, {x2}, {y2}]")
+            
+            # Validate coordinates
+            if x1 >= x2 or y1 >= y2:
+                print(f"   ⚠️ Invalid bbox coordinates, skipping")
+                continue
+                
+            # Draw bounding box with Mara.care blue color
+            box_color = (77, 101, 255)  # #4d65ff
+            draw.rectangle([x1, y1, x2, y2], outline=box_color, width=3)
             
             # Draw label background
             label = f"{class_name}: {confidence:.2f}"
-            bbox_text = draw.textbbox((x1, y1 - 20), label, font=font)
-            draw.rectangle(bbox_text, fill='red')
+            bbox_text = draw.textbbox((x1, y1 - 25), label, font=font)
+            
+            # Ensure label doesn't go off the top of the image
+            if y1 - 25 < 0:
+                y1 = 25
+                bbox_text = draw.textbbox((x1, 0), label, font=font)
+            
+            # Draw label background with semi-transparent effect
+            label_bg = Image.new('RGBA', (bbox_text[2] - bbox_text[0] + 10, bbox_text[3] - bbox_text[1] + 10), (77, 101, 255, 200))
+            image.paste(label_bg, (bbox_text[0] - 5, bbox_text[1] - 5), label_bg)
             
             # Draw label text
-            draw.text((x1, y1 - 20), label, fill='white', font=font)
+            draw.text((x1, y1 - 25), label, fill='white', font=font)
+            
+            # Add corner indicators for better visibility
+            corner_size = 8
+            # Top-left corner
+            draw.rectangle([x1, y1, x1 + corner_size, y1 + corner_size], fill=box_color)
+            # Top-right corner
+            draw.rectangle([x2 - corner_size, y1, x2, y1 + corner_size], fill=box_color)
+            # Bottom-left corner
+            draw.rectangle([x1, y2 - corner_size, x1 + corner_size, y2], fill=box_color)
+            # Bottom-right corner
+            draw.rectangle([x2 - corner_size, y2 - corner_size, x2, y2], fill=box_color)
         
         # Convert to base64 for sending to frontend
         buffer = io.BytesIO()

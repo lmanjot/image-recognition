@@ -284,6 +284,36 @@
             background-color: #f8f9ff;
         }
         
+        /* Coordinate visualization */
+        .coordinate-visualization {
+            position: relative;
+            width: 60px;
+            height: 40px;
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        
+        .coord-box {
+            position: absolute;
+            background: var(--mara-blue);
+            border: 1px solid white;
+            border-radius: 2px;
+            opacity: 0.8;
+        }
+        
+        /* Table improvements */
+        .table-sm td {
+            padding: 0.5rem;
+            vertical-align: middle;
+        }
+        
+        .table-sm th {
+            padding: 0.5rem;
+            font-size: 0.875rem;
+        }
+        
         /* Responsive improvements */
         @media (min-width: 1200px) {
             .container-fluid {
@@ -451,8 +481,9 @@
                                                 <thead class="table-light">
                                                     <tr>
                                                         <th>#</th>
-                                                        <th>Object</th>
+                                                        <th>Object & Location</th>
                                                         <th>Confidence</th>
+                                                        <th>Visual</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody id="detectionTableBody">
@@ -649,14 +680,28 @@
             // Check if annotated image data is valid
             if (!data.annotated_image || data.annotated_image === 'null' || data.annotated_image === 'undefined') {
                 console.error('Invalid annotated image data:', data.annotated_image);
-                container.innerHTML = `
-                    <div class="alert alert-warning">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        <strong>Warning:</strong> Could not generate annotated image. 
-                        Showing original image with detection results below.
-                    </div>
-                    <img src="${getOriginalImageData()}" alt="Original image" class="img-fluid">
-                `;
+                
+                // Show original image with client-side overlay
+                const originalImage = getOriginalImageData();
+                if (originalImage) {
+                    container.innerHTML = `
+                        <div class="position-relative">
+                            <img src="${originalImage}" alt="Original image" class="img-fluid" id="originalImage">
+                            <div id="overlayContainer" class="position-absolute top-0 start-0 w-100 h-100"></div>
+                        </div>
+                    `;
+                    
+                    // Create client-side bounding box overlays
+                    createClientSideOverlays(data.predictions);
+                } else {
+                    container.innerHTML = `
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>Warning:</strong> Could not generate annotated image. 
+                            Showing original image with detection results below.
+                        </div>
+                    `;
+                }
             } else {
                 // Show only the annotated image (not side by side)
                 container.innerHTML = `<img src="${data.annotated_image}" alt="Annotated image with detections" class="img-fluid">`;
@@ -689,6 +734,53 @@
             document.getElementById('resultsCard').style.display = 'block';
         }
 
+        function createClientSideOverlays(predictions) {
+            const overlayContainer = document.getElementById('overlayContainer');
+            if (!overlayContainer || !predictions) return;
+            
+            predictions.forEach((pred, index) => {
+                const bbox = pred.bbox || [0, 0, 0, 0];
+                const class_name = pred.displayName || 'Unknown';
+                const confidence = pred.confidence || 0.0;
+                
+                // Create bounding box overlay
+                const box = document.createElement('div');
+                box.className = 'overlay-box';
+                box.style.cssText = `
+                    position: absolute;
+                    left: ${bbox[0] * 100}%;
+                    top: ${bbox[1] * 100}%;
+                    width: ${(bbox[2] - bbox[0]) * 100}%;
+                    height: ${(bbox[3] - bbox[1]) * 100}%;
+                    border: 3px solid var(--mara-blue);
+                    background: rgba(77, 101, 255, 0.1);
+                    pointer-events: none;
+                `;
+                
+                // Create label
+                const label = document.createElement('div');
+                label.className = 'overlay-label';
+                label.style.cssText = `
+                    position: absolute;
+                    left: ${bbox[0] * 100}%;
+                    top: ${Math.max(0, bbox[1] * 100 - 30)}%;
+                    background: var(--mara-blue);
+                    color: white;
+                    padding: 4px 8px;
+                    border-radius: 4px;
+                    font-size: 12px;
+                    font-weight: 600;
+                    white-space: nowrap;
+                    pointer-events: none;
+                    z-index: 10;
+                `;
+                label.textContent = `${class_name}: ${(confidence * 100).toFixed(1)}%`;
+                
+                overlayContainer.appendChild(box);
+                overlayContainer.appendChild(label);
+            });
+        }
+
         function getOriginalImageData() {
             // Get the original image data from the file input
             const imageInput = document.getElementById('imageInput');
@@ -703,15 +795,23 @@
             tableBody.innerHTML = '';
             
             if (!predictions || predictions.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">No objects detected</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">No objects detected</td></tr>';
                 return;
             }
             
             predictions.forEach((pred, index) => {
                 const row = document.createElement('tr');
+                
+                // Format coordinates for display
+                const bbox = pred.bbox || [0, 0, 0, 0];
+                const coordDisplay = formatCoordinates(bbox);
+                
                 row.innerHTML = `
                     <td><span class="badge bg-primary">${index + 1}</span></td>
-                    <td><strong>${pred.displayName || 'Unknown'}</strong></td>
+                    <td>
+                        <strong>${pred.displayName || 'Unknown'}</strong>
+                        <br><small class="text-muted">${coordDisplay}</small>
+                    </td>
                     <td>
                         <div class="d-flex align-items-center">
                             <div class="progress flex-grow-1 me-2" style="height: 6px;">
@@ -720,9 +820,31 @@
                             <small class="text-muted">${(pred.confidence * 100).toFixed(1)}%</small>
                         </div>
                     </td>
+                    <td>
+                        <div class="coordinate-visualization">
+                            <div class="coord-box" style="
+                                left: ${bbox[0] * 100}%; 
+                                top: ${bbox[1] * 100}%; 
+                                width: ${(bbox[2] - bbox[0]) * 100}%; 
+                                height: ${(bbox[3] - bbox[1]) * 100}%;
+                            "></div>
+                        </div>
+                    </td>
                 `;
                 tableBody.appendChild(row);
             });
+        }
+
+        function formatCoordinates(bbox) {
+            if (!bbox || bbox.length !== 4) return 'No coordinates';
+            
+            // Convert normalized coordinates to percentages for display
+            const x1 = (bbox[0] * 100).toFixed(1);
+            const y1 = (bbox[1] * 100).toFixed(1);
+            const x2 = (bbox[2] * 100).toFixed(1);
+            const y2 = (bbox[3] * 100).toFixed(1);
+            
+            return `(${x1}%, ${y1}%) to (${x2}%, ${y2}%)`;
         }
 
         function displayClassCounts(classCounts) {
