@@ -356,6 +356,8 @@ def create_annotated_image(image_bytes, predictions):
         
     except Exception as e:
         print(f"❌ Error creating annotated image: {e}")
+        import traceback
+        traceback.print_exc()
         return None
 
 def parse_multipart_data(body, content_type):
