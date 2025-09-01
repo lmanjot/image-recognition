@@ -47,12 +47,9 @@
         
         /* Title Container */
         .title-container {
-            background: linear-gradient(135deg, rgba(51, 51, 51, 0.95) 0%, rgba(85, 85, 85, 0.95) 100%);
-            backdrop-filter: blur(10px);
+            background: transparent;
             padding: 2rem 0;
             margin-bottom: 2rem;
-            border-radius: 0 0 24px 24px;
-            box-shadow: var(--shadow-medium);
         }
         
         .title-content {
@@ -63,7 +60,7 @@
         }
         
         .title-text {
-            color: white;
+            color: var(--primary-color);
             font-size: 2.5rem;
             font-weight: 700;
             margin-bottom: 0.5rem;
@@ -78,7 +75,7 @@
         }
         
         .title-subtitle {
-            color: rgba(255, 255, 255, 0.8);
+            color: var(--text-muted);
             font-size: 1.1rem;
             margin: 0;
             font-weight: 400;
@@ -307,6 +304,27 @@
             background-color: var(--primary-color) !important;
         }
         
+        /* Table styling */
+        .table {
+            margin-bottom: 0;
+        }
+        
+        .table th {
+            border-top: none;
+            font-weight: 600;
+            color: var(--primary-color);
+            background-color: #f8f9fa;
+        }
+        
+        .table td {
+            vertical-align: middle;
+            border-color: var(--border-color);
+        }
+        
+        .table-hover tbody tr:hover {
+            background-color: rgba(51, 51, 51, 0.05);
+        }
+        
         /* Responsive Design */
         @media (max-width: 1200px) {
             .content-grid {
@@ -384,13 +402,13 @@
                                 </div>
                                 
                                 <div class="mb-3">
-                                    <label for="confidenceThreshold" class="form-label">Confidence Threshold: <span id="confidenceValue">0.5</span></label>
-                                    <input type="range" class="form-range" id="confidenceThreshold" min="0.1" max="1.0" step="0.1" value="0.5">
+                                    <label for="confidenceThreshold" class="form-label">Confidence Threshold: <span id="confidenceValue">0.30</span></label>
+                                    <input type="range" class="form-range" id="confidenceThreshold" min="0.01" max="1.0" step="0.01" value="0.3">
                                 </div>
                                 
                                 <div class="mb-3">
-                                    <label for="iouThreshold" class="form-label">IoU Threshold: <span id="iouValue">0.5</span></label>
-                                    <input type="range" class="form-range" id="iouThreshold" min="0.1" max="1.0" step="0.1" value="0.5">
+                                    <label for="iouThreshold" class="form-label">IoU Threshold: <span id="iouValue">0.10</span></label>
+                                    <input type="range" class="form-range" id="iouThreshold" min="0.01" max="1.0" step="0.01" value="0.1">
                                 </div>
                                 
                                 <div class="mb-3">
@@ -455,6 +473,29 @@
                                     <h5 class="text-muted">No image selected</h5>
                                     <p class="text-muted">Upload an image to get started</p>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Detection Results Table -->
+                    <div class="card mt-3" id="detectionResultsCard" style="display: none;">
+                        <div class="card-header">
+                            <h5><i class="fas fa-table"></i> Detection Results</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Class</th>
+                                            <th>Confidence</th>
+                                            <th>Count</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="detectionResultsTable">
+                                        <!-- Results will be populated here -->
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
@@ -526,11 +567,11 @@
             const maxPredictionsSlider = document.getElementById('maxPredictions');
             
             confidenceSlider.addEventListener('input', function() {
-                document.getElementById('confidenceValue').textContent = parseFloat(this.value).toFixed(1);
+                document.getElementById('confidenceValue').textContent = parseFloat(this.value).toFixed(2);
             });
             
             iouSlider.addEventListener('input', function() {
-                document.getElementById('iouValue').textContent = parseFloat(this.value).toFixed(1);
+                document.getElementById('iouValue').textContent = parseFloat(this.value).toFixed(2);
             });
             
             maxPredictionsSlider.addEventListener('input', function() {
@@ -572,9 +613,9 @@
 
         function updateRangeDisplays() {
             document.getElementById('confidenceValue').textContent = 
-                parseFloat(document.getElementById('confidenceThreshold').value).toFixed(1);
+                parseFloat(document.getElementById('confidenceThreshold').value).toFixed(2);
             document.getElementById('iouValue').textContent = 
-                parseFloat(document.getElementById('iouThreshold').value).toFixed(1);
+                parseFloat(document.getElementById('iouThreshold').value).toFixed(2);
             document.getElementById('maxPredictionsValue').textContent = 
                 document.getElementById('maxPredictions').value;
         }
@@ -672,9 +713,11 @@
 
         function hideResults() {
             const detectionDetailsCard = document.getElementById('detectionDetailsCard');
+            const detectionResultsCard = document.getElementById('detectionResultsCard');
             const runtimeDisplay = document.getElementById('runtimeDisplay');
             
             if (detectionDetailsCard) detectionDetailsCard.style.display = 'none';
+            if (detectionResultsCard) detectionResultsCard.style.display = 'none';
             if (runtimeDisplay) runtimeDisplay.style.display = 'none';
         }
 
@@ -712,10 +755,15 @@
             
             // Show detection details on the right side safely
             const detectionDetailsCard = document.getElementById('detectionDetailsCard');
+            const detectionResultsCard = document.getElementById('detectionResultsCard');
             const noDetectionsPlaceholder = document.getElementById('noDetectionsPlaceholder');
             
             if (detectionDetailsCard) {
                 detectionDetailsCard.style.display = 'block';
+            }
+            
+            if (detectionResultsCard) {
+                detectionResultsCard.style.display = 'block';
             }
             
             if (noDetectionsPlaceholder) {
@@ -724,6 +772,9 @@
             
             // Update class distribution
             updateClassDistribution(data.predictions);
+            
+            // Update detection results table
+            updateDetectionResultsTable(data.predictions);
         }
 
         function updateClassDistribution(predictions) {
@@ -754,6 +805,56 @@
             });
             
             classDistributionEl.innerHTML = html;
+        }
+
+        function updateDetectionResultsTable(predictions) {
+            const tableBody = document.getElementById('detectionResultsTable');
+            if (!tableBody) return;
+            
+            if (!predictions || predictions.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">No objects detected</td></tr>';
+                return;
+            }
+            
+            // Count objects by class and calculate average confidence
+            const classData = {};
+            predictions.forEach(pred => {
+                const className = pred.displayName || 'Unknown';
+                const confidence = pred.confidence || 0;
+                
+                if (!classData[className]) {
+                    classData[className] = {
+                        count: 0,
+                        totalConfidence: 0,
+                        confidences: []
+                    };
+                }
+                
+                classData[className].count++;
+                classData[className].totalConfidence += confidence;
+                classData[className].confidences.push(confidence);
+            });
+            
+            // Create table rows
+            let html = '';
+            Object.entries(classData).forEach(([className, data]) => {
+                const avgConfidence = (data.totalConfidence / data.count).toFixed(3);
+                const minConfidence = Math.min(...data.confidences).toFixed(3);
+                const maxConfidence = Math.max(...data.confidences).toFixed(3);
+                
+                html += `
+                    <tr>
+                        <td><strong>${className}</strong></td>
+                        <td>
+                            <span class="badge bg-primary">${avgConfidence}</span>
+                            <small class="text-muted d-block">${minConfidence} - ${maxConfidence}</small>
+                        </td>
+                        <td><span class="badge bg-secondary">${data.count}</span></td>
+                    </tr>
+                `;
+            });
+            
+            tableBody.innerHTML = html;
         }
 
         function addToHistory(data, processingTime) {
@@ -800,7 +901,11 @@
                     const className = pred.displayName || 'Unknown';
                     classCounts[className] = (classCounts[className] || 0) + 1;
                 });
-                const topClass = Object.keys(classCounts)[0] || 'None';
+                
+                // Create class summary string
+                const classSummary = Object.entries(classCounts)
+                    .map(([className, count]) => `${className}: ${count}`)
+                    .join(', ');
                 
                 html += `
                     <div class="history-item" onclick="loadHistoryItem(${item.id})">
@@ -808,7 +913,8 @@
                         <div class="history-content">
                             <div class="history-title">${timeStr}</div>
                             <div class="history-details">
-                                ${item.totalPredictions} objects • ${topClass}
+                                ${item.totalPredictions} objects
+                                <br><small>${classSummary}</small>
                             </div>
                         </div>
                         <div class="history-count">${item.totalPredictions}</div>
