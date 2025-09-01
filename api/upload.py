@@ -349,9 +349,10 @@ def create_annotated_image(image_bytes, predictions):
         
         # Convert to base64 for sending to frontend
         buffer = io.BytesIO()
-        image.save(buffer, format='JPEG')
+        image.save(buffer, format='JPEG', quality=95)
         img_str = base64.b64encode(buffer.getvalue()).decode('utf-8')
         
+        print(f"✅ Annotated image created successfully: {len(img_str)} characters")
         return f"data:image/jpeg;base64,{img_str}"
         
     except Exception as e:

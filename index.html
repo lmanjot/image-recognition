@@ -12,33 +12,44 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
+        /* Mara.care inspired color scheme */
+        :root {
+            --mara-blue: #4d65ff;
+            --mara-blue-light: #6b7cff;
+            --mara-gold: #C79653;
+            --mara-dark: #333333;
+            --mara-light: #fafafa;
+            --mara-gray: #666666;
+            --mara-border: #e0e0e0;
+        }
+        
         /* Essential CSS for functionality */
         body {
-            background-color: #fafafa !important;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+            background-color: var(--mara-light);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             min-height: 100vh;
-            color: #333333 !important;
+            color: var(--mara-dark);
         }
         
         .header {
-            background: linear-gradient(135deg, #4d65ff 0%, #6b7cff 100%) !important;
-            color: white !important;
+            background: linear-gradient(135deg, var(--mara-blue) 0%, var(--mara-blue-light) 100%);
+            color: white;
             margin-bottom: 2rem;
             border-radius: 0 0 20px 20px;
-            box-shadow: 0 4px 20px rgba(77, 101, 255, 0.15) !important;
+            box-shadow: 0 4px 20px rgba(77, 101, 255, 0.15);
         }
         
         .card {
-            border: none !important;
-            border-radius: 16px !important;
+            border: none;
+            border-radius: 16px;
             overflow: hidden;
             transition: all 0.3s ease;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.08) !important;
-            background: white !important;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            background: white;
         }
         
         .card:hover {
-            box-shadow: 0 8px 25px rgba(0,0,0,0.12) !important;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
             transform: translateY(-2px);
         }
         
@@ -48,33 +59,33 @@
         }
         
         .form-range::-webkit-slider-thumb {
-            background: #4d65ff !important;
-            box-shadow: 0 2px 6px rgba(77, 101, 255, 0.3) !important;
+            background: var(--mara-blue);
+            box-shadow: 0 2px 6px rgba(77, 101, 255, 0.3);
         }
         
         .form-range::-moz-range-thumb {
-            background: #4d65ff !important;
-            border: none !important;
+            background: var(--mara-blue);
+            border: none;
         }
         
         .btn-primary {
-            background: linear-gradient(135deg, #4d65ff 0%, #6b7cff 100%) !important;
-            border: none !important;
+            background: linear-gradient(135deg, var(--mara-blue) 0%, var(--mara-blue-light) 100%);
+            border: none;
             transition: all 0.3s ease;
-            border-radius: 12px !important;
-            font-weight: 600 !important;
-            padding: 12px 24px !important;
+            border-radius: 12px;
+            font-weight: 600;
+            padding: 12px 24px;
         }
         
         .btn-primary:hover {
-            transform: translateY(-1px) !important;
-            box-shadow: 0 6px 20px rgba(77, 101, 255, 0.3) !important;
-            background: linear-gradient(135deg, #3d55ef 0%, #5b6cef 100%) !important;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(77, 101, 255, 0.3);
+            background: linear-gradient(135deg, #3d55ef 0%, #5b6cef 100%);
         }
         
         .btn-primary:focus {
-            background: linear-gradient(135deg, #4d65ff 0%, #6b7cff 100%) !important;
-            box-shadow: 0 0 0 0.25rem rgba(77, 101, 255, 0.25) !important;
+            background: linear-gradient(135deg, var(--mara-blue) 0%, var(--mara-blue-light) 100%);
+            box-shadow: 0 0 0 0.25rem rgba(77, 101, 255, 0.25);
         }
         
         .image-container {
@@ -83,22 +94,22 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: #fafafa !important;
-            border-radius: 16px !important;
-            border: 2px dashed #e0e0e0 !important;
+            background: var(--mara-light);
+            border-radius: 16px;
+            border: 2px dashed var(--mara-border);
             transition: all 0.3s ease;
         }
         
         .image-container.has-image {
-            border: none !important;
-            background: white !important;
+            border: none;
+            background: white;
         }
         
         .image-container img {
             max-width: 100%;
             max-height: 600px;
-            border-radius: 12px !important;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1) !important;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
             transition: all 0.3s ease;
         }
         
@@ -108,14 +119,14 @@
         
         .placeholder-image {
             padding: 4rem 2rem;
-            color: #666 !important;
+            color: var(--mara-gray);
             text-align: center;
         }
         
         .spinner-border {
             width: 3rem;
             height: 3rem;
-            color: #4d65ff !important;
+            color: var(--mara-blue);
         }
         
         .class-count-item {
@@ -123,19 +134,19 @@
             justify-content: space-between;
             align-items: center;
             padding: 0.75rem 0;
-            border-bottom: 1px solid #f0f0f0 !important;
+            border-bottom: 1px solid #f0f0f0;
             transition: all 0.2s ease;
         }
         
         .class-count-item:hover {
-            background-color: #f8f9ff !important;
+            background-color: #f8f9ff;
             padding-left: 0.5rem;
             border-radius: 8px;
         }
         
         .class-count {
-            background: linear-gradient(135deg, #4d65ff 0%, #6b7cff 100%) !important;
-            color: white !important;
+            background: linear-gradient(135deg, var(--mara-blue) 0%, var(--mara-blue-light) 100%);
+            color: white;
             padding: 0.25rem 0.75rem;
             border-radius: 20px;
             font-size: 0.875rem;
@@ -159,22 +170,22 @@
         }
         
         .status-vertex {
-            background: linear-gradient(135deg, #10b981, #059669) !important;
-            color: white !important;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
         }
         
         .status-mock {
-            background: linear-gradient(135deg, #f59e0b, #d97706) !important;
-            color: white !important;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
         }
         
         .performance-metrics {
-            background: linear-gradient(135deg, #4d65ff 0%, #6b7cff 100%) !important;
-            color: white !important;
-            border-radius: 16px !important;
+            background: linear-gradient(135deg, var(--mara-blue) 0%, var(--mara-blue-light) 100%);
+            color: white;
+            border-radius: 16px;
             padding: 1.5rem;
             margin-bottom: 1.5rem;
-            box-shadow: 0 4px 20px rgba(77, 101, 255, 0.15) !important;
+            box-shadow: 0 4px 20px rgba(77, 101, 255, 0.15);
         }
         
         .metric-item {
@@ -193,64 +204,57 @@
         }
         
         .card-header.bg-primary {
-            background: linear-gradient(135deg, #4d65ff 0%, #6b7cff 100%) !important;
+            background: linear-gradient(135deg, var(--mara-blue) 0%, var(--mara-blue-light) 100%);
         }
         
         .card-header.bg-success {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
         }
         
         .card-header.bg-secondary {
-            background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%) !important;
+            background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
         }
         
         .form-control:focus {
-            border-color: #4d65ff !important;
-            box-shadow: 0 0 0 0.2rem rgba(77, 101, 255, 0.25) !important;
+            border-color: var(--mara-blue);
+            box-shadow: 0 0 0 0.2rem rgba(77, 101, 255, 0.25);
         }
         
         .form-label {
-            color: #333333 !important;
-            font-weight: 600 !important;
+            color: var(--mara-dark);
+            font-weight: 600;
         }
         
-        /* Override Bootstrap default colors */
-        .bg-primary {
-            background-color: #4d65ff !important;
-        }
-        
+        /* Text colors */
         .text-primary {
-            color: #4d65ff !important;
+            color: var(--mara-blue) !important;
         }
         
-        .border-primary {
-            border-color: #4d65ff !important;
+        .text-muted {
+            color: var(--mara-gray) !important;
         }
         
-        /* Table styling */
-        .table-hover tbody tr:hover {
-            background-color: #f8f9ff !important;
-        }
-        
+        /* Badge colors */
         .badge.bg-primary {
-            background-color: #4d65ff !important;
+            background-color: var(--mara-blue) !important;
         }
         
+        /* Progress bar */
         .progress-bar.bg-success {
             background-color: #10b981 !important;
         }
         
         /* Alert styling */
         .alert {
-            border-radius: 12px !important;
-            border: none !important;
+            border-radius: 12px;
+            border: none;
             margin-bottom: 1rem;
         }
         
         .alert-warning {
-            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%) !important;
-            color: #92400e !important;
-            border-left: 4px solid #f59e0b !important;
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            color: #92400e;
+            border-left: 4px solid #f59e0b;
         }
         
         .alert i {
@@ -265,15 +269,19 @@
         }
         
         .table thead th {
-            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%) !important;
-            border: none !important;
-            font-weight: 600 !important;
-            color: #475569 !important;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border: none;
+            font-weight: 600;
+            color: #475569;
         }
         
         .table tbody td {
-            border-color: #f1f5f9 !important;
+            border-color: #f1f5f9;
             vertical-align: middle;
+        }
+        
+        .table-hover tbody tr:hover {
+            background-color: #f8f9ff;
         }
         
         /* Responsive improvements */
@@ -381,7 +389,7 @@
                     <!-- Results Summary -->
                     <div class="card shadow-sm mt-4" id="resultsCard" style="display: none;">
                         <div class="card-header bg-success text-white">
-                            <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Detection Results</h5>
+                            <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Performance Metrics</h5>
                         </div>
                         <div class="card-body">
                             <!-- Performance Metrics -->
@@ -407,33 +415,6 @@
                                     </div>
                                 </div>
                             </div>
-                            
-                            <!-- Detection Results Table -->
-                            <div class="mt-4">
-                                <h6 class="fw-bold mb-3"><i class="fas fa-table"></i> Detection Details</h6>
-                                <div class="table-responsive">
-                                    <table class="table table-hover" id="detectionTable">
-                                        <thead class="table-light">
-                                            <tr>
-                                                <th>#</th>
-                                                <th>Object</th>
-                                                <th>Confidence</th>
-                                                <th>Location</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="detectionTableBody">
-                                            <!-- Detection rows will be populated here -->
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                            
-                            <hr class="my-4">
-                            
-                            <h6 class="fw-bold"><i class="fas fa-tags"></i> Class Distribution</h6>
-                            <div id="classCounts" class="mt-2">
-                                <!-- Class counts will be populated here -->
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -447,11 +428,54 @@
                             <h5 class="mb-0"><i class="fas fa-eye"></i> Image Preview & Results</h5>
                         </div>
                         <div class="card-body">
-                            <div id="imageContainer" class="image-container">
-                                <div class="placeholder-image">
-                                    <i class="fas fa-image fa-4x text-muted mb-3"></i>
-                                    <p class="text-muted mb-0">Upload an image to get started</p>
-                                    <small class="text-muted">Drag and drop or click to browse</small>
+                            <div class="row">
+                                <!-- Left: Image Display -->
+                                <div class="col-md-8">
+                                    <div id="imageContainer" class="image-container">
+                                        <div class="placeholder-image">
+                                            <i class="fas fa-image fa-4x text-muted mb-3"></i>
+                                            <p class="text-muted mb-0">Upload an image to get started</p>
+                                            <small class="text-muted">Drag and drop or click to browse</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Right: Detection Details Table -->
+                                <div class="col-md-4">
+                                    <div id="detectionDetailsCard" style="display: none;">
+                                        <h6 class="fw-bold mb-3 text-primary">
+                                            <i class="fas fa-table"></i> Detection Details
+                                        </h6>
+                                        <div class="table-responsive">
+                                            <table class="table table-sm table-hover" id="detectionTable">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th>#</th>
+                                                        <th>Object</th>
+                                                        <th>Confidence</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="detectionTableBody">
+                                                    <!-- Detection rows will be populated here -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        
+                                        <hr class="my-3">
+                                        
+                                        <h6 class="fw-bold text-primary">
+                                            <i class="fas fa-tags"></i> Class Summary
+                                        </h6>
+                                        <div id="classCounts" class="mt-2">
+                                            <!-- Class counts will be populated here -->
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Placeholder when no detections -->
+                                    <div id="noDetectionsPlaceholder" class="text-center text-muted">
+                                        <i class="fas fa-search fa-2x mb-2"></i>
+                                        <p class="small">Detection results will appear here</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -553,6 +577,11 @@
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     displayImage(e.target.result);
+                    
+                    // Reset detection details when new image is loaded
+                    document.getElementById('detectionDetailsCard').style.display = 'none';
+                    document.getElementById('noDetectionsPlaceholder').style.display = 'block';
+                    document.getElementById('resultsCard').style.display = 'none';
                 };
                 reader.readAsDataURL(file);
             }
@@ -649,6 +678,10 @@
                 modelStatus.className = 'metric-value status-mock';
             }
             
+            // Show detection details on the right side
+            document.getElementById('detectionDetailsCard').style.display = 'block';
+            document.getElementById('noDetectionsPlaceholder').style.display = 'none';
+            
             // Populate detection table
             displayDetectionTable(data.predictions);
             
@@ -670,7 +703,7 @@
             tableBody.innerHTML = '';
             
             if (!predictions || predictions.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">No objects detected</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">No objects detected</td></tr>';
                 return;
             }
             
@@ -681,13 +714,12 @@
                     <td><strong>${pred.displayName || 'Unknown'}</strong></td>
                     <td>
                         <div class="d-flex align-items-center">
-                            <div class="progress flex-grow-1 me-2" style="height: 8px;">
+                            <div class="progress flex-grow-1 me-2" style="height: 6px;">
                                 <div class="progress-bar bg-success" style="width: ${(pred.confidence * 100).toFixed(1)}%"></div>
                             </div>
                             <small class="text-muted">${(pred.confidence * 100).toFixed(1)}%</small>
                         </div>
                     </td>
-                    <td><small class="text-muted">(${pred.bbox.join(', ')})</small></td>
                 `;
                 tableBody.appendChild(row);
             });
@@ -724,6 +756,11 @@
                 loadingIndicator.style.display = 'block';
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+                
+                // Reset detection details
+                document.getElementById('detectionDetailsCard').style.display = 'none';
+                document.getElementById('noDetectionsPlaceholder').style.display = 'block';
+                document.getElementById('resultsCard').style.display = 'none';
             } else {
                 loadingIndicator.style.display = 'none';
                 submitBtn.disabled = false;
