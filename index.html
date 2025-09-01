@@ -179,42 +179,6 @@
             color: white;
         }
         
-        .performance-metrics {
-            background: linear-gradient(135deg, var(--mara-blue) 0%, var(--mara-blue-light) 100%);
-            color: white;
-            border-radius: 16px;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 4px 20px rgba(77, 101, 255, 0.15);
-        }
-        
-        .metric-item {
-            text-align: center;
-        }
-        
-        .metric-value {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 0.25rem;
-        }
-        
-        .metric-label {
-            font-size: 0.875rem;
-            opacity: 0.9;
-        }
-        
-        .card-header.bg-primary {
-            background: linear-gradient(135deg, var(--mara-blue) 0%, var(--mara-blue-light) 100%);
-        }
-        
-        .card-header.bg-success {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-        }
-        
-        .card-header.bg-secondary {
-            background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
-        }
-        
         .form-control:focus {
             border-color: var(--mara-blue);
             box-shadow: 0 0 0 0.2rem rgba(77, 101, 255, 0.25);
@@ -331,6 +295,70 @@
                 padding-left: 1rem;
             }
         }
+
+        /* Force Mara.care color scheme - override Bootstrap */
+        .btn-primary {
+            background-color: #4d65ff !important;
+            border-color: #4d65ff !important;
+        }
+        
+        .btn-primary:hover {
+            background-color: #3d55ef !important;
+            border-color: #3d55ef !important;
+        }
+        
+        .text-primary {
+            color: #4d65ff !important;
+        }
+        
+        .bg-primary {
+            background-color: #4d65ff !important;
+        }
+        
+        .badge.bg-primary {
+            background-color: #4d65ff !important;
+        }
+        
+        .card-header.bg-primary {
+            background-color: #4d65ff !important;
+        }
+        
+        .card-header.bg-success {
+            background-color: #10b981 !important;
+        }
+        
+        .card-header.bg-secondary {
+            background-color: #6b7280 !important;
+        }
+        
+        /* Form controls */
+        .form-control:focus {
+            border-color: #4d65ff !important;
+            box-shadow: 0 0 0 0.2rem rgba(77, 101, 255, 0.25) !important;
+        }
+        
+        .form-range::-webkit-slider-thumb {
+            background-color: #4d65ff !important;
+        }
+        
+        .form-range::-moz-range-thumb {
+            background-color: #4d65ff !important;
+        }
+        
+        /* Header gradient */
+        .header {
+            background: linear-gradient(135deg, #4d65ff 0%, #6b7cff 100%) !important;
+        }
+        
+        /* Performance metrics */
+        .performance-metrics {
+            background: linear-gradient(135deg, #4d65ff 0%, #6b7cff 100%) !important;
+        }
+        
+        /* Class count badges */
+        .class-count {
+            background: linear-gradient(135deg, #4d65ff 0%, #6b7cff 100%) !important;
+        }
     </style>
 </head>
 <body>
@@ -404,6 +432,13 @@
                                 <button type="submit" class="btn btn-primary btn-lg w-100" id="submitBtn">
                                     <i class="fas fa-play"></i> Run Detection
                                 </button>
+                                
+                                <!-- Runtime Display -->
+                                <div class="text-center mt-2" id="runtimeDisplay" style="display: none;">
+                                    <small class="text-muted">
+                                        <i class="fas fa-clock"></i> Processing time: <span id="processingTime">0s</span>
+                                    </small>
+                                </div>
                             </form>
 
                             <!-- Loading Indicator -->
@@ -419,31 +454,12 @@
                     <!-- Results Summary -->
                     <div class="card shadow-sm mt-4" id="resultsCard" style="display: none;">
                         <div class="card-header bg-success text-white">
-                            <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Performance Metrics</h5>
+                            <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Model Status</h5>
                         </div>
-                        <div class="card-body">
-                            <!-- Performance Metrics -->
-                            <div class="performance-metrics">
-                                <div class="row">
-                                    <div class="col-4">
-                                        <div class="metric-item">
-                                            <div class="metric-value" id="totalPredictions">0</div>
-                                            <div class="metric-label">Objects</div>
-                                        </div>
-                                    </div>
-                                    <div class="col-4">
-                                        <div class="metric-item">
-                                            <div class="metric-value" id="processingTime">0s</div>
-                                            <div class="metric-label">Time</div>
-                                        </div>
-                                    </div>
-                                    <div class="col-4">
-                                        <div class="metric-item">
-                                            <div class="metric-value" id="modelStatus">Mock</div>
-                                            <div class="metric-label">Model</div>
-                                        </div>
-                                    </div>
-                                </div>
+                        <div class="card-body text-center">
+                            <div class="mb-3">
+                                <h6 class="text-muted mb-2">Model Used</h6>
+                                <span id="modelStatus" class="badge bg-primary fs-6">Mock Data</span>
                             </div>
                         </div>
                     </div>
@@ -473,32 +489,26 @@
                                 <!-- Right: Detection Details Table -->
                                 <div class="col-md-4">
                                     <div id="detectionDetailsCard" style="display: none;">
-                                        <h6 class="fw-bold mb-3 text-primary">
-                                            <i class="fas fa-table"></i> Detection Details
-                                        </h6>
-                                        <div class="table-responsive">
-                                            <table class="table table-sm table-hover" id="detectionTable">
-                                                <thead class="table-light">
-                                                    <tr>
-                                                        <th>#</th>
-                                                        <th>Object & Location</th>
-                                                        <th>Confidence</th>
-                                                        <th>Visual</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody id="detectionTableBody">
-                                                    <!-- Detection rows will be populated here -->
-                                                </tbody>
-                                            </table>
+                                        <!-- Total Objects Summary -->
+                                        <div class="card mb-3">
+                                            <div class="card-body text-center">
+                                                <h3 class="text-primary mb-0" id="totalPredictions">0</h3>
+                                                <p class="text-muted mb-0">Total Objects Detected</p>
+                                            </div>
                                         </div>
                                         
-                                        <hr class="my-3">
-                                        
-                                        <h6 class="fw-bold text-primary">
-                                            <i class="fas fa-tags"></i> Class Summary
-                                        </h6>
-                                        <div id="classCounts" class="mt-2">
-                                            <!-- Class counts will be populated here -->
+                                        <!-- Class Distribution -->
+                                        <div class="card">
+                                            <div class="card-header bg-light">
+                                                <h6 class="mb-0 text-primary">
+                                                    <i class="fas fa-tags"></i> Class Distribution
+                                                </h6>
+                                            </div>
+                                            <div class="card-body">
+                                                <div id="classCounts">
+                                                    <!-- Class counts will be populated here -->
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                     
@@ -713,14 +723,17 @@
             document.getElementById('totalPredictions').textContent = data.total_predictions;
             document.getElementById('processingTime').textContent = processingTime + 's';
             
+            // Show runtime display below the button
+            document.getElementById('runtimeDisplay').style.display = 'block';
+            
             // Update model status with better styling
             const modelStatus = document.getElementById('modelStatus');
             if (data.model_used === 'Vertex AI') {
                 modelStatus.textContent = 'Vertex AI';
-                modelStatus.className = 'metric-value status-vertex';
+                modelStatus.className = 'badge bg-primary';
             } else {
                 modelStatus.textContent = 'Mock Data';
-                modelStatus.className = 'metric-value status-mock';
+                modelStatus.className = 'badge bg-secondary';
             }
             
             // Show detection details on the right side
@@ -743,41 +756,68 @@
                 const class_name = pred.displayName || 'Unknown';
                 const confidence = pred.confidence || 0.0;
                 
-                // Create bounding box overlay
-                const box = document.createElement('div');
-                box.className = 'overlay-box';
-                box.style.cssText = `
-                    position: absolute;
-                    left: ${bbox[0] * 100}%;
-                    top: ${bbox[1] * 100}%;
-                    width: ${(bbox[2] - bbox[0]) * 100}%;
-                    height: ${(bbox[3] - bbox[1]) * 100}%;
-                    border: 3px solid var(--mara-blue);
-                    background: rgba(77, 101, 255, 0.1);
-                    pointer-events: none;
-                `;
+                console.log(`Creating overlay for ${class_name}:`, bbox);
                 
-                // Create label
-                const label = document.createElement('div');
-                label.className = 'overlay-label';
-                label.style.cssText = `
-                    position: absolute;
-                    left: ${bbox[0] * 100}%;
-                    top: ${Math.max(0, bbox[1] * 100 - 30)}%;
-                    background: var(--mara-blue);
-                    color: white;
-                    padding: 4px 8px;
-                    border-radius: 4px;
-                    font-size: 12px;
-                    font-weight: 600;
-                    white-space: nowrap;
-                    pointer-events: none;
-                    z-index: 10;
-                `;
-                label.textContent = `${class_name}: ${(confidence * 100).toFixed(1)}%`;
+                // Vertex AI bounding box format: [y_min, x_min, y_max, x_max] (normalized 0-1)
+                // Convert to [x_min, y_min, x_max, y_max] format
+                let x_min, y_min, x_max, y_max;
                 
-                overlayContainer.appendChild(box);
-                overlayContainer.appendChild(label);
+                if (bbox.length === 4) {
+                    if (bbox[0] <= bbox[2] && bbox[1] <= bbox[3]) {
+                        // Already in [x_min, y_min, x_max, y_max] format
+                        [x_min, y_min, x_max, y_max] = bbox;
+                    } else {
+                        // Convert from [y_min, x_min, y_max, x_max] to [x_min, y_min, x_max, y_max]
+                        [y_min, x_min, y_max, x_max] = bbox;
+                    }
+                    
+                    // Ensure coordinates are within 0-1 range
+                    x_min = Math.max(0, Math.min(1, x_min));
+                    y_min = Math.max(0, Math.min(1, y_min));
+                    x_max = Math.max(0, Math.min(1, x_max));
+                    y_max = Math.max(0, Math.min(1, y_max));
+                    
+                    console.log(`Converted coordinates: x_min=${x_min}, y_min=${y_min}, x_max=${x_max}, y_max=${y_max}`);
+                    
+                    // Create bounding box overlay
+                    const box = document.createElement('div');
+                    box.className = 'overlay-box';
+                    box.style.cssText = `
+                        position: absolute;
+                        left: ${x_min * 100}%;
+                        top: ${y_min * 100}%;
+                        width: ${(x_max - x_min) * 100}%;
+                        height: ${(y_max - y_min) * 100}%;
+                        border: 3px solid #4d65ff;
+                        background: rgba(77, 101, 255, 0.1);
+                        pointer-events: none;
+                        z-index: 5;
+                    `;
+                    
+                    // Create label
+                    const label = document.createElement('div');
+                    label.className = 'overlay-label';
+                    label.style.cssText = `
+                        position: absolute;
+                        left: ${x_min * 100}%;
+                        top: ${Math.max(0, y_min * 100 - 30)}%;
+                        background: #4d65ff;
+                        color: white;
+                        padding: 4px 8px;
+                        border-radius: 4px;
+                        font-size: 12px;
+                        font-weight: 600;
+                        white-space: nowrap;
+                        pointer-events: none;
+                        z-index: 10;
+                    `;
+                    label.textContent = `${class_name}: ${(confidence * 100).toFixed(1)}%`;
+                    
+                    overlayContainer.appendChild(box);
+                    overlayContainer.appendChild(label);
+                } else {
+                    console.warn(`Invalid bbox format for ${class_name}:`, bbox);
+                }
             });
         }
 
@@ -873,11 +913,13 @@
         function showLoading(show) {
             const loadingIndicator = document.getElementById('loadingIndicator');
             const submitBtn = document.getElementById('submitBtn');
+            const runtimeDisplay = document.getElementById('runtimeDisplay');
             
             if (show) {
                 loadingIndicator.style.display = 'block';
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+                runtimeDisplay.style.display = 'none';
                 
                 // Reset detection details
                 document.getElementById('detectionDetailsCard').style.display = 'none';
