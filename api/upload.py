@@ -773,19 +773,37 @@ def parse_multipart_data(body, content_type):
             environ={'REQUEST_METHOD': 'POST'}
         )
         
-        # Extract form data with new defaults
+        # Extract form data
         image_file = form.getfirst('image')
-        confidence_threshold = float(form.getfirst('confidenceThreshold', 0.2))  # Default: 0.2
-        iou_threshold = float(form.getfirst('iouThreshold', 0.0))  # Default: 0.0
-        padding_factor = float(form.getfirst('paddingFactor', 0.5))  # Default: 0.5
-        max_predictions = int(form.getfirst('maxPredictions', 100))
+        
+        # Model selection
+        run_density_model = form.getfirst('runDensityModel', 'false').lower() == 'true'
+        run_thickness_model = form.getfirst('runThicknessModel', 'false').lower() == 'true'
+        
+        # Density model parameters
+        density_confidence = float(form.getfirst('densityConfidence', 0.2))
+        density_iou_threshold = float(form.getfirst('densityNMS', 0.0))
+        density_padding_factor = float(form.getfirst('densityPadding', 0.5))
+        density_max_predictions = int(form.getfirst('densityMaxPred', 100))
+        
+        # Thickness model parameters
+        thickness_confidence = float(form.getfirst('thicknessConfidence', 0.2))
+        thickness_iou_threshold = float(form.getfirst('thicknessNMS', 0.0))
+        thickness_padding_factor = float(form.getfirst('thicknessPadding', 0.5))
+        thickness_max_predictions = int(form.getfirst('thicknessMaxPred', 100))
         
         return {
             'image': image_file,
-            'confidence_threshold': confidence_threshold,
-            'iou_threshold': iou_threshold,
-            'padding_factor': padding_factor,
-            'max_predictions': max_predictions
+            'run_density_model': run_density_model,
+            'run_thickness_model': run_thickness_model,
+            'density_confidence': density_confidence,
+            'density_iou_threshold': density_iou_threshold,
+            'density_padding_factor': density_padding_factor,
+            'density_max_predictions': density_max_predictions,
+            'thickness_confidence': thickness_confidence,
+            'thickness_iou_threshold': thickness_iou_threshold,
+            'thickness_padding_factor': thickness_padding_factor,
+            'thickness_max_predictions': thickness_max_predictions
         }
     except Exception as e:
         print(f"❌ Error parsing multipart data: {e}")
@@ -829,13 +847,11 @@ class handler(BaseHTTPRequestHandler):
                 self.send_error_response('No image file provided', 400)
                 return
             
-            # Get parameters
-            confidence_threshold = form_data['confidence_threshold']
-            iou_threshold = form_data['iou_threshold']
-            padding_factor = form_data['padding_factor']
-            max_predictions = form_data['max_predictions']
+            # Get model selection and parameters
+            run_density_model = form_data['run_density_model']
+            run_thickness_model = form_data['run_thickness_model']
             
-            print(f"🖼️ Processing image with parameters: conf={confidence_threshold}, NMS={iou_threshold}, padding={padding_factor}, max={max_predictions}")
+            print(f"🖼️ Processing image - Density: {run_density_model}, Thickness: {run_thickness_model}")
             
             # Convert image file to bytes
             if hasattr(form_data['image'], 'file'):
@@ -843,51 +859,62 @@ class handler(BaseHTTPRequestHandler):
             else:
                 image_bytes = form_data['image']
             
-            # Call prediction function
-            predictions = predict_image_object_detection(
-                image_bytes, 
-                confidence_threshold, 
-                iou_threshold,
-                padding_factor,
-                max_predictions
-            )
-            
-            if not predictions:
-                self.send_error_response('No predictions returned from model', 400)
-                return
-            
-            # Process predictions and create annotated image
-            annotated_image_data = create_annotated_image(image_bytes, predictions, padding_factor)
-            
-            # Count predictions by class
-            class_counts = {}
-            for pred in predictions:
-                class_name = pred.get('displayName', 'Unknown')
-                class_counts[class_name] = class_counts.get(class_name, 0) + 1
-            
-            print(f"📊 Results: {len(predictions)} objects, classes: {list(class_counts.keys())}")
-            
-            # Calculate follicular metrics
-            follicular_metrics = calculate_follicular_metrics(predictions)
-            
-            # Determine model status
-            model_used = "Vertex AI" if check_vertex_ai_enabled() else "Mock Data"
-            
-            # Check if this was a fallback (no Vertex AI available)
-            vertex_ai_was_available = check_vertex_ai_enabled()
-            is_fallback = len(predictions) == 0 and not vertex_ai_was_available
-            
-            # Send success response
+            # Initialize response data
             response_data = {
                 'success': True,
-                'annotated_image': annotated_image_data,
-                'predictions': predictions,
-                'class_counts': class_counts,
-                'total_predictions': len(predictions),
-                'model_used': model_used,
-                'is_fallback': is_fallback,
-                'follicular_metrics': follicular_metrics
+                'density_results': None,
+                'thickness_results': None
             }
+            
+            # Process density model if selected
+            if run_density_model:
+                print("🔍 Running density model...")
+                density_predictions = predict_image_object_detection(
+                    image_bytes, 
+                    form_data['density_confidence'], 
+                    form_data['density_iou_threshold'],
+                    form_data['density_padding_factor'],
+                    form_data['density_max_predictions']
+                )
+                
+                if density_predictions:
+                    density_annotated_image = create_annotated_image(image_bytes, density_predictions, form_data['density_padding_factor'])
+                    density_metrics = calculate_follicular_metrics(density_predictions)
+                    
+                    response_data['density_results'] = {
+                        'annotated_image': density_annotated_image,
+                        'predictions': density_predictions,
+                        'follicular_metrics': density_metrics,
+                        'total_predictions': len(density_predictions)
+                    }
+            
+            # Process thickness model if selected
+            if run_thickness_model:
+                print("🔍 Running thickness model...")
+                # TODO: Implement thickness model prediction
+                # For now, return mock data
+                thickness_predictions = [
+                    {'displayName': 'strong', 'confidence': 0.95, 'bbox': [0.1, 0.3, 0.1, 0.8]},
+                    {'displayName': 'medium', 'confidence': 0.87, 'bbox': [0.4, 0.9, 0.3, 0.7]},
+                    {'displayName': 'weak', 'confidence': 0.78, 'bbox': [0.6, 0.8, 0.2, 0.5]}
+                ]
+                
+                thickness_annotated_image = create_annotated_image(image_bytes, thickness_predictions, form_data['thickness_padding_factor'])
+                
+                # Calculate thickness metrics
+                thickness_metrics = {
+                    'strong': sum(1 for p in thickness_predictions if p['displayName'] == 'strong'),
+                    'medium': sum(1 for p in thickness_predictions if p['displayName'] == 'medium'),
+                    'weak': sum(1 for p in thickness_predictions if p['displayName'] == 'weak'),
+                    'total_detections': len(thickness_predictions)
+                }
+                
+                response_data['thickness_results'] = {
+                    'annotated_image': thickness_annotated_image,
+                    'predictions': thickness_predictions,
+                    'thickness_metrics': thickness_metrics,
+                    'total_predictions': len(thickness_predictions)
+                }
             
             self.send_success_response(response_data)
             

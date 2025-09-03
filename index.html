@@ -922,25 +922,11 @@
         function displayResults(data, processingTime) {
             console.log('Displaying results:', data);
             
-            // Update image display
-            const container = document.getElementById('imageContainer');
-            if (data.annotated_image && data.annotated_image !== 'null' && data.annotated_image !== 'undefined') {
-                container.innerHTML = `<img src="${data.annotated_image}" alt="Annotated image with detections" class="img-fluid">`;
-            } else {
-                // Show original image
-                const originalImage = getOriginalImageData();
-                if (originalImage) {
-                    container.innerHTML = `<img src="${originalImage}" alt="Original image" class="img-fluid">`;
-                } else {
-                    container.innerHTML = `
-                        <div class="alert alert-warning">
-                            <i class="fas fa-exclamation-triangle"></i>
-                            <strong>Warning:</strong> Could not generate annotated image.
-                        </div>
-                    `;
-                }
+            // Show results card
+            const resultsCard = document.getElementById('resultsCard');
+            if (resultsCard) {
+                resultsCard.style.display = 'block';
             }
-            container.classList.add('has-image');
             
             // Update processing time display
             const processingTimeEl = document.getElementById('processingTime');
@@ -949,17 +935,47 @@
             if (processingTimeEl) processingTimeEl.textContent = processingTime + 's';
             if (runtimeDisplayEl) runtimeDisplayEl.style.display = 'block';
             
-            // Show results card
-            const resultsCard = document.getElementById('resultsCard');
-            
-            if (resultsCard) {
-                resultsCard.style.display = 'block';
+            // Display density results if available
+            if (data.density_results) {
+                displayDensityResults(data.density_results);
             }
             
-            // Update follicular metrics display
-            updateFollicularMetrics(data.follicular_metrics);
+            // Display thickness results if available
+            if (data.thickness_results) {
+                displayThicknessResults(data.thickness_results);
+            }
+        }
+        
+        function displayDensityResults(densityData) {
+            // Show density image preview
+            const densityImagePreview = document.getElementById('densityImagePreview');
+            if (densityImagePreview && densityData.annotated_image) {
+                densityImagePreview.src = densityData.annotated_image;
+                densityImagePreview.style.display = 'block';
+            }
             
-
+            // Update density metrics
+            updateFollicularMetrics(densityData.follicular_metrics);
+        }
+        
+        function displayThicknessResults(thicknessData) {
+            // Show thickness image preview
+            const thicknessImagePreview = document.getElementById('thicknessImagePreview');
+            if (thicknessImagePreview && thicknessData.annotated_image) {
+                thicknessImagePreview.src = thicknessData.annotated_image;
+                thicknessImagePreview.style.display = 'block';
+            }
+            
+            // Update thickness metrics
+            const thicknessMetrics = document.getElementById('thicknessMetrics');
+            if (thicknessMetrics && thicknessData.thickness_metrics) {
+                document.getElementById('thicknessStrong').textContent = thicknessData.thickness_metrics.strong || '0';
+                document.getElementById('thicknessMedium').textContent = thicknessData.thickness_metrics.medium || '0';
+                document.getElementById('thicknessWeak').textContent = thicknessData.thickness_metrics.weak || '0';
+                document.getElementById('thicknessTotalDetections').textContent = thicknessData.thickness_metrics.total_detections || '0';
+                
+                thicknessMetrics.style.display = 'block';
+            }
         }
 
         function updateParameterDisplay() {
@@ -996,12 +1012,20 @@
 
 
         function addToHistory(data, processingTime) {
-            // Get current parameter values
+            // Get current parameter values for both models
             const parameters = {
-                confidence: parseFloat(document.getElementById('confidenceThreshold').value).toFixed(2),
-                padding: parseFloat(document.getElementById('paddingFactor').value).toFixed(2),
-                nms: parseFloat(document.getElementById('iouThreshold').value).toFixed(2),
-                maxPredictions: document.getElementById('maxPredictions').value
+                density: {
+                    confidence: parseFloat(document.getElementById('densityConfidence').value).toFixed(2),
+                    padding: parseFloat(document.getElementById('densityPadding').value).toFixed(2),
+                    nms: parseFloat(document.getElementById('densityNMS').value).toFixed(2),
+                    maxPredictions: document.getElementById('densityMaxPred').value
+                },
+                thickness: {
+                    confidence: parseFloat(document.getElementById('thicknessConfidence').value).toFixed(2),
+                    padding: parseFloat(document.getElementById('thicknessPadding').value).toFixed(2),
+                    nms: parseFloat(document.getElementById('thicknessNMS').value).toFixed(2),
+                    maxPredictions: document.getElementById('thicknessMaxPred').value
+                }
             };
             
             const historyItem = {
