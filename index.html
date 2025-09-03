@@ -378,6 +378,7 @@
             flex: 1;
             display: flex;
             flex-direction: column;
+            overflow-y: auto;
         }
         
         .analysis-panel #combinedMetrics {
@@ -388,6 +389,11 @@
         
         .analysis-panel .row.h-100 {
             flex: 1;
+        }
+        
+        /* Ensure OHS section doesn't take too much space */
+        .analysis-panel .row.mb-4 {
+            flex-shrink: 0;
         }
         
         /* Responsive Design */
@@ -600,11 +606,8 @@
                                                 <!-- Overall Hair Score - Prominent Display -->
                                                 <div class="row mb-4">
                                                     <div class="col-12">
-                                                        <div class="metric-card p-4 border rounded border-primary" id="ohsCard" data-bs-toggle="tooltip" data-bs-placement="top" title="Overall Hair Score (OHS) = √((HCI% / 100) × (EHD% / 100)) × 100. Geometric mean of Hair Thickness Score and Scalp Coverage. Bands: 80-100% = Excellent, 60-79% = Good, 40-59% = Moderate, 20-39% = Low, 0-19% = Very Low">
+                                                        <div class="metric-card p-4 border rounded border-primary" id="ohsCard" data-bs-toggle="tooltip" data-bs-placement="top" title="Overall Hair Score (OHS) = (2 / ((1 / (HCI% / 100)) + (1 / (EHD% / 100)))) × 100. Harmonic mean of Hair Thickness Score and Scalp Coverage. Bands: 80-100% = Excellent, 60-79% = Good, 40-59% = Moderate, 20-39% = Low, 0-19% = Very Low">
                                                             <div class="d-flex align-items-center justify-content-center">
-                                                                <div class="metric-icon me-4">
-                                                                    <i class="fas fa-star text-primary fa-3x"></i>
-                                                                </div>
                                                                 <div class="text-center">
                                                                     <div class="metric-label text-muted mb-2 h5">Overall Hair Score (OHS)</div>
                                                                     <div class="metric-value h1 mb-2" id="overallHairScore">-%</div>

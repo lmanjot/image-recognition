@@ -325,11 +325,16 @@ def calculate_combined_metrics(density_predictions, thickness_predictions):
     # Normalizes effective hair density to a 0-100 percentage scale
     ehd_percentage = (effective_hair_density / ehd_max * 100) if ehd_max > 0 else 0.0
     
-    # Overall Hair Score (OHS) = sqrt((HCI_percent/100) * (EHD_percent/100)) * 100
-    # Geometric mean of HCI% and EHD% for overall hair quality assessment
+    # Overall Hair Score (OHS) = (2 / ((1 / (HCI_percent/100)) + (1 / (EHD_percent/100)))) * 100
+    # Harmonic mean of HCI% and EHD% for overall hair quality assessment
     hci_normalized = hair_caliber_index_percentage / 100.0
     ehd_normalized = ehd_percentage / 100.0
-    overall_hair_score = (hci_normalized * ehd_normalized) ** 0.5 * 100 if hci_normalized > 0 and ehd_normalized > 0 else 0.0
+    
+    # If either HCI_percent or EHD_percent is 0, set OHS = 0 to avoid division by zero
+    if hci_normalized > 0 and ehd_normalized > 0:
+        overall_hair_score = (2 / ((1 / hci_normalized) + (1 / ehd_normalized))) * 100
+    else:
+        overall_hair_score = 0.0
     
     # Define interpretation bands for OHS
     if overall_hair_score >= 80:
@@ -359,7 +364,7 @@ def calculate_combined_metrics(density_predictions, thickness_predictions):
     print(f"  - EHD = (hairs_per_cm² × avg_thickness_score) / 3: {effective_hair_density:.1f}")
     print(f"  - EHD_max: {ehd_max}")
     print(f"  - EHD% = (EHD / EHD_max) × 100: {ehd_percentage:.1f}%")
-    print(f"  - Overall Hair Score (OHS): {overall_hair_score:.1f}% ({ohs_interpretation})")
+    print(f"  - Overall Hair Score (OHS) - Harmonic Mean: {overall_hair_score:.1f}% ({ohs_interpretation})")
     print(f"  - Final thickness breakdown: {strong_hairs:.1f} strong, {medium_hairs:.1f} medium, {weak_hairs:.1f} weak")
     
     return {
