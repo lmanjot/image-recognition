@@ -271,22 +271,23 @@ def calculate_combined_metrics(density_predictions, thickness_predictions):
     # Extract values
     total_hairs = density_metrics['total_hairs']
     total_fu = density_metrics['total_follicular_units']
-    thick_hairs = thickness_metrics['strong']
+    strong_hairs = thickness_metrics['strong']
     medium_hairs = thickness_metrics['medium']
-    thin_hairs = thickness_metrics['weak']
+    weak_hairs = thickness_metrics['weak']
+    total_thickness_detections = thickness_metrics['total_detections']
     
     # Calculate combined metrics
-    # Terminal-to-Vellus Ratio = thick_hairs / thin_hairs (return 0 if thin_hairs = 0)
-    terminal_to_vellus_ratio = thick_hairs / thin_hairs if thin_hairs > 0 else 0.0
+    # Terminal-to-Vellus Ratio = weak/strong (vellus/terminal) (return 0 if strong = 0)
+    terminal_to_vellus_ratio = weak_hairs / strong_hairs if strong_hairs > 0 else 0.0
     
-    # % Thick Hairs = (thick_hairs / total_hairs) * 100
-    percent_thick_hairs = (thick_hairs / total_hairs * 100) if total_hairs > 0 else 0.0
+    # % Thick Hairs = (strong_hairs / total_thickness_detections) * 100
+    percent_thick_hairs = (strong_hairs / total_thickness_detections * 100) if total_thickness_detections > 0 else 0.0
     
-    # Hair Caliber Index (HCI) = (thick_hairs * 3) + (medium_hairs * 2) + (thin_hairs * 1)
-    hair_caliber_index = (thick_hairs * 3) + (medium_hairs * 2) + (thin_hairs * 1)
+    # Hair Caliber Index (HCI) = (strong_hairs * 3) + (medium_hairs * 2) + (weak_hairs * 1)
+    hair_caliber_index = (strong_hairs * 3) + (medium_hairs * 2) + (weak_hairs * 1)
     
-    # Average Thickness Score = HCI / total_hairs
-    average_thickness_score = hair_caliber_index / total_hairs if total_hairs > 0 else 0.0
+    # Average Thickness Score = HCI / total_thickness_detections
+    average_thickness_score = hair_caliber_index / total_thickness_detections if total_thickness_detections > 0 else 0.0
     
     # Hairs per FU = total_hairs / total_FU
     hairs_per_fu = total_hairs / total_fu if total_fu > 0 else 0.0
@@ -298,13 +299,14 @@ def calculate_combined_metrics(density_predictions, thickness_predictions):
     effective_hair_density = hairs_per_cm2 * (average_thickness_score / 3.0)
     
     print(f"📊 Combined Metrics:")
-    print(f"  - Terminal-to-Vellus Ratio: {terminal_to_vellus_ratio:.2f}")
-    print(f"  - % Thick Hairs: {percent_thick_hairs:.1f}%")
+    print(f"  - Terminal-to-Vellus Ratio (weak/strong): {terminal_to_vellus_ratio:.2f}")
+    print(f"  - % Thick Hairs (strong/total): {percent_thick_hairs:.1f}%")
     print(f"  - Hair Caliber Index: {hair_caliber_index}")
     print(f"  - Average Thickness Score: {average_thickness_score:.2f}")
     print(f"  - Hairs per FU: {hairs_per_fu:.2f}")
     print(f"  - Hairs per cm²: {hairs_per_cm2:.1f}")
     print(f"  - Effective Hair Density: {effective_hair_density:.1f}")
+    print(f"  - Thickness breakdown: {strong_hairs} strong, {medium_hairs} medium, {weak_hairs} weak")
     
     return {
         'terminal_to_vellus_ratio': round(terminal_to_vellus_ratio, 2),

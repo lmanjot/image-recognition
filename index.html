@@ -855,9 +855,14 @@
         }
 
         function displayImage(imageData) {
-            const container = document.getElementById('imageContainer');
-            container.innerHTML = `<img src="${imageData}" alt="Uploaded image" class="img-fluid">`;
-            container.classList.add('has-image');
+            const mainImagePreview = document.getElementById('mainImagePreview');
+            const imagePlaceholder = document.getElementById('imagePlaceholder');
+            
+            if (mainImagePreview && imagePlaceholder) {
+                mainImagePreview.src = imageData;
+                mainImagePreview.style.display = 'block';
+                imagePlaceholder.style.display = 'none';
+            }
         }
 
         function getOriginalImageData() {
