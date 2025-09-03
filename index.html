@@ -570,14 +570,14 @@
                             <div id="combinedMetrics" style="display: none;">
                                                 <div class="row g-4">
                                                     <div class="col-lg-4 col-md-6">
-                                                        <div class="metric-card p-3 border rounded" data-bs-toggle="tooltip" data-bs-placement="top" title="Terminal-to-Vellus Ratio = Weak Hairs / Strong Hairs (Vellus/Terminal)">
+                                                        <div class="metric-card p-3 border rounded" data-bs-toggle="tooltip" data-bs-placement="top" title="Terminal-to-Vellus Ratio = (Weak Hairs / Strong Hairs) × 100% (lower is better)">
                                                             <div class="d-flex align-items-center">
                                                                 <div class="metric-icon me-3">
                                                                     <i class="fas fa-balance-scale text-primary fa-lg"></i>
                                                                 </div>
                                                                 <div>
                                                                     <div class="metric-label text-muted small">Terminal-to-Vellus Ratio</div>
-                                                                    <div class="metric-value h5 mb-0 text-primary" id="terminalToVellusRatio">-</div>
+                                                                    <div class="metric-value h5 mb-0 text-primary" id="terminalToVellusRatio">-%</div>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -1099,10 +1099,10 @@
         function displayCombinedMetrics(combinedMetrics) {
             const combinedMetricsEl = document.getElementById('combinedMetrics');
             if (combinedMetricsEl && combinedMetrics) {
-                document.getElementById('terminalToVellusRatio').textContent = combinedMetrics.terminal_to_vellus_ratio || '0.00';
-                document.getElementById('percentThickHairs').textContent = combinedMetrics.percent_thick_hairs || '0.0';
+                document.getElementById('terminalToVellusRatio').textContent = (combinedMetrics.terminal_to_vellus_ratio || '0.0') + '%';
+                document.getElementById('percentThickHairs').textContent = (combinedMetrics.percent_thick_hairs || '0.0') + '%';
                 document.getElementById('hairCaliberIndex').textContent = combinedMetrics.hair_caliber_index || '0';
-                document.getElementById('hairCaliberIndexPercentage').textContent = combinedMetrics.hair_caliber_index_percentage || '0.0';
+                document.getElementById('hairCaliberIndexPercentage').textContent = (combinedMetrics.hair_caliber_index_percentage || '0.0') + '%';
                 document.getElementById('averageThicknessScore').textContent = combinedMetrics.average_thickness_score || '0.00';
                 document.getElementById('hairsPerFU').textContent = combinedMetrics.hairs_per_fu || '0.00';
                 document.getElementById('hairsPerCm2').textContent = combinedMetrics.hairs_per_cm2 || '0.0';
