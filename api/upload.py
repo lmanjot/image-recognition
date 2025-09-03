@@ -54,17 +54,17 @@ def get_mock_predictions():
         {
             'displayName': 'person',
             'confidence': 0.95,
-            'bbox': [0.1, 0.1, 0.3, 0.8]
+            'bbox': [0.1, 0.3, 0.1, 0.8]  # [xMin, xMax, yMin, yMax] - normalized coordinates
         },
         {
             'displayName': 'car',
             'confidence': 0.87,
-            'bbox': [0.4, 0.6, 0.9, 0.9]
+            'bbox': [0.4, 0.9, 0.6, 0.9]  # [xMin, xMax, yMin, yMax] - normalized coordinates
         },
         {
             'displayName': 'dog',
             'confidence': 0.78,
-            'bbox': [0.6, 0.2, 0.8, 0.5]
+            'bbox': [0.6, 0.8, 0.2, 0.5]  # [xMin, xMax, yMin, yMax] - normalized coordinates
         }
     ]
 
@@ -314,44 +314,103 @@ def predict_image_object_detection(image_bytes, confidence_threshold, iou_thresh
     )
 
 def create_annotated_image(image_bytes, predictions):
-    """Create an annotated image with bounding boxes and labels"""
+    """
+    Create an annotated image with bounding boxes and labels.
+    Properly handles Vertex AI normalized coordinates [xMin, xMax, yMin, yMax].
+    """
     try:
         print(f"🎨 Creating annotated image with {len(predictions)} predictions")
         
-        # Open image from bytes
-        image = Image.open(io.BytesIO(image_bytes))
+        # Open image and convert to RGB to ensure compatibility
+        image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
         draw = ImageDraw.Draw(image)
+        img_width, img_height = image.size
         
-        # Use default font
-        font = ImageFont.load_default()
+        print(f"📐 Image dimensions: {img_width}x{img_height}")
+        
+        # Try to load a better font, fall back to default if not available
+        try:
+            # Try multiple font paths for better compatibility
+            font_paths = [
+                "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+                "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
+                "/System/Library/Fonts/Arial.ttf",  # macOS
+                "arial.ttf"  # Windows
+            ]
+            font = None
+            for font_path in font_paths:
+                try:
+                    font = ImageFont.truetype(font_path, 20)
+                    break
+                except (IOError, OSError):
+                    continue
+            
+            if font is None:
+                font = ImageFont.load_default()
+        except:
+            font = ImageFont.load_default()
+        
+        # Define colors for different classes (cycling through them)
+        colors = ['red', 'blue', 'green', 'yellow', 'purple', 'orange', 'cyan', 'magenta']
         
         # Draw bounding boxes and labels
-        for pred in predictions:
+        for i, pred in enumerate(predictions):
             bbox = pred.get('bbox', [0, 0, 0, 0])
             class_name = pred.get('displayName', 'Unknown')
             confidence = pred.get('confidence', 0.0)
             
-            # Convert normalized coordinates to pixel coordinates
-            width, height = image.size
-            x1 = int(bbox[0] * width)
-            y1 = int(bbox[1] * height)
-            x2 = int(bbox[2] * width)
-            y2 = int(bbox[3] * height)
+            print(f"🎯 Drawing box {i+1}: {class_name} ({confidence:.2f}) at {bbox}")
             
-            # Draw bounding box
-            draw.rectangle([x1, y1, x2, y2], outline='red', width=3)
+            # Vertex AI returns normalized coordinates as [xMin, xMax, yMin, yMax]
+            # Convert to absolute pixel coordinates
+            x_min = bbox[0] * img_width
+            x_max = bbox[1] * img_width
+            y_min = bbox[2] * img_height
+            y_max = bbox[3] * img_height
             
-            # Draw label background
-            label = f"{class_name}: {confidence:.2f}"
-            bbox_text = draw.textbbox((x1, y1 - 20), label, font=font)
-            draw.rectangle(bbox_text, fill='red')
+            # Ensure coordinates are within image bounds
+            x_min = max(0, min(x_min, img_width))
+            x_max = max(0, min(x_max, img_width))
+            y_min = max(0, min(y_min, img_height))
+            y_max = max(0, min(y_max, img_height))
+            
+            # Skip invalid bounding boxes
+            if x_max <= x_min or y_max <= y_min:
+                print(f"⚠️ Skipping invalid bounding box: {bbox}")
+                continue
+            
+            # Choose color for this detection
+            color = colors[i % len(colors)]
+            
+            # Draw the bounding box with thicker outline
+            draw.rectangle(
+                [(x_min, y_min), (x_max, y_max)], 
+                outline=color, 
+                width=4
+            )
+            
+            # Prepare label text
+            display_text = f"{class_name}: {confidence:.2f}"
+            
+            # Get text bounding box for background
+            text_bbox = draw.textbbox((x_min, y_min - 25), display_text, font=font)
+            
+            # Draw label background rectangle
+            draw.rectangle(text_bbox, fill=color)
             
             # Draw label text
-            draw.text((x1, y1 - 20), label, fill='white', font=font)
+            draw.text(
+                (x_min, y_min - 25), 
+                display_text, 
+                fill="white", 
+                font=font
+            )
+            
+            print(f"✅ Drew bounding box: {class_name} at ({x_min:.0f},{y_min:.0f})-({x_max:.0f},{y_max:.0f})")
         
         # Convert to base64 for sending to frontend
         buffer = io.BytesIO()
-        image.save(buffer, format='JPEG')
+        image.save(buffer, format='JPEG', quality=95)
         img_str = base64.b64encode(buffer.getvalue()).decode('utf-8')
         
         print(f"✅ Annotated image created successfully")
