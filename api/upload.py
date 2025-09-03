@@ -745,9 +745,9 @@ def parse_multipart_data(body, content_type):
         
         # Extract form data with new defaults
         image_file = form.getfirst('image')
-        confidence_threshold = float(form.getfirst('confidenceThreshold', 0.1))  # Default: 0.1
+        confidence_threshold = float(form.getfirst('confidenceThreshold', 0.2))  # Default: 0.2
         iou_threshold = float(form.getfirst('iouThreshold', 0.0))  # Default: 0.0
-        padding_factor = float(form.getfirst('paddingFactor', 0.0))  # Default: 0.0
+        padding_factor = float(form.getfirst('paddingFactor', 0.5))  # Default: 0.5
         max_predictions = int(form.getfirst('maxPredictions', 100))
         
         return {
