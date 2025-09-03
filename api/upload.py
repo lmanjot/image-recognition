@@ -147,6 +147,8 @@ def calculate_follicular_metrics(predictions):
     # Initialize counters
     total_follicular_units = 0
     total_hairs = 0
+    fu_with_one_hair = 0
+    fu_with_multiple_hairs = 0
     class_counts = {}
     
     for pred in predictions:
@@ -171,6 +173,12 @@ def calculate_follicular_metrics(predictions):
         total_follicular_units += 1
         total_hairs += class_number
         
+        # Count FU breakdown
+        if class_number == 1:
+            fu_with_one_hair += 1
+        else:
+            fu_with_multiple_hairs += 1
+        
         # Track class distribution
         if class_name not in class_counts:
             class_counts[class_name] = 0
@@ -185,6 +193,8 @@ def calculate_follicular_metrics(predictions):
         'total_hairs': total_hairs,
         'follicular_density_per_cm2': round(follicular_density, 2),
         'average_hair_per_unit': round(average_hair_per_unit, 2),
+        'fu_with_one_hair': fu_with_one_hair,
+        'fu_with_multiple_hairs': fu_with_multiple_hairs,
         'area_cm2': AREA_CM2,
         'class_distribution': class_counts
     }
@@ -194,6 +204,8 @@ def calculate_follicular_metrics(predictions):
     print(f"  - Total Hairs: {total_hairs}")
     print(f"  - FU Density: {follicular_density:.2f} per cm²")
     print(f"  - Avg Hairs/FU: {average_hair_per_unit:.2f}")
+    print(f"  - FU with 1 Hair: {fu_with_one_hair}")
+    print(f"  - FU with 2+ Hairs: {fu_with_multiple_hairs}")
     
     return metrics
 

@@ -479,69 +479,58 @@
                             <h5><i class="fas fa-table"></i> Detection Results</h5>
                         </div>
                         <div class="card-body">
-                            <div class="row align-items-center">
-                                <!-- Left: Total Count -->
-                                <div class="col-md-4 text-center">
-                                    <h1 class="text-primary mb-0" id="totalPredictions">0</h1>
-                                    <small class="text-muted">Total Objects Detected</small>
-                                </div>
-                                
-                                <!-- Right: Details Table -->
-                                <div class="col-md-8">
-                                    <div class="table-responsive">
-                                        <table class="table table-hover mb-0">
-                                            <thead>
-                                                <tr>
-                                                    <th>Class</th>
-                                                    <th>Count</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody id="detectionResultsTable">
-                                                <!-- Results will be populated here -->
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                    
-                                    <!-- Follicular Metrics -->
-                                    <div class="mt-3" id="follicularMetrics" style="display: none;">
-                                        <div class="row">
-                                            <div class="col-md-6">
-                                                <small class="text-muted">
-                                                    <strong>Follicular Unit Density:</strong>
-                                                    <span id="follicularDensity">-</span> per cm²
-                                                </small>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <small class="text-muted">
-                                                    <strong>Average Hairs per Unit:</strong>
-                                                    <span id="averageHairsPerUnit">-</span>
-                                                </small>
-                                            </div>
-                                        </div>
-                                        <div class="row mt-1">
-                                            <div class="col-md-6">
-                                                <small class="text-muted">
-                                                    <strong>Total Hairs:</strong>
-                                                    <span id="totalHairs">-</span>
-                                                </small>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <small class="text-muted">
-                                                    <strong>Total Follicular Units:</strong>
-                                                    <span id="totalFollicularUnits">-</span>
-                                                </small>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Parameter Information -->
-                                    <div class="mt-3">
+                            <!-- Follicular Metrics -->
+                            <div id="follicularMetrics" style="display: none;">
+                                <div class="row">
+                                    <div class="col-md-6">
                                         <small class="text-muted">
-                                            <strong>Parameters used:</strong>
-                                            <span id="parameterDisplay">-</span>
+                                            <strong>Follicular Unit Density:</strong>
+                                            <span id="follicularDensity">-</span> per cm²
+                                        </small>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <small class="text-muted">
+                                            <strong>Average Hairs per Unit:</strong>
+                                            <span id="averageHairsPerUnit">-</span>
                                         </small>
                                     </div>
                                 </div>
+                                <div class="row mt-1">
+                                    <div class="col-md-6">
+                                        <small class="text-muted">
+                                            <strong>Total Hairs:</strong>
+                                            <span id="totalHairs">-</span>
+                                        </small>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <small class="text-muted">
+                                            <strong>Total Follicular Units:</strong>
+                                            <span id="totalFollicularUnits">-</span>
+                                        </small>
+                                    </div>
+                                </div>
+                                <div class="row mt-1">
+                                    <div class="col-md-6">
+                                        <small class="text-muted">
+                                            <strong>FU with 1 Hair:</strong>
+                                            <span id="fuWithOneHair">-</span>
+                                        </small>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <small class="text-muted">
+                                            <strong>FU with 2+ Hairs:</strong>
+                                            <span id="fuWithMultipleHairs">-</span>
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Parameter Information -->
+                            <div class="mt-3">
+                                <small class="text-muted">
+                                    <strong>Parameters used:</strong>
+                                    <span id="parameterDisplay">-</span>
+                                </small>
                             </div>
                         </div>
                     </div>
@@ -796,12 +785,10 @@
             }
             container.classList.add('has-image');
             
-            // Update detection results safely
-            const totalPredictionsEl = document.getElementById('totalPredictions');
+            // Update processing time display
             const processingTimeEl = document.getElementById('processingTime');
             const runtimeDisplayEl = document.getElementById('runtimeDisplay');
             
-            if (totalPredictionsEl) totalPredictionsEl.textContent = data.total_predictions;
             if (processingTimeEl) processingTimeEl.textContent = processingTime + 's';
             if (runtimeDisplayEl) runtimeDisplayEl.style.display = 'block';
             
@@ -812,23 +799,13 @@
                 detectionResultsCard.style.display = 'block';
             }
             
-            // Update detection results table
-            updateDetectionResultsTable(data.predictions, data.is_fallback);
-            
             // Update parameter display
             updateParameterDisplay();
             
             // Update follicular metrics display
             updateFollicularMetrics(data.follicular_metrics);
             
-            // Update total count to show 0 if no real predictions
-            const hasRealPredictions = data.predictions && data.predictions.length > 0 && 
-                data.predictions.some(pred => pred.confidence && pred.confidence > 0);
-            
-            if (!hasRealPredictions) {
-                const totalPredictionsEl = document.getElementById('totalPredictions');
-                if (totalPredictionsEl) totalPredictionsEl.textContent = '0';
-            }
+
         }
 
         function updateParameterDisplay() {
@@ -855,64 +832,21 @@
             const averageHairsPerUnit = document.getElementById('averageHairsPerUnit');
             const totalHairs = document.getElementById('totalHairs');
             const totalFollicularUnits = document.getElementById('totalFollicularUnits');
+            const fuWithOneHair = document.getElementById('fuWithOneHair');
+            const fuWithMultipleHairs = document.getElementById('fuWithMultipleHairs');
             
             if (follicularDensity) follicularDensity.textContent = metrics.follicular_density_per_cm2 || '0';
             if (averageHairsPerUnit) averageHairsPerUnit.textContent = metrics.average_hair_per_unit || '0';
             if (totalHairs) totalHairs.textContent = metrics.total_hairs || '0';
             if (totalFollicularUnits) totalFollicularUnits.textContent = metrics.total_follicular_units || '0';
+            if (fuWithOneHair) fuWithOneHair.textContent = metrics.fu_with_one_hair || '0';
+            if (fuWithMultipleHairs) fuWithMultipleHairs.textContent = metrics.fu_with_multiple_hairs || '0';
             
             // Show the metrics container
             metricsContainer.style.display = 'block';
         }
 
-        function updateDetectionResultsTable(predictions, isFallback = false) {
-            const tableBody = document.getElementById('detectionResultsTable');
-            if (!tableBody) return;
-            
-            // Check if we have real predictions or if it's mock data
-            const hasRealPredictions = predictions && predictions.length > 0 && 
-                predictions.some(pred => pred.confidence && pred.confidence > 0);
-            
-            if (!hasRealPredictions) {
-                if (isFallback) {
-                    tableBody.innerHTML = '<tr><td colspan="2" class="text-center text-warning"><i class="fas fa-exclamation-triangle"></i> Couldn\'t analyze this picture - try a different picture</td></tr>';
-                } else {
-                    tableBody.innerHTML = '<tr><td colspan="2" class="text-center text-muted">No objects detected</td></tr>';
-                }
-                return;
-            }
-            
-            // Count objects by class
-            const classData = {};
-            predictions.forEach(pred => {
-                const className = pred.displayName || 'Unknown';
-                const confidence = pred.confidence || 0;
-                
-                // Only include predictions with valid confidence scores
-                if (confidence > 0) {
-                    if (!classData[className]) {
-                        classData[className] = {
-                            count: 0
-                        };
-                    }
-                    
-                    classData[className].count++;
-                }
-            });
-            
-            // Create table rows
-            let html = '';
-            Object.entries(classData).forEach(([className, data]) => {
-                html += `
-                    <tr>
-                        <td><strong>${className}</strong></td>
-                        <td><span class="badge bg-secondary">${data.count}</span></td>
-                    </tr>
-                `;
-            });
-            
-            tableBody.innerHTML = html;
-        }
+
 
         function addToHistory(data, processingTime) {
             // Get current parameter values
