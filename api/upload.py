@@ -48,6 +48,89 @@ def check_vertex_ai_enabled():
     
     return enabled
 
+def compress_image(image_bytes, max_size_mb=0.8, quality=85):
+    """
+    Compress image to reduce file size while maintaining quality.
+    
+    Args:
+        image_bytes: Original image bytes
+        max_size_mb: Maximum size in MB (default 0.8MB for Vertex AI)
+        quality: JPEG quality (1-100, default 85)
+    
+    Returns:
+        Compressed image bytes
+    """
+    try:
+        # Open image with Pillow
+        image = Image.open(io.BytesIO(image_bytes))
+        
+        # Convert to RGB if necessary (for JPEG compatibility)
+        if image.mode in ('RGBA', 'LA', 'P'):
+            # Create white background for transparent images
+            background = Image.new('RGB', image.size, (255, 255, 255))
+            if image.mode == 'P':
+                image = image.convert('RGBA')
+            background.paste(image, mask=image.split()[-1] if image.mode == 'RGBA' else None)
+            image = background
+        elif image.mode != 'RGB':
+            image = image.convert('RGB')
+        
+        # Check current size
+        current_size_mb = len(image_bytes) / (1024 * 1024)
+        print(f"📏 Original image size: {current_size_mb:.2f} MB")
+        
+        if current_size_mb <= max_size_mb:
+            print(f"✅ Image size OK ({current_size_mb:.2f} MB <= {max_size_mb} MB)")
+            return image_bytes
+        
+        # Compress the image
+        output = io.BytesIO()
+        
+        # Try different quality levels if needed
+        for attempt_quality in [quality, 75, 65, 55, 45]:
+            output.seek(0)
+            output.truncate(0)
+            
+            image.save(output, format='JPEG', quality=attempt_quality, optimize=True)
+            compressed_size_mb = len(output.getvalue()) / (1024 * 1024)
+            
+            print(f"🔧 Compression attempt: quality={attempt_quality}, size={compressed_size_mb:.2f} MB")
+            
+            if compressed_size_mb <= max_size_mb:
+                print(f"✅ Compression successful: {compressed_size_mb:.2f} MB (quality={attempt_quality})")
+                return output.getvalue()
+        
+        # If still too large, resize the image
+        print(f"⚠️ Still too large after compression, resizing image...")
+        original_size = image.size
+        scale_factor = 0.8
+        
+        while scale_factor > 0.3:  # Don't go below 30% of original size
+            new_size = (int(original_size[0] * scale_factor), int(original_size[1] * scale_factor))
+            resized_image = image.resize(new_size, Image.Resampling.LANCZOS)
+            
+            output.seek(0)
+            output.truncate(0)
+            resized_image.save(output, format='JPEG', quality=75, optimize=True)
+            final_size_mb = len(output.getvalue()) / (1024 * 1024)
+            
+            print(f"🔧 Resize attempt: {new_size}, size={final_size_mb:.2f} MB")
+            
+            if final_size_mb <= max_size_mb:
+                print(f"✅ Resize successful: {final_size_mb:.2f} MB (scale={scale_factor:.1f})")
+                return output.getvalue()
+            
+            scale_factor -= 0.1
+        
+        # Last resort: return the smallest we could make it
+        print(f"⚠️ Using smallest possible size: {final_size_mb:.2f} MB")
+        return output.getvalue()
+        
+    except Exception as e:
+        print(f"❌ Error compressing image: {e}")
+        # Return original if compression fails
+        return image_bytes
+
 def get_mock_predictions():
     """Return empty predictions when Vertex AI is not available - no mock data"""
     print("⚠️ Returning empty predictions - Vertex AI not available")
@@ -232,11 +315,15 @@ def call_vertex_ai_endpoint(image_bytes, confidence_threshold, iou_threshold, ma
 def predict_image_object_detection_rest(image_bytes, confidence_threshold, iou_threshold, padding_factor, max_predictions):
     """Call Vertex AI endpoint using REST API (lightweight approach)"""
     print(f"\n🔍 Starting Vertex AI prediction process...")
-    print(f"  - Image size: {len(image_bytes)} bytes")
+    print(f"  - Original image size: {len(image_bytes)} bytes")
     print(f"  - Confidence threshold: {confidence_threshold}")
     print(f"  - NMS threshold: {iou_threshold}")
     print(f"  - Padding factor: {padding_factor}")
     print(f"  - Max predictions: {max_predictions}")
+    
+    # Compress image if it's too large for Vertex AI
+    compressed_image_bytes = compress_image(image_bytes, max_size_mb=0.8)
+    print(f"  - Compressed image size: {len(compressed_image_bytes)} bytes")
     
     # Check Vertex AI configuration at runtime (only once)
     vertex_ai_enabled = check_vertex_ai_enabled()
@@ -269,7 +356,7 @@ def predict_image_object_detection_rest(image_bytes, confidence_threshold, iou_t
         # Make actual API call to Vertex AI with high IoU threshold to get all raw detections
         # We'll apply our own NMS later
         predictions = call_vertex_ai_endpoint(
-            image_bytes, 
+            compressed_image_bytes,  # Use compressed image
             confidence_threshold, 
             0.99,  # Very high IoU threshold to get all raw detections
             200,   # High max predictions to get all detections
