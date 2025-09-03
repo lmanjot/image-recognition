@@ -48,8 +48,8 @@
         /* Title Container */
         .title-container {
             background: transparent;
-            padding: 2rem 0;
-            margin-bottom: 2rem;
+            padding: 1rem 0;
+            margin-bottom: 1rem;
         }
         
         .title-content {
@@ -61,22 +61,22 @@
         
         .title-text {
             color: var(--primary-color);
-            font-size: 2.5rem;
+            font-size: 1.8rem;
             font-weight: 700;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.3rem;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 1rem;
+            gap: 0.5rem;
         }
         
         .title-text i {
-            font-size: 2.2rem;
+            font-size: 1.6rem;
         }
         
         .title-subtitle {
             color: var(--text-muted);
-            font-size: 1.1rem;
+            font-size: 0.9rem;
             margin: 0;
             font-weight: 400;
         }
@@ -92,7 +92,7 @@
         
         .content-grid {
             display: grid;
-            grid-template-columns: 350px 1fr 300px;
+            grid-template-columns: 350px 1fr;
             gap: 2rem;
             align-items: start;
         }
@@ -116,7 +116,7 @@
             background: var(--primary-color);
             color: white;
             border: none;
-            padding: 1.25rem;
+            padding: 0.75rem 1rem;
         }
         
         .card-header h5 {
@@ -125,10 +125,11 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            font-size: 1rem;
         }
         
         .card-body {
-            padding: 1.5rem;
+            padding: 1rem;
         }
         
         /* Form Elements */
@@ -176,8 +177,9 @@
             border-color: var(--primary-color) !important;
             border-radius: var(--border-radius-sm);
             font-weight: 600;
-            padding: 0.75rem 1.5rem;
+            padding: 0.5rem 1rem;
             transition: all 0.3s ease;
+            font-size: 0.9rem;
         }
         
         .btn-primary:hover {
@@ -466,58 +468,10 @@
                         </div>
                     </div>
                     
-                    <!-- Detection Results Table -->
-                    <div class="card mt-3" id="detectionResultsCard" style="display: none;">
-                        <div class="card-header">
-                            <h5><i class="fas fa-table"></i> Detection Results</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="row align-items-center">
-                                <!-- Left: Total Count -->
-                                <div class="col-md-4 text-center">
-                                    <h1 class="text-primary mb-0" id="totalPredictions">0</h1>
-                                    <small class="text-muted">Total Objects Detected</small>
-                                </div>
-                                
-                                <!-- Right: Details Table -->
-                                <div class="col-md-8">
-                                    <div class="table-responsive">
-                                        <table class="table table-hover mb-0">
-                                            <thead>
-                                                <tr>
-                                                    <th>Class</th>
-                                                    <th>Count</th>
-                                                    <th>Confidence</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody id="detectionResultsTable">
-                                                <!-- Results will be populated here -->
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+
                 </div>
 
-                <!-- Right Panel - History -->
-                <div class="history-panel">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5><i class="fas fa-history"></i> Session History</h5>
-                        </div>
-                        <div class="card-body">
-                            <div id="historyList" class="history-list">
-                                <div class="text-center text-muted">
-                                    <i class="fas fa-clock fa-2x mb-2"></i>
-                                    <p>No history yet</p>
-                                    <small>Run detections to see history</small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+
             </div>
         </div>
     </div>
@@ -542,9 +496,9 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Session history storage
-        let sessionHistory = [];
+        // Current image data
         let currentImageData = null;
+        let accumulatedResults = [];
 
         // Initialize app
         document.addEventListener('DOMContentLoaded', function() {
@@ -555,7 +509,6 @@
             setupEventListeners();
             updateRangeDisplays();
             setupDragAndDrop();
-            loadHistory();
         }
 
         function setupEventListeners() {
@@ -638,6 +591,9 @@
             const container = document.getElementById('imageContainer');
             container.innerHTML = `<img src="${imageData}" alt="Uploaded image" class="img-fluid">`;
             container.classList.add('has-image');
+            // Clear accumulated results when new image is loaded
+            accumulatedResults = [];
+            hideResults();
         }
 
         function getOriginalImageData() {
@@ -683,7 +639,6 @@
                 
                 if (data.success) {
                     displayResults(data, processingTime);
-                    addToHistory(data, processingTime);
                 } else {
                     throw new Error(data.error || 'Unknown error occurred');
                 }
@@ -712,17 +667,19 @@
         }
 
         function hideResults() {
-            const detectionResultsCard = document.getElementById('detectionResultsCard');
             const runtimeDisplay = document.getElementById('runtimeDisplay');
-            
-            if (detectionResultsCard) detectionResultsCard.style.display = 'none';
             if (runtimeDisplay) runtimeDisplay.style.display = 'none';
         }
 
         function displayResults(data, processingTime) {
             console.log('Displaying results:', data);
             
-            // Update image display
+            // Add new results to accumulated results
+            if (data.predictions && data.predictions.length > 0) {
+                accumulatedResults.push(...data.predictions);
+            }
+            
+            // Update image display with accumulated results
             const container = document.getElementById('imageContainer');
             if (data.annotated_image && data.annotated_image !== 'null' && data.annotated_image !== 'undefined') {
                 container.innerHTML = `<img src="${data.annotated_image}" alt="Annotated image with detections" class="img-fluid">`;
@@ -742,191 +699,19 @@
             }
             container.classList.add('has-image');
             
-            // Update detection results safely
-            const totalPredictionsEl = document.getElementById('totalPredictions');
+            // Update runtime display
             const processingTimeEl = document.getElementById('processingTime');
             const runtimeDisplayEl = document.getElementById('runtimeDisplay');
             
-            if (totalPredictionsEl) totalPredictionsEl.textContent = data.total_predictions;
             if (processingTimeEl) processingTimeEl.textContent = processingTime + 's';
             if (runtimeDisplayEl) runtimeDisplayEl.style.display = 'block';
-            
-            // Show detection results table
-            const detectionResultsCard = document.getElementById('detectionResultsCard');
-            
-            if (detectionResultsCard) {
-                detectionResultsCard.style.display = 'block';
-            }
-            
-            // Update detection results table
-            updateDetectionResultsTable(data.predictions);
-            
-            // Update total count to show 0 if no real predictions
-            const hasRealPredictions = data.predictions && data.predictions.length > 0 && 
-                data.predictions.some(pred => pred.confidence && pred.confidence > 0);
-            
-            if (!hasRealPredictions) {
-                const totalPredictionsEl = document.getElementById('totalPredictions');
-                if (totalPredictionsEl) totalPredictionsEl.textContent = '0';
-            }
         }
 
 
 
-        function updateDetectionResultsTable(predictions) {
-            const tableBody = document.getElementById('detectionResultsTable');
-            if (!tableBody) return;
-            
-            // Check if we have real predictions or if it's mock data
-            const hasRealPredictions = predictions && predictions.length > 0 && 
-                predictions.some(pred => pred.confidence && pred.confidence > 0);
-            
-            if (!hasRealPredictions) {
-                tableBody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">No objects detected</td></tr>';
-                return;
-            }
-            
-            // Count objects by class and calculate average confidence
-            const classData = {};
-            predictions.forEach(pred => {
-                const className = pred.displayName || 'Unknown';
-                const confidence = pred.confidence || 0;
-                
-                // Only include predictions with valid confidence scores
-                if (confidence > 0) {
-                    if (!classData[className]) {
-                        classData[className] = {
-                            count: 0,
-                            totalConfidence: 0
-                        };
-                    }
-                    
-                    classData[className].count++;
-                    classData[className].totalConfidence += confidence;
-                }
-            });
-            
-            // Create table rows
-            let html = '';
-            Object.entries(classData).forEach(([className, data]) => {
-                const avgConfidence = (data.totalConfidence / data.count).toFixed(3);
-                
-                html += `
-                    <tr>
-                        <td><strong>${className}</strong></td>
-                        <td><span class="badge bg-secondary">${data.count}</span></td>
-                        <td><span class="badge bg-light">${avgConfidence}</span></td>
-                    </tr>
-                `;
-            });
-            
-            tableBody.innerHTML = html;
-        }
 
-        function addToHistory(data, processingTime) {
-            const historyItem = {
-                id: Date.now(),
-                timestamp: new Date(),
-                imageData: currentImageData,
-                totalPredictions: data.total_predictions,
-                predictions: data.predictions || [],
-                processingTime: processingTime
-            };
-            
-            sessionHistory.unshift(historyItem);
-            
-            // Keep only last 10 items
-            if (sessionHistory.length > 10) {
-                sessionHistory = sessionHistory.slice(0, 10);
-            }
-            
-            saveHistory();
-            updateHistoryDisplay();
-        }
 
-        function updateHistoryDisplay() {
-            const historyListEl = document.getElementById('historyList');
-            if (!historyListEl) return;
-            
-            if (sessionHistory.length === 0) {
-                historyListEl.innerHTML = `
-                    <div class="text-center text-muted">
-                        <i class="fas fa-clock fa-2x mb-2"></i>
-                        <p>No history yet</p>
-                        <small>Run detections to see history</small>
-                    </div>
-                `;
-                return;
-            }
-            
-            let html = '';
-            sessionHistory.forEach(item => {
-                const timeStr = item.timestamp.toLocaleTimeString();
-                const classCounts = {};
-                item.predictions.forEach(pred => {
-                    const className = pred.displayName || 'Unknown';
-                    classCounts[className] = (classCounts[className] || 0) + 1;
-                });
-                
-                // Create class summary string
-                const classSummary = Object.entries(classCounts)
-                    .map(([className, count]) => `${className}: ${count}`)
-                    .join(', ');
-                
-                html += `
-                    <div class="history-item" onclick="loadHistoryItem(${item.id})">
-                        <img src="${item.imageData}" alt="History thumbnail" class="history-thumbnail">
-                        <div class="history-content">
-                            <div class="history-title">${timeStr}</div>
-                            <div class="history-details">
-                                ${item.totalPredictions} objects
-                                <br><small>${classSummary}</small>
-                            </div>
-                        </div>
-                        <div class="history-count">${item.totalPredictions}</div>
-                    </div>
-                `;
-            });
-            
-            historyListEl.innerHTML = html;
-        }
 
-        function loadHistoryItem(itemId) {
-            const item = sessionHistory.find(h => h.id === itemId);
-            if (!item) return;
-            
-            // Load the image
-            displayImage(item.imageData);
-            currentImageData = item.imageData;
-            
-            // Load the results
-            displayResults({
-                total_predictions: item.totalPredictions,
-                predictions: item.predictions,
-                annotated_image: item.imageData
-            }, item.processingTime);
-        }
-
-        function saveHistory() {
-            try {
-                localStorage.setItem('vertexAIHistory', JSON.stringify(sessionHistory));
-            } catch (e) {
-                console.warn('Could not save history to localStorage:', e);
-            }
-        }
-
-        function loadHistory() {
-            try {
-                const saved = localStorage.getItem('vertexAIHistory');
-                if (saved) {
-                    sessionHistory = JSON.parse(saved);
-                    updateHistoryDisplay();
-                }
-            } catch (e) {
-                console.warn('Could not load history from localStorage:', e);
-                sessionHistory = [];
-            }
-        }
 
         function showError(message) {
             const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
