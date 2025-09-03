@@ -568,9 +568,21 @@
                             
                             <!-- Combined Metrics -->
                             <div id="combinedMetrics" style="display: none;">
-                                                <div class="row g-4">
-
-                                                    <div class="col-lg-4 col-md-6">
+                                                <div class="row g-3">
+                                                    <div class="col-lg-3 col-md-6">
+                                                        <div class="metric-card p-3 border rounded" data-bs-toggle="tooltip" data-bs-placement="top" title="Terminal-to-Vellus Ratio = (Weak Hairs / Strong Hairs) × 100% (lower is better)">
+                                                            <div class="d-flex align-items-center">
+                                                                <div class="metric-icon me-3">
+                                                                    <i class="fas fa-balance-scale text-primary fa-lg"></i>
+                                                                </div>
+                                                                <div>
+                                                                    <div class="metric-label text-muted small">Terminal-to-Vellus Ratio</div>
+                                                                    <div class="metric-value h5 mb-0 text-primary" id="terminalToVellusRatio">-%</div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-lg-3 col-md-6">
                                                         <div class="metric-card p-3 border rounded" data-bs-toggle="tooltip" data-bs-placement="top" title="% Thick Hairs = (Strong Hairs / Total Thickness Detections) × 100">
                                                             <div class="d-flex align-items-center">
                                                                 <div class="metric-icon me-3">
@@ -583,8 +595,7 @@
                                                             </div>
                                                         </div>
                                                     </div>
-
-                                                    <div class="col-lg-4 col-md-6">
+                                                    <div class="col-lg-3 col-md-6">
                                                         <div class="metric-card p-3 border rounded" data-bs-toggle="tooltip" data-bs-placement="top" title="Hair Caliber Index % = (HCI / (Total Hairs × 3)) × 100. Normalized 0-100 scale where 100% = all hairs are thick">
                                                             <div class="d-flex align-items-center">
                                                                 <div class="metric-icon me-3">
@@ -597,9 +608,7 @@
                                                             </div>
                                                         </div>
                                                     </div>
-
-
-                                                    <div class="col-lg-4 col-md-6">
+                                                    <div class="col-lg-3 col-md-6">
                                                         <div class="metric-card p-3 border rounded" data-bs-toggle="tooltip" data-bs-placement="top" title="Hairs per cm² = Total Hairs / Picture Area (0.273 cm²)">
                                                             <div class="d-flex align-items-center">
                                                                 <div class="metric-icon me-3">
@@ -612,15 +621,15 @@
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <div class="col-lg-6 col-md-12">
-                                                        <div class="metric-card p-3 border rounded border-success" data-bs-toggle="tooltip" data-bs-placement="top" title="EHD% = (Effective Hair Density / 220) × 100. Normalized hair quality score on 0-100 scale">
-                                                            <div class="d-flex align-items-center">
+                                                    <div class="col-lg-12">
+                                                        <div class="metric-card p-3 border rounded border-success" data-bs-toggle="tooltip" data-bs-placement="top" title="Effective Hair Density % = (Effective Hair Density / 220) × 100. Normalized hair quality score on 0-100 scale">
+                                                            <div class="d-flex align-items-center justify-content-center">
                                                                 <div class="metric-icon me-3">
                                                                     <i class="fas fa-trophy text-success fa-lg"></i>
                                                                 </div>
-                                                                <div>
-                                                                    <div class="metric-label text-muted small">EHD%</div>
-                                                                    <div class="metric-value h4 mb-0 text-success" id="ehdPercentage">-%</div>
+                                                                <div class="text-center">
+                                                                    <div class="metric-label text-muted small">Effective Hair Density %</div>
+                                                                    <div class="metric-value h3 mb-0 text-success" id="ehdPercentage">-%</div>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -1051,6 +1060,7 @@
         function displayCombinedMetrics(combinedMetrics) {
             const combinedMetricsEl = document.getElementById('combinedMetrics');
             if (combinedMetricsEl && combinedMetrics) {
+                document.getElementById('terminalToVellusRatio').textContent = (combinedMetrics.terminal_to_vellus_ratio || '0.0') + '%';
                 document.getElementById('percentThickHairs').textContent = (combinedMetrics.percent_thick_hairs || '0.0') + '%';
                 document.getElementById('hairCaliberIndexPercentage').textContent = (combinedMetrics.hair_caliber_index_percentage || '0.0') + '%';
                 document.getElementById('hairsPerCm2').textContent = combinedMetrics.hairs_per_cm2 || '0.0';
