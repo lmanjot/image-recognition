@@ -116,19 +116,39 @@
             background: var(--primary-color);
             color: white;
             border: none;
-            padding: 1.25rem;
+            padding: 0.75rem 1rem;
         }
         
         .card-header h5 {
             margin: 0;
             font-weight: 600;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .card-header h6 {
+            margin: 0;
+            font-weight: 600;
+            font-size: 0.9rem;
             display: flex;
             align-items: center;
             gap: 0.5rem;
         }
         
         .card-body {
-            padding: 1.5rem;
+            padding: 1rem;
+        }
+        
+        .btn {
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
+        
+        .btn-lg {
+            padding: 0.6rem 1.2rem;
+            font-size: 1rem;
         }
         
         /* Form Elements */
@@ -228,62 +248,7 @@
             margin-bottom: 1rem;
         }
         
-        /* History Panel */
-        .history-list {
-            max-height: 600px;
-            overflow-y: auto;
-        }
-        
-        .history-item {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            padding: 1rem;
-            border: 1px solid var(--border-color);
-            border-radius: var(--border-radius-sm);
-            margin-bottom: 0.75rem;
-            background: white;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-        
-        .history-item:hover {
-            border-color: var(--primary-color);
-            transform: translateY(-1px);
-            box-shadow: var(--shadow-light);
-        }
-        
-        .history-thumbnail {
-            width: 60px;
-            height: 60px;
-            border-radius: var(--border-radius-sm);
-            object-fit: cover;
-            border: 2px solid var(--border-color);
-        }
-        
-        .history-content {
-            flex: 1;
-        }
-        
-        .history-title {
-            font-weight: 600;
-            margin-bottom: 0.25rem;
-            font-size: 0.9rem;
-        }
-        
-        .history-details {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-        }
-        
-        .history-count {
-            background: var(--primary-color);
-            color: white;
-            padding: 0.25rem 0.5rem;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
+
         
         /* Spinner */
         .spinner-border {
@@ -543,11 +508,11 @@
                         </div>
                         <div class="card-body">
                             <!-- Main Image with Combined Overlays -->
-                            <div class="text-center mb-4">
+                            <div class="text-center mb-3">
                                 <div id="imageContainer" class="position-relative d-inline-block">
-                                    <img id="mainImagePreview" src="" alt="Analysis Preview" class="img-fluid" style="display: none; max-height: 500px;">
+                                    <img id="mainImagePreview" src="" alt="Analysis Preview" class="img-fluid" style="display: none; max-height: 400px;">
                                     <div id="imagePlaceholder" class="text-muted">
-                                        <i class="fas fa-image fa-3x mb-3"></i>
+                                        <i class="fas fa-image fa-2x mb-2"></i>
                                         <p>Analysis preview will appear here</p>
                                     </div>
                                 </div>
@@ -661,23 +626,7 @@
                     </div>
                 </div>
 
-                <!-- Right Panel - History -->
-                <div class="history-panel">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5><i class="fas fa-history"></i> Session History</h5>
-                        </div>
-                        <div class="card-body">
-                            <div id="historyList" class="history-list">
-                                <div class="text-center text-muted">
-                                    <i class="fas fa-clock fa-2x mb-2"></i>
-                                    <p>No history yet</p>
-                                    <small>Run detections to see history</small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+
             </div>
         </div>
     </div>
@@ -702,8 +651,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Session history storage
-        let sessionHistory = [];
         let currentImageData = null;
 
         // Initialize app
@@ -715,7 +662,7 @@
             setupEventListeners();
             updateRangeDisplays();
             setupDragAndDrop();
-            loadHistory();
+
         }
 
         function setupEventListeners() {
@@ -897,7 +844,7 @@
                 
                 if (data.success) {
                     displayResults(data, processingTime);
-                    addToHistory(data, processingTime);
+
                 } else {
                     throw new Error(data.error || 'Unknown error occurred');
                 }
@@ -933,8 +880,12 @@
             if (runtimeDisplay) runtimeDisplay.style.display = 'none';
         }
 
-        // Store current results data for overlay toggling
-        let currentResults = null;
+        // Store accumulated results data for overlay toggling
+        let accumulatedResults = {
+            density_results: null,
+            thickness_results: null,
+            combined_annotated_image: null
+        };
         
         // Add event listeners for overlay toggles
         document.addEventListener('DOMContentLoaded', function() {
@@ -950,24 +901,22 @@
         });
         
         function toggleOverlays() {
-            if (!currentResults) return;
-            
             const showDensity = document.getElementById('showDensityOverlay').checked;
             const showThickness = document.getElementById('showThicknessOverlay').checked;
             
             let imageToShow = null;
             
             // If both are selected and we have a combined image, show that
-            if (showDensity && showThickness && currentResults.combined_annotated_image) {
-                imageToShow = currentResults.combined_annotated_image;
+            if (showDensity && showThickness && accumulatedResults.combined_annotated_image) {
+                imageToShow = accumulatedResults.combined_annotated_image;
             }
             // If only density is selected, show density image
-            else if (showDensity && currentResults.density_results && currentResults.density_results.annotated_image) {
-                imageToShow = currentResults.density_results.annotated_image;
+            else if (showDensity && accumulatedResults.density_results && accumulatedResults.density_results.annotated_image) {
+                imageToShow = accumulatedResults.density_results.annotated_image;
             }
             // If only thickness is selected, show thickness image
-            else if (showThickness && currentResults.thickness_results && currentResults.thickness_results.annotated_image) {
-                imageToShow = currentResults.thickness_results.annotated_image;
+            else if (showThickness && accumulatedResults.thickness_results && accumulatedResults.thickness_results.annotated_image) {
+                imageToShow = accumulatedResults.thickness_results.annotated_image;
             }
             // If neither is selected, show original image (if available)
             else if (!showDensity && !showThickness) {
@@ -987,8 +936,16 @@
         function displayResults(data, processingTime) {
             console.log('Displaying results:', data);
             
-            // Store results for overlay toggling
-            currentResults = data;
+            // Accumulate results instead of replacing them
+            if (data.density_results) {
+                accumulatedResults.density_results = data.density_results;
+            }
+            if (data.thickness_results) {
+                accumulatedResults.thickness_results = data.thickness_results;
+            }
+            if (data.combined_annotated_image) {
+                accumulatedResults.combined_annotated_image = data.combined_annotated_image;
+            }
             
             // Show results card
             const resultsCard = document.getElementById('resultsCard');
@@ -1004,16 +961,16 @@
             if (runtimeDisplayEl) runtimeDisplayEl.style.display = 'block';
             
             // Display combined image with overlays
-            displayCombinedImage(data);
+            displayCombinedImage(accumulatedResults);
             
             // Display density results if available
-            if (data.density_results) {
-                displayDensityResults(data.density_results);
+            if (accumulatedResults.density_results) {
+                displayDensityResults(accumulatedResults.density_results);
             }
             
             // Display thickness results if available
-            if (data.thickness_results) {
-                displayThicknessResults(data.thickness_results);
+            if (accumulatedResults.thickness_results) {
+                displayThicknessResults(accumulatedResults.thickness_results);
             }
         }
         
@@ -1094,145 +1051,7 @@
 
 
 
-        function addToHistory(data, processingTime) {
-            // Get current parameter values for both models
-            const parameters = {
-                density: {
-                    confidence: parseFloat(document.getElementById('densityConfidence').value).toFixed(2),
-                    padding: parseFloat(document.getElementById('densityPadding').value).toFixed(2),
-                    nms: parseFloat(document.getElementById('densityNMS').value).toFixed(2),
-                    maxPredictions: document.getElementById('densityMaxPred').value
-                },
-                thickness: {
-                    confidence: parseFloat(document.getElementById('thicknessConfidence').value).toFixed(2),
-                    padding: parseFloat(document.getElementById('thicknessPadding').value).toFixed(2),
-                    nms: parseFloat(document.getElementById('thicknessNMS').value).toFixed(2),
-                    maxPredictions: document.getElementById('thicknessMaxPred').value
-                }
-            };
-            
-            const historyItem = {
-                id: Date.now(),
-                timestamp: new Date(),
-                imageData: currentImageData || getOriginalImageData(),
-                annotatedImageData: data.annotated_image, // Store the annotated image with boxes
-                totalPredictions: data.total_predictions,
-                predictions: data.predictions || [],
-                processingTime: processingTime,
-                parameters: parameters, // Store the parameters used
-                is_fallback: data.is_fallback || false, // Store fallback status
-                follicular_metrics: data.follicular_metrics || null // Store follicular metrics
-            };
-            
-            sessionHistory.unshift(historyItem);
-            
-            // Keep only last 10 items
-            if (sessionHistory.length > 10) {
-                sessionHistory = sessionHistory.slice(0, 10);
-            }
-            
-            saveHistory();
-            updateHistoryDisplay();
-        }
 
-        function updateHistoryDisplay() {
-            const historyListEl = document.getElementById('historyList');
-            if (!historyListEl) return;
-            
-            if (sessionHistory.length === 0) {
-                historyListEl.innerHTML = `
-                    <div class="text-center text-muted">
-                        <i class="fas fa-clock fa-2x mb-2"></i>
-                        <p>No history yet</p>
-                        <small>Run detections to see history</small>
-                    </div>
-                `;
-                return;
-            }
-            
-            let html = '';
-            sessionHistory.forEach(item => {
-                const timeStr = item.timestamp.toLocaleTimeString();
-                const classCounts = {};
-                item.predictions.forEach(pred => {
-                    const className = pred.displayName || 'Unknown';
-                    classCounts[className] = (classCounts[className] || 0) + 1;
-                });
-                
-                // Create class summary string
-                const classSummary = Object.entries(classCounts)
-                    .map(([className, count]) => `${className}: ${count}`)
-                    .join(', ');
-                
-                html += `
-                    <div class="history-item" onclick="loadHistoryItem(${item.id})">
-                        <img src="${item.imageData}" alt="History thumbnail" class="history-thumbnail">
-                        <div class="history-content">
-                            <div class="history-title">${timeStr}</div>
-                            <div class="history-details">
-                                ${item.totalPredictions} objects
-                                <br><small>${classSummary}</small>
-                            </div>
-                        </div>
-                        <div class="history-count">${item.totalPredictions}</div>
-                    </div>
-                `;
-            });
-            
-            historyListEl.innerHTML = html;
-        }
-
-        function loadHistoryItem(itemId) {
-            const item = sessionHistory.find(h => h.id === itemId);
-            if (!item) return;
-            
-            // Load the annotated image (with boxes) if available, otherwise original image
-            const imageToShow = item.annotatedImageData || item.imageData;
-            displayImage(imageToShow);
-            currentImageData = item.imageData; // Keep original for new processing
-            
-            // Load the results
-            displayResults({
-                total_predictions: item.totalPredictions,
-                predictions: item.predictions,
-                annotated_image: imageToShow,
-                is_fallback: item.is_fallback || false,
-                follicular_metrics: item.follicular_metrics || null
-            }, item.processingTime);
-            
-            // Display the stored parameters
-            if (item.parameters) {
-                displayStoredParameters(item.parameters);
-            }
-        }
-
-        function displayStoredParameters(parameters) {
-            const parameterDisplay = document.getElementById('parameterDisplay');
-            if (parameterDisplay && parameters) {
-                parameterDisplay.textContent = `Confidence: ${parameters.confidence}, Padding: ${parameters.padding}, NMS: ${parameters.nms}, Max: ${parameters.maxPredictions}`;
-            }
-        }
-
-        function saveHistory() {
-            try {
-                localStorage.setItem('vertexAIHistory', JSON.stringify(sessionHistory));
-            } catch (e) {
-                console.warn('Could not save history to localStorage:', e);
-            }
-        }
-
-        function loadHistory() {
-            try {
-                const saved = localStorage.getItem('vertexAIHistory');
-                if (saved) {
-                    sessionHistory = JSON.parse(saved);
-                    updateHistoryDisplay();
-                }
-            } catch (e) {
-                console.warn('Could not load history from localStorage:', e);
-                sessionHistory = [];
-            }
-        }
 
         function showError(message) {
             const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));

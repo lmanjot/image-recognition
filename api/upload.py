@@ -707,7 +707,7 @@ def create_combined_annotated_image(image_bytes, density_predictions, thickness_
             print(f"  - Font loading error: {e}")
             font = ImageFont.load_default()
         
-        # Draw density predictions (blue boxes)
+        # Draw density predictions with consistent colors
         if density_predictions:
             print(f"  - Drawing {len(density_predictions)} density predictions")
             for pred in density_predictions:
@@ -722,20 +722,28 @@ def create_combined_annotated_image(image_bytes, density_predictions, thickness_
                     x_max = int(padded_bbox[1] * img_width)
                     y_max = int(padded_bbox[3] * img_height)
                     
-                    # Draw blue rectangle for density
-                    draw.rectangle([x_min, y_min, x_max, y_max], outline='blue', width=2)
+                    # Get class-specific color: 1=blue, 2=white
+                    class_name = pred.get('displayName', 'Unknown')
+                    if class_name == '1':
+                        color = 'blue'
+                    elif class_name == '2':
+                        color = 'white'
+                    else:
+                        color = 'blue'  # default
+                    
+                    # Draw rectangle for density
+                    draw.rectangle([x_min, y_min, x_max, y_max], outline=color, width=2)
                     
                     # Add label
-                    class_name = pred.get('displayName', 'Unknown')
                     confidence = pred.get('confidence', 0.0)
                     label = f"{class_name}: {confidence:.2f}"
                     
                     # Draw label background
                     bbox_text = draw.textbbox((x_min, y_min - 20), label, font=font)
-                    draw.rectangle(bbox_text, fill='blue')
-                    draw.text((x_min, y_min - 20), label, fill='white', font=font)
+                    draw.rectangle(bbox_text, fill=color)
+                    draw.text((x_min, y_min - 20), label, fill='black' if color == 'white' else 'white', font=font)
         
-        # Draw thickness predictions (green boxes)
+        # Draw thickness predictions with consistent colors
         if thickness_predictions:
             print(f"  - Drawing {len(thickness_predictions)} thickness predictions")
             for pred in thickness_predictions:
@@ -750,18 +758,28 @@ def create_combined_annotated_image(image_bytes, density_predictions, thickness_
                     x_max = int(padded_bbox[1] * img_width)
                     y_max = int(padded_bbox[3] * img_height)
                     
-                    # Draw green rectangle for thickness
-                    draw.rectangle([x_min, y_min, x_max, y_max], outline='green', width=2)
+                    # Get class-specific color: weak=red, medium=yellow, strong=green
+                    class_name = pred.get('displayName', 'Unknown')
+                    if class_name == 'weak':
+                        color = 'red'
+                    elif class_name == 'medium':
+                        color = 'yellow'
+                    elif class_name == 'strong':
+                        color = 'green'
+                    else:
+                        color = 'green'  # default
+                    
+                    # Draw rectangle for thickness
+                    draw.rectangle([x_min, y_min, x_max, y_max], outline=color, width=2)
                     
                     # Add label
-                    class_name = pred.get('displayName', 'Unknown')
                     confidence = pred.get('confidence', 0.0)
                     label = f"{class_name}: {confidence:.2f}"
                     
                     # Draw label background
                     bbox_text = draw.textbbox((x_min, y_min - 20), label, font=font)
-                    draw.rectangle(bbox_text, fill='green')
-                    draw.text((x_min, y_min - 20), label, fill='white', font=font)
+                    draw.rectangle(bbox_text, fill=color)
+                    draw.text((x_min, y_min - 20), label, fill='black' if color == 'yellow' else 'white', font=font)
         
         # Convert to base64
         img_buffer = io.BytesIO()
@@ -977,11 +995,22 @@ def create_annotated_image(image_bytes, predictions, padding_factor=0.0):
         except:
             font = ImageFont.load_default()
         
-        # Define colors for different classes
-        colors = ['red', 'blue', 'green', 'yellow', 'purple', 'orange', 'cyan', 'magenta']
-        
-        # Track colors assigned to each class
-        class_colors = {}
+        # Define consistent colors for different classes
+        def get_class_color(class_name):
+            # Density model colors: 1=blue, 2=white
+            if class_name == '1':
+                return 'blue'
+            elif class_name == '2':
+                return 'white'
+            # Thickness model colors: weak=red, medium=yellow, strong=green
+            elif class_name == 'weak':
+                return 'red'
+            elif class_name == 'medium':
+                return 'yellow'
+            elif class_name == 'strong':
+                return 'green'
+            else:
+                return 'blue'  # default
         
         # Draw bounding boxes and labels
         for i, pred in enumerate(predictions):
@@ -1012,10 +1041,8 @@ def create_annotated_image(image_bytes, predictions, padding_factor=0.0):
                 print(f"⚠️ Skipping invalid bounding box: {bbox}")
                 continue
             
-            # Choose color based on class name (consistent for same class)
-            if class_name not in class_colors:
-                class_colors[class_name] = colors[len(class_colors) % len(colors)]
-            color = class_colors[class_name]
+            # Get consistent color for class
+            color = get_class_color(class_name)
             
             # Draw the bounding box with thicker outline
             draw.rectangle(
@@ -1033,11 +1060,12 @@ def create_annotated_image(image_bytes, predictions, padding_factor=0.0):
             # Draw label background rectangle
             draw.rectangle(text_bbox, fill=color)
             
-            # Draw label text
+            # Draw label text with appropriate color
+            text_color = "black" if color in ['white', 'yellow'] else "white"
             draw.text(
                 (x_min, y_min - 25), 
                 display_text, 
-                fill="white", 
+                fill=text_color, 
                 font=font
             )
             
