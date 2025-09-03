@@ -353,6 +353,30 @@ def calculate_combined_metrics(density_predictions, thickness_predictions):
         ohs_interpretation = "Very Low"
         ohs_color = "danger"
     
+    # Define interpretation bands for HCI%
+    if hair_caliber_index_percentage >= 80:
+        hci_color = "success"
+    elif hair_caliber_index_percentage >= 60:
+        hci_color = "info"
+    elif hair_caliber_index_percentage >= 40:
+        hci_color = "warning"
+    elif hair_caliber_index_percentage >= 20:
+        hci_color = "danger"
+    else:
+        hci_color = "danger"
+    
+    # Define interpretation bands for EHD%
+    if ehd_percentage >= 80:
+        ehd_color = "success"
+    elif ehd_percentage >= 60:
+        ehd_color = "info"
+    elif ehd_percentage >= 40:
+        ehd_color = "warning"
+    elif ehd_percentage >= 20:
+        ehd_color = "danger"
+    else:
+        ehd_color = "danger"
+    
     print(f"📊 Combined Metrics (using density model hair count as ground truth):")
     print(f"  - Terminal-to-Vellus Ratio (weak/strong): {terminal_to_vellus_ratio:.1f}%")
     print(f"  - % Thick Hairs (strong/total): {percent_thick_hairs:.1f}%")
@@ -372,11 +396,13 @@ def calculate_combined_metrics(density_predictions, thickness_predictions):
         'percent_thick_hairs': round(percent_thick_hairs, 1),  # Percentage, 1 decimal
         'hair_caliber_index': hair_caliber_index,  # Integer
         'hair_caliber_index_percentage': round(hair_caliber_index_percentage, 1),  # Percentage, 1 decimal
+        'hci_color': hci_color,  # HCI% color class for styling
         'average_thickness_score': round(average_thickness_score, 2),  # Score, 2 decimals
         'hairs_per_fu': round(hairs_per_fu, 2),  # Double digit, 2 decimals
         'hairs_per_cm2': round(hairs_per_cm2, 1),  # No comma, 1 decimal
         'effective_hair_density': round(effective_hair_density, 1),  # 1 decimal
         'ehd_percentage': round(ehd_percentage, 1),  # EHD%, 1 decimal
+        'ehd_color': ehd_color,  # EHD% color class for styling
         'overall_hair_score': round(overall_hair_score, 1),  # OHS%, 1 decimal
         'ohs_interpretation': ohs_interpretation,  # Interpretation text
         'ohs_color': ohs_color  # Color class for styling
