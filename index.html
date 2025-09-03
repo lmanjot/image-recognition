@@ -334,6 +334,31 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
+        /* Metric Items */
+        .metric-item {
+            background: white;
+            transition: all 0.3s ease;
+            border: 1px solid #e9ecef !important;
+        }
+        
+        .metric-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-color: var(--primary-color) !important;
+        }
+        
+        .metric-item .metric-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        
+        .metric-item .metric-label {
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
         /* Responsive Design */
         @media (max-width: 1200px) {
             .content-grid {
@@ -459,30 +484,30 @@
                                     </thead>
                                     <tbody>
                                         <tr>
-                                            <td class="fw-semibold">Confidence</td>
+                                            <td class="fw-semibold" data-bs-toggle="tooltip" data-bs-placement="right" title="Confidence: Minimum detection confidence threshold. Higher values = fewer, more certain detections. Lower values = more detections but may include false positives.">Confidence <i class="fas fa-info-circle text-muted"></i></td>
                                             <td>
-                                                <input type="number" class="form-control form-control-sm" id="densityConfidence" min="1" max="100" step="1" value="20" title="1-100 (1 = 0.01, 20 = 0.20)">
+                                                <input type="number" class="form-control form-control-sm text-center" id="densityConfidence" min="1" max="100" step="1" value="20" data-bs-toggle="tooltip" data-bs-placement="top" title="Density Model: 1-100 (1 = 0.01, 20 = 0.20). Higher = fewer boxes, more accurate">
                                             </td>
                                             <td>
-                                                <input type="number" class="form-control form-control-sm" id="thicknessConfidence" min="1" max="100" step="1" value="20" title="1-100 (1 = 0.01, 20 = 0.20)">
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-semibold">Padding</td>
-                                            <td>
-                                                <input type="number" class="form-control form-control-sm" id="densityPadding" min="0" max="100" step="1" value="50" title="0-100 (0 = 0.00, 50 = 0.50)">
-                                            </td>
-                                            <td>
-                                                <input type="number" class="form-control form-control-sm" id="thicknessPadding" min="0" max="100" step="1" value="50" title="0-100 (0 = 0.00, 50 = 0.50)">
+                                                <input type="number" class="form-control form-control-sm text-center" id="thicknessConfidence" min="1" max="100" step="1" value="10" data-bs-toggle="tooltip" data-bs-placement="top" title="Thickness Model: 1-100 (1 = 0.01, 10 = 0.10). Higher = fewer boxes, more accurate">
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td class="fw-semibold">NMS</td>
+                                            <td class="fw-semibold" data-bs-toggle="tooltip" data-bs-placement="right" title="Padding: Expands bounding boxes before NMS. Higher values = larger boxes, better overlap detection. Lower values = tighter boxes.">Padding <i class="fas fa-info-circle text-muted"></i></td>
                                             <td>
-                                                <input type="number" class="form-control form-control-sm" id="densityNMS" min="0" max="100" step="1" value="0" title="0-100 (0 = 0.00, 50 = 0.50)">
+                                                <input type="number" class="form-control form-control-sm text-center" id="densityPadding" min="0" max="100" step="1" value="50" data-bs-toggle="tooltip" data-bs-placement="top" title="Density Model: 0-100 (0 = 0.00, 50 = 0.50). Higher = larger boxes for better overlap detection">
                                             </td>
                                             <td>
-                                                <input type="number" class="form-control form-control-sm" id="thicknessNMS" min="0" max="100" step="1" value="0" title="0-100 (0 = 0.00, 50 = 0.50)">
+                                                <input type="number" class="form-control form-control-sm text-center" id="thicknessPadding" min="0" max="100" step="1" value="50" data-bs-toggle="tooltip" data-bs-placement="top" title="Thickness Model: 0-100 (0 = 0.00, 50 = 0.50). Higher = larger boxes for better overlap detection">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-semibold" data-bs-toggle="tooltip" data-bs-placement="right" title="NMS (Non-Maximum Suppression): Removes overlapping boxes. Higher values = fewer overlapping boxes. Lower values = keeps more overlapping detections.">NMS <i class="fas fa-info-circle text-muted"></i></td>
+                                            <td>
+                                                <input type="number" class="form-control form-control-sm text-center" id="densityNMS" min="0" max="100" step="1" value="0" data-bs-toggle="tooltip" data-bs-placement="top" title="Density Model: 0-100 (0 = 0.00, 50 = 0.50). Higher = removes more overlapping boxes">
+                                            </td>
+                                            <td>
+                                                <input type="number" class="form-control form-control-sm text-center" id="thicknessNMS" min="0" max="100" step="1" value="0" data-bs-toggle="tooltip" data-bs-placement="top" title="Thickness Model: 0-100 (0 = 0.00, 50 = 0.50). Higher = removes more overlapping boxes">
                                             </td>
                                         </tr>
                                     </tbody>
@@ -525,12 +550,36 @@
                         </div>
                         <div class="card-body">
                             <!-- Main Image with Combined Overlays -->
-                            <div class="text-center mb-3">
-                                <div id="imageContainer" class="position-relative d-inline-block">
-                                    <img id="mainImagePreview" src="" alt="Analysis Preview" class="img-fluid" style="display: none; max-height: 400px;">
-                                    <div id="imagePlaceholder" class="text-muted">
-                                        <i class="fas fa-image fa-2x mb-2"></i>
-                                        <p>Analysis preview will appear here</p>
+                            <div class="row mb-4">
+                                <div class="col-12">
+                                    <div class="card border-0 shadow-sm">
+                                        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                            <h6 class="mb-0"><i class="fas fa-image"></i> Analysis Preview</h6>
+                                            <div class="d-flex gap-3">
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="checkbox" id="showDensityOverlay" checked>
+                                                    <label class="form-check-label small" for="showDensityOverlay">
+                                                        <i class="fas fa-hashtag text-primary"></i> Density
+                                                    </label>
+                                                </div>
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="checkbox" id="showThicknessOverlay" checked>
+                                                    <label class="form-check-label small" for="showThicknessOverlay">
+                                                        <i class="fas fa-weight text-success"></i> Thickness
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="card-body p-3">
+                                            <div id="imageContainer" class="text-center" style="min-height: 400px; background: #f8f9fa; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                                                <img id="mainImagePreview" src="" alt="Analysis Preview" class="img-fluid" style="display: none; max-height: 500px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                                                <div id="imagePlaceholder" class="text-muted">
+                                                    <i class="fas fa-microscope fa-3x mb-3"></i>
+                                                    <h5 class="text-muted">Ready for Analysis</h5>
+                                                    <p class="text-muted">Upload an image and run analysis to see results</p>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -538,13 +587,14 @@
                             <!-- Combined Metrics -->
                             <div class="row mb-4">
                                 <div class="col-12">
-                                    <div class="card border-primary">
+                                    <div class="card border-primary shadow-sm">
                                         <div class="card-header bg-primary text-white">
                                             <h5 class="mb-0"><i class="fas fa-chart-line"></i> Combined Analysis Metrics</h5>
+                                            <small class="opacity-75">Advanced metrics combining both density and thickness analysis</small>
                                         </div>
-                                        <div class="card-body">
+                                        <div class="card-body p-4">
                                             <div id="combinedMetrics" style="display: none;">
-                                                <div class="row g-3">
+                                                <div class="row g-4">
                                                     <div class="col-lg-4 col-md-6">
                                                         <div class="metric-card p-3 border rounded" data-bs-toggle="tooltip" data-bs-placement="top" title="Terminal-to-Vellus Ratio = Weak Hairs / Strong Hairs (Vellus/Terminal)">
                                                             <div class="d-flex align-items-center">
@@ -644,55 +694,52 @@
                             </div>
                             
                             <!-- Individual Model Metrics -->
-                            <div class="row">
+                            <div class="row g-4">
                                 <!-- Hair Density Metrics -->
-                                <div class="col-md-6">
-                                    <div class="card">
-                                        <div class="card-header">
-                                            <h6><i class="fas fa-hashtag"></i> Hair Density Analysis</h6>
+                                <div class="col-lg-6">
+                                    <div class="card h-100 shadow-sm">
+                                        <div class="card-header bg-primary text-white">
+                                            <h6 class="mb-0"><i class="fas fa-hashtag"></i> Hair Density Analysis</h6>
+                                            <small class="opacity-75">Follicular unit counting and hair density metrics</small>
                                         </div>
-                                        <div class="card-body">
+                                        <div class="card-body p-4">
                                             <div id="densityMetrics" style="display: none;">
-                                                <div class="row">
+                                                <div class="row g-3">
                                                     <div class="col-6">
-                                                        <small class="text-muted">
-                                                            <strong>FU Density:</strong>
-                                                            <span id="densityFollicularDensity">-</span> per cm²
-                                                        </small>
+                                                        <div class="metric-item p-3 border rounded text-center">
+                                                            <div class="metric-value h4 text-primary mb-1" id="densityFollicularDensity">-</div>
+                                                            <div class="metric-label small text-muted">FU Density per cm²</div>
+                                                        </div>
                                                     </div>
                                                     <div class="col-6">
-                                                        <small class="text-muted">
-                                                            <strong>Avg Hairs/Unit:</strong>
-                                                            <span id="densityAverageHairs">-</span>
-                                                        </small>
-                                                    </div>
-                                                </div>
-                                                <div class="row mt-1">
-                                                    <div class="col-6">
-                                                        <small class="text-muted">
-                                                            <strong>Total Hairs:</strong>
-                                                            <span id="densityTotalHairs">-</span>
-                                                        </small>
+                                                        <div class="metric-item p-3 border rounded text-center">
+                                                            <div class="metric-value h4 text-info mb-1" id="densityAverageHairs">-</div>
+                                                            <div class="metric-label small text-muted">Avg Hairs/Unit</div>
+                                                        </div>
                                                     </div>
                                                     <div class="col-6">
-                                                        <small class="text-muted">
-                                                            <strong>Total FU:</strong>
-                                                            <span id="densityTotalFU">-</span>
-                                                        </small>
-                                                    </div>
-                                                </div>
-                                                <div class="row mt-1">
-                                                    <div class="col-6">
-                                                        <small class="text-muted">
-                                                            <strong>FU with 1 Hair:</strong>
-                                                            <span id="densityFUWithOneHair">-</span>
-                                                        </small>
+                                                        <div class="metric-item p-3 border rounded text-center">
+                                                            <div class="metric-value h4 text-success mb-1" id="densityTotalHairs">-</div>
+                                                            <div class="metric-label small text-muted">Total Hairs</div>
+                                                        </div>
                                                     </div>
                                                     <div class="col-6">
-                                                        <small class="text-muted">
-                                                            <strong>FU with 2+ Hairs:</strong>
-                                                            <span id="densityFUWithMultipleHairs">-</span>
-                                                        </small>
+                                                        <div class="metric-item p-3 border rounded text-center">
+                                                            <div class="metric-value h4 text-warning mb-1" id="densityTotalFU">-</div>
+                                                            <div class="metric-label small text-muted">Total FU</div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <div class="metric-item p-3 border rounded text-center">
+                                                            <div class="metric-value h4 text-secondary mb-1" id="densityFUWithOneHair">-</div>
+                                                            <div class="metric-label small text-muted">FU with 1 Hair</div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <div class="metric-item p-3 border rounded text-center">
+                                                            <div class="metric-value h4 text-danger mb-1" id="densityFUWithMultipleHairs">-</div>
+                                                            <div class="metric-label small text-muted">FU with 2+ Hairs</div>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -701,45 +748,44 @@
                                 </div>
                                 
                                 <!-- Hair Thickness Metrics -->
-                                <div class="col-md-6">
-                                    <div class="card">
-                                        <div class="card-header">
-                                            <h6><i class="fas fa-weight"></i> Hair Thickness Analysis</h6>
+                                <div class="col-lg-6">
+                                    <div class="card h-100 shadow-sm">
+                                        <div class="card-header bg-success text-white">
+                                            <h6 class="mb-0"><i class="fas fa-weight"></i> Hair Thickness Analysis</h6>
+                                            <small class="opacity-75">Hair caliber classification and thickness distribution</small>
                                         </div>
-                                        <div class="card-body">
+                                        <div class="card-body p-4">
                                             <div id="thicknessMetrics" style="display: none;">
-                                                <div class="row">
+                                                <div class="row g-3">
                                                     <div class="col-4">
-                                                        <small class="text-muted">
-                                                            <strong>Strong:</strong>
-                                                            <span id="thicknessStrong">-</span>
-                                                        </small>
+                                                        <div class="metric-item p-3 border rounded text-center">
+                                                            <div class="metric-value h4 text-success mb-1" id="thicknessStrong">-</div>
+                                                            <div class="metric-label small text-muted">Strong</div>
+                                                        </div>
                                                     </div>
                                                     <div class="col-4">
-                                                        <small class="text-muted">
-                                                            <strong>Medium:</strong>
-                                                            <span id="thicknessMedium">-</span>
-                                                        </small>
+                                                        <div class="metric-item p-3 border rounded text-center">
+                                                            <div class="metric-value h4 text-warning mb-1" id="thicknessMedium">-</div>
+                                                            <div class="metric-label small text-muted">Medium</div>
+                                                        </div>
                                                     </div>
                                                     <div class="col-4">
-                                                        <small class="text-muted">
-                                                            <strong>Weak:</strong>
-                                                            <span id="thicknessWeak">-</span>
-                                                        </small>
-                                                    </div>
-                                                </div>
-                                                <div class="row mt-1">
-                                                    <div class="col-6">
-                                                        <small class="text-muted">
-                                                            <strong>Total Detections:</strong>
-                                                            <span id="thicknessTotalDetections">-</span>
-                                                        </small>
+                                                        <div class="metric-item p-3 border rounded text-center">
+                                                            <div class="metric-value h4 text-danger mb-1" id="thicknessWeak">-</div>
+                                                            <div class="metric-label small text-muted">Weak</div>
+                                                        </div>
                                                     </div>
                                                     <div class="col-6">
-                                                        <small class="text-muted">
-                                                            <strong>Processing Time:</strong>
-                                                            <span id="thicknessProcessingTime">-</span>s
-                                                        </small>
+                                                        <div class="metric-item p-3 border rounded text-center">
+                                                            <div class="metric-value h4 text-primary mb-1" id="thicknessTotalDetections">-</div>
+                                                            <div class="metric-label small text-muted">Total Detections</div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <div class="metric-item p-3 border rounded text-center">
+                                                            <div class="metric-value h4 text-info mb-1" id="thicknessProcessingTime">-</div>
+                                                            <div class="metric-label small text-muted">Processing Time (s)</div>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
