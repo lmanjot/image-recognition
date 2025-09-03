@@ -348,6 +348,17 @@ def calculate_iou(box1, box2):
     
     return intersection_area / union_area
 
+def get_class_number(class_name):
+    """Extract class number from class name (e.g., 'class1' -> 1, 'class2' -> 2)"""
+    try:
+        if class_name.lower().startswith('class'):
+            return int(class_name.lower().replace('class', ''))
+        else:
+            # For non-class names, use a default priority
+            return 0
+    except:
+        return 0
+
 def apply_nms(predictions, iou_threshold, max_predictions):
     """
     Apply Non-Maximum Suppression to filter overlapping bounding boxes.
@@ -365,48 +376,59 @@ def apply_nms(predictions, iou_threshold, max_predictions):
     
     print(f"🔍 Applying NMS with IoU threshold: {iou_threshold}, max predictions: {max_predictions}")
     
-    # Sort predictions by confidence (highest first)
-    sorted_predictions = sorted(predictions, key=lambda x: x.get('confidence', 0.0), reverse=True)
-    
-    # Group predictions by class
-    class_groups = {}
-    for pred in sorted_predictions:
+    # Sort predictions by class priority (higher class numbers first), then by confidence
+    def sort_key(pred):
         class_name = pred.get('displayName', 'Unknown')
-        if class_name not in class_groups:
-            class_groups[class_name] = []
-        class_groups[class_name].append(pred)
-    
-    # Apply NMS to each class separately
-    filtered_predictions = []
-    for class_name, class_predictions in class_groups.items():
-        print(f"  📦 Processing class '{class_name}' with {len(class_predictions)} detections")
+        # Extract class number from class name (e.g., "class1" -> 1, "class2" -> 2)
+        try:
+            if class_name.lower().startswith('class'):
+                class_num = int(class_name.lower().replace('class', ''))
+            else:
+                # For non-class names, use a default priority
+                class_num = 0
+        except:
+            class_num = 0
         
-        # Apply NMS within this class
-        selected_indices = []
-        for i, pred in enumerate(class_predictions):
-            should_keep = True
-            bbox1 = pred.get('bbox', [0, 0, 0, 0])
+        confidence = pred.get('confidence', 0.0)
+        # Sort by class number (descending), then by confidence (descending)
+        return (-class_num, -confidence)
+    
+    sorted_predictions = sorted(predictions, key=sort_key)
+    
+    # Apply NMS across all classes (higher class numbers can override lower ones)
+    filtered_predictions = []
+    for i, pred in enumerate(sorted_predictions):
+        should_keep = True
+        bbox1 = pred.get('bbox', [0, 0, 0, 0])
+        class_name1 = pred.get('displayName', 'Unknown')
+        
+        # Check against already selected predictions
+        for selected_pred in filtered_predictions:
+            bbox2 = selected_pred.get('bbox', [0, 0, 0, 0])
+            class_name2 = selected_pred.get('displayName', 'Unknown')
             
-            # Check against already selected predictions
-            for j in selected_indices:
-                bbox2 = class_predictions[j].get('bbox', [0, 0, 0, 0])
-                iou = calculate_iou(bbox1, bbox2)
+            # Calculate IoU
+            iou = calculate_iou(bbox1, bbox2)
+            
+            if iou > iou_threshold:
+                # If boxes overlap, check class priority
+                class_num1 = get_class_number(class_name1)
+                class_num2 = get_class_number(class_name2)
                 
-                if iou > iou_threshold:
+                if class_num1 > class_num2:
+                    # Current prediction has higher class priority, remove the selected one
+                    filtered_predictions.remove(selected_pred)
+                    print(f"  🔄 Replaced {class_name2} with higher priority {class_name1}")
+                    break
+                else:
+                    # Selected prediction has higher or equal class priority, skip current
                     should_keep = False
                     break
-            
-            if should_keep:
-                selected_indices.append(i)
         
-        # Add selected predictions for this class
-        for idx in selected_indices:
-            filtered_predictions.append(class_predictions[idx])
-        
-        print(f"    ✅ Kept {len(selected_indices)} out of {len(class_predictions)} detections")
+        if should_keep:
+            filtered_predictions.append(pred)
     
-    # Sort all filtered predictions by confidence again
-    filtered_predictions = sorted(filtered_predictions, key=lambda x: x.get('confidence', 0.0), reverse=True)
+    print(f"  📊 Processed {len(sorted_predictions)} predictions, kept {len(filtered_predictions)}")
     
     # Limit to max_predictions
     if len(filtered_predictions) > max_predictions:
