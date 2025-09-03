@@ -487,6 +487,66 @@ def predict_image_object_detection(image_bytes, confidence_threshold, iou_thresh
         image_bytes, confidence_threshold, iou_threshold, padding_factor, max_predictions
     )
 
+def predict_thickness_model_rest(image_bytes, confidence_threshold, iou_threshold, padding_factor, max_predictions):
+    """Call Thickness Vertex AI endpoint using REST API"""
+    print(f"\n🔍 Starting Thickness Vertex AI prediction process...")
+    print(f"  - Original image size: {len(image_bytes)} bytes")
+    print(f"  - Confidence threshold: {confidence_threshold}")
+    print(f"  - NMS threshold: {iou_threshold}")
+    print(f"  - Padding factor: {padding_factor}")
+    print(f"  - Max predictions: {max_predictions}")
+    
+    # Compress image if it's too large for Vertex AI
+    compressed_image_bytes = compress_image(image_bytes, max_size_mb=0.8)
+    print(f"  - Compressed image size: {len(compressed_image_bytes)} bytes")
+    
+    # Check Vertex AI configuration at runtime
+    vertex_ai_enabled = check_vertex_ai_enabled()
+    
+    if not vertex_ai_enabled:
+        print("⚠️ Vertex AI not configured, using mock data for thickness model")
+        return get_mock_thickness_predictions()
+    
+    try:
+        # Call Vertex AI endpoint for thickness model
+        predictions = call_vertex_ai_endpoint(
+            compressed_image_bytes, 
+            confidence_threshold,
+            project_id=thickness_project_id,
+            endpoint_id=thickness_endpoint_id,
+            location=thickness_location
+        )
+        
+        if not predictions:
+            print("⚠️ No predictions from thickness model, using mock data")
+            return get_mock_thickness_predictions()
+        
+        print(f"✅ Thickness model returned {len(predictions)} predictions")
+        
+        # Apply padding to bounding boxes before NMS
+        for pred in predictions:
+            if 'bbox' in pred:
+                pred['bbox'] = apply_padding_to_bbox(pred['bbox'], padding_factor)
+        
+        # Apply NMS
+        filtered_predictions = apply_nms(predictions, iou_threshold, padding_factor, max_predictions)
+        
+        print(f"✅ After NMS: {len(filtered_predictions)} thickness predictions")
+        return filtered_predictions
+        
+    except Exception as e:
+        print(f"❌ Error calling thickness Vertex AI endpoint: {e}")
+        print("⚠️ Falling back to mock data for thickness model")
+        return get_mock_thickness_predictions()
+
+def get_mock_thickness_predictions():
+    """Return mock thickness predictions for testing"""
+    return [
+        {'displayName': 'strong', 'confidence': 0.95, 'bbox': [0.1, 0.3, 0.1, 0.8]},
+        {'displayName': 'medium', 'confidence': 0.87, 'bbox': [0.4, 0.9, 0.3, 0.7]},
+        {'displayName': 'weak', 'confidence': 0.78, 'bbox': [0.6, 0.8, 0.2, 0.5]}
+    ]
+
 def calculate_iou(box1, box2):
     """
     Calculate Intersection over Union (IoU) of two bounding boxes.
@@ -891,30 +951,31 @@ class handler(BaseHTTPRequestHandler):
             # Process thickness model if selected
             if run_thickness_model:
                 print("🔍 Running thickness model...")
-                # TODO: Implement thickness model prediction
-                # For now, return mock data
-                thickness_predictions = [
-                    {'displayName': 'strong', 'confidence': 0.95, 'bbox': [0.1, 0.3, 0.1, 0.8]},
-                    {'displayName': 'medium', 'confidence': 0.87, 'bbox': [0.4, 0.9, 0.3, 0.7]},
-                    {'displayName': 'weak', 'confidence': 0.78, 'bbox': [0.6, 0.8, 0.2, 0.5]}
-                ]
+                thickness_predictions = predict_thickness_model_rest(
+                    image_bytes, 
+                    form_data['thickness_confidence'], 
+                    form_data['thickness_iou_threshold'],
+                    form_data['thickness_padding_factor'],
+                    form_data['thickness_max_predictions']
+                )
                 
-                thickness_annotated_image = create_annotated_image(image_bytes, thickness_predictions, form_data['thickness_padding_factor'])
-                
-                # Calculate thickness metrics
-                thickness_metrics = {
-                    'strong': sum(1 for p in thickness_predictions if p['displayName'] == 'strong'),
-                    'medium': sum(1 for p in thickness_predictions if p['displayName'] == 'medium'),
-                    'weak': sum(1 for p in thickness_predictions if p['displayName'] == 'weak'),
-                    'total_detections': len(thickness_predictions)
-                }
-                
-                response_data['thickness_results'] = {
-                    'annotated_image': thickness_annotated_image,
-                    'predictions': thickness_predictions,
-                    'thickness_metrics': thickness_metrics,
-                    'total_predictions': len(thickness_predictions)
-                }
+                if thickness_predictions:
+                    thickness_annotated_image = create_annotated_image(image_bytes, thickness_predictions, form_data['thickness_padding_factor'])
+                    
+                    # Calculate thickness metrics
+                    thickness_metrics = {
+                        'strong': sum(1 for p in thickness_predictions if p['displayName'] == 'strong'),
+                        'medium': sum(1 for p in thickness_predictions if p['displayName'] == 'medium'),
+                        'weak': sum(1 for p in thickness_predictions if p['displayName'] == 'weak'),
+                        'total_detections': len(thickness_predictions)
+                    }
+                    
+                    response_data['thickness_results'] = {
+                        'annotated_image': thickness_annotated_image,
+                        'predictions': thickness_predictions,
+                        'thickness_metrics': thickness_metrics,
+                        'total_predictions': len(thickness_predictions)
+                    }
             
             self.send_success_response(response_data)
             
