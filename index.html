@@ -120,10 +120,7 @@
             transition: all 0.3s ease;
         }
         
-        .card:hover {
-            box-shadow: var(--shadow-medium);
-            transform: translateY(-2px);
-        }
+
         
         .card-header {
             background: var(--primary-color);
@@ -687,59 +684,67 @@
                             <!-- Individual Model Metrics -->
                             <div class="mt-3">
                                 <!-- Hair Density Analysis -->
-                                <div class="mb-3">
-                                    <h6 class="text-primary mb-2 small"><i class="fas fa-hashtag"></i> Hair Density Analysis</h6>
-                                    <div id="densityMetrics" style="display: none;">
-                                        <div class="table-responsive">
-                                            <table class="table table-sm table-borderless">
-                                                <tbody>
-                                                    <tr>
-                                                        <td class="text-muted small">FU Density per cm²:</td>
-                                                        <td class="fw-bold text-primary" id="densityFollicularDensity">-</td>
-                                                        <td class="text-muted small">Avg Hairs/Unit:</td>
-                                                        <td class="fw-bold text-info" id="densityAverageHairs">-</td>
-                                                        <td class="text-muted small">Total Hairs:</td>
-                                                        <td class="fw-bold text-success" id="densityTotalHairs">-</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td class="text-muted small">Total FU:</td>
-                                                        <td class="fw-bold text-warning" id="densityTotalFU">-</td>
-                                                        <td class="text-muted small">FU with 1 Hair:</td>
-                                                        <td class="fw-bold text-secondary" id="densityFUWithOneHair">-</td>
-                                                        <td class="text-muted small">FU with 2+ Hairs:</td>
-                                                        <td class="fw-bold text-danger" id="densityFUWithMultipleHairs">-</td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
+                                <div class="card mb-3">
+                                    <div class="card-header">
+                                        <h6 class="mb-0 text-primary"><i class="fas fa-hashtag"></i> Hair Density Analysis</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="densityMetrics" style="display: none;">
+                                            <div class="table-responsive">
+                                                <table class="table table-sm table-borderless">
+                                                    <tbody>
+                                                        <tr>
+                                                            <td class="text-muted small">FU Density per cm²:</td>
+                                                            <td class="fw-bold text-primary" id="densityFollicularDensity">-</td>
+                                                            <td class="text-muted small">Avg Hairs/Unit:</td>
+                                                            <td class="fw-bold text-info" id="densityAverageHairs">-</td>
+                                                            <td class="text-muted small">Total Hairs:</td>
+                                                            <td class="fw-bold text-success" id="densityTotalHairs">-</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="text-muted small">Total FU:</td>
+                                                            <td class="fw-bold text-warning" id="densityTotalFU">-</td>
+                                                            <td class="text-muted small">FU with 1 Hair:</td>
+                                                            <td class="fw-bold text-secondary" id="densityFUWithOneHair">-</td>
+                                                            <td class="text-muted small">FU with 2+ Hairs:</td>
+                                                            <td class="fw-bold text-danger" id="densityFUWithMultipleHairs">-</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                                 
                                 <!-- Hair Thickness Analysis -->
-                                <div class="mb-3">
-                                    <h6 class="text-success mb-2 small"><i class="fas fa-weight"></i> Hair Thickness Analysis</h6>
-                                    <div id="thicknessMetrics" style="display: none;">
-                                        <div class="table-responsive">
-                                            <table class="table table-sm table-borderless">
-                                                <tbody>
-                                                    <tr>
-                                                        <td class="text-muted small">Strong:</td>
-                                                        <td class="fw-bold text-success" id="thicknessStrong">-</td>
-                                                        <td class="text-muted small">Medium:</td>
-                                                        <td class="fw-bold text-warning" id="thicknessMedium">-</td>
-                                                        <td class="text-muted small">Weak:</td>
-                                                        <td class="fw-bold text-danger" id="thicknessWeak">-</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td class="text-muted small">Total Detections:</td>
-                                                        <td class="fw-bold text-primary" id="thicknessTotalDetections">-</td>
-                                                        <td class="text-muted small">Processing Time:</td>
-                                                        <td class="fw-bold text-info" id="thicknessProcessingTime">-</td>
-                                                        <td></td>
-                                                        <td></td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
+                                <div class="card mb-3">
+                                    <div class="card-header">
+                                        <h6 class="mb-0 text-success"><i class="fas fa-weight"></i> Hair Thickness Analysis</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="thicknessMetrics" style="display: none;">
+                                            <div class="table-responsive">
+                                                <table class="table table-sm table-borderless">
+                                                    <tbody>
+                                                        <tr>
+                                                            <td class="text-muted small">Strong:</td>
+                                                            <td class="fw-bold text-success" id="thicknessStrong">-</td>
+                                                            <td class="text-muted small">Medium:</td>
+                                                            <td class="fw-bold text-warning" id="thicknessMedium">-</td>
+                                                            <td class="text-muted small">Weak:</td>
+                                                            <td class="fw-bold text-danger" id="thicknessWeak">-</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="text-muted small">Total Detections:</td>
+                                                            <td class="fw-bold text-primary" id="thicknessTotalDetections">-</td>
+                                                            <td class="text-muted small">Processing Time:</td>
+                                                            <td class="fw-bold text-info" id="thicknessProcessingTime">-</td>
+                                                            <td></td>
+                                                            <td></td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
