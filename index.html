@@ -494,7 +494,6 @@
                                                 <tr>
                                                     <th>Class</th>
                                                     <th>Count</th>
-                                                    <th>Confidence</th>
                                                 </tr>
                                             </thead>
                                             <tbody id="detectionResultsTable">
@@ -876,14 +875,14 @@
             
             if (!hasRealPredictions) {
                 if (isFallback) {
-                    tableBody.innerHTML = '<tr><td colspan="3" class="text-center text-warning"><i class="fas fa-exclamation-triangle"></i> Couldn\'t analyze this picture - try a different picture</td></tr>';
+                    tableBody.innerHTML = '<tr><td colspan="2" class="text-center text-warning"><i class="fas fa-exclamation-triangle"></i> Couldn\'t analyze this picture - try a different picture</td></tr>';
                 } else {
-                    tableBody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">No objects detected</td></tr>';
+                    tableBody.innerHTML = '<tr><td colspan="2" class="text-center text-muted">No objects detected</td></tr>';
                 }
                 return;
             }
             
-            // Count objects by class and calculate average confidence
+            // Count objects by class
             const classData = {};
             predictions.forEach(pred => {
                 const className = pred.displayName || 'Unknown';
@@ -893,26 +892,21 @@
                 if (confidence > 0) {
                     if (!classData[className]) {
                         classData[className] = {
-                            count: 0,
-                            totalConfidence: 0
+                            count: 0
                         };
                     }
                     
                     classData[className].count++;
-                    classData[className].totalConfidence += confidence;
                 }
             });
             
             // Create table rows
             let html = '';
             Object.entries(classData).forEach(([className, data]) => {
-                const avgConfidence = (data.totalConfidence / data.count).toFixed(3);
-                
                 html += `
                     <tr>
                         <td><strong>${className}</strong></td>
                         <td><span class="badge bg-secondary">${data.count}</span></td>
-                        <td><span class="badge bg-light">${avgConfidence}</span></td>
                     </tr>
                 `;
             });
