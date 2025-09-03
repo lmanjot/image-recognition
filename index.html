@@ -92,7 +92,7 @@
         
         .content-grid {
             display: grid;
-            grid-template-columns: 350px 1fr 300px;
+            grid-template-columns: 400px 1fr;
             gap: 2rem;
             align-items: start;
         }
@@ -299,10 +299,45 @@
             background-color: rgba(51, 51, 51, 0.05);
         }
         
+        /* Metric Cards */
+        .metric-card {
+            background: white;
+            transition: all 0.3s ease;
+            border: 1px solid #e9ecef !important;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-color: var(--primary-color) !important;
+        }
+        
+        .metric-icon {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.05);
+        }
+        
+        .metric-label {
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .metric-value {
+            font-weight: 700;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
         /* Responsive Design */
         @media (max-width: 1200px) {
             .content-grid {
-                grid-template-columns: 300px 1fr 250px;
+                grid-template-columns: 350px 1fr;
                 gap: 1.5rem;
             }
         }
@@ -403,63 +438,64 @@
                         </div>
                     </div>
 
-                    <!-- Compact Model Parameters -->
-                    <div class="row mt-3">
-                        <!-- Hair Density Model Parameters -->
-                        <div class="col-md-6">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h6><i class="fas fa-hashtag"></i> Density Model</h6>
-                                </div>
-                                <div class="card-body p-2">
-                                    <div class="row g-2">
-                                        <div class="col-6">
-                                            <label class="form-label small">Confidence</label>
-                                            <input type="number" class="form-control form-control-sm" id="densityConfidence" min="0.01" max="1.0" step="0.01" value="0.2">
-                                        </div>
-                                        <div class="col-6">
-                                            <label class="form-label small">Padding</label>
-                                            <input type="number" class="form-control form-control-sm" id="densityPadding" min="0.0" max="1.0" step="0.01" value="0.5">
-                                        </div>
-                                        <div class="col-6">
-                                            <label class="form-label small">NMS</label>
-                                            <input type="number" class="form-control form-control-sm" id="densityNMS" min="0.0" max="1.0" step="0.01" value="0.0">
-                                        </div>
-                                        <div class="col-6">
-                                            <label class="form-label small">Max Pred</label>
-                                            <input type="number" class="form-control form-control-sm" id="densityMaxPred" min="1" max="100" step="1" value="100">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                    <!-- Model Parameters Table -->
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <h6><i class="fas fa-cogs"></i> Model Parameters</h6>
                         </div>
-
-                        <!-- Hair Thickness Model Parameters -->
-                        <div class="col-md-6">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h6><i class="fas fa-weight"></i> Thickness Model</h6>
-                                </div>
-                                <div class="card-body p-2">
-                                    <div class="row g-2">
-                                        <div class="col-6">
-                                            <label class="form-label small">Confidence</label>
-                                            <input type="number" class="form-control form-control-sm" id="thicknessConfidence" min="0.01" max="1.0" step="0.01" value="0.2">
-                                        </div>
-                                        <div class="col-6">
-                                            <label class="form-label small">Padding</label>
-                                            <input type="number" class="form-control form-control-sm" id="thicknessPadding" min="0.0" max="1.0" step="0.01" value="0.5">
-                                        </div>
-                                        <div class="col-6">
-                                            <label class="form-label small">NMS</label>
-                                            <input type="number" class="form-control form-control-sm" id="thicknessNMS" min="0.0" max="1.0" step="0.01" value="0.0">
-                                        </div>
-                                        <div class="col-6">
-                                            <label class="form-label small">Max Pred</label>
-                                            <input type="number" class="form-control form-control-sm" id="thicknessMaxPred" min="1" max="100" step="1" value="100">
-                                        </div>
-                                    </div>
-                                </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-sm table-borderless">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-muted">Parameter</th>
+                                            <th class="text-center">
+                                                <i class="fas fa-hashtag text-primary"></i> Density Model
+                                            </th>
+                                            <th class="text-center">
+                                                <i class="fas fa-weight text-success"></i> Thickness Model
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="fw-semibold">Confidence</td>
+                                            <td>
+                                                <input type="number" class="form-control form-control-sm" id="densityConfidence" min="0.01" max="1.0" step="0.01" value="0.2">
+                                            </td>
+                                            <td>
+                                                <input type="number" class="form-control form-control-sm" id="thicknessConfidence" min="0.01" max="1.0" step="0.01" value="0.2">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-semibold">Padding</td>
+                                            <td>
+                                                <input type="number" class="form-control form-control-sm" id="densityPadding" min="0.0" max="1.0" step="0.01" value="0.5">
+                                            </td>
+                                            <td>
+                                                <input type="number" class="form-control form-control-sm" id="thicknessPadding" min="0.0" max="1.0" step="0.01" value="0.5">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-semibold">NMS</td>
+                                            <td>
+                                                <input type="number" class="form-control form-control-sm" id="densityNMS" min="0.0" max="1.0" step="0.01" value="0.0">
+                                            </td>
+                                            <td>
+                                                <input type="number" class="form-control form-control-sm" id="thicknessNMS" min="0.0" max="1.0" step="0.01" value="0.0">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-semibold">Max Predictions</td>
+                                            <td>
+                                                <input type="number" class="form-control form-control-sm" id="densityMaxPred" min="1" max="100" step="1" value="100">
+                                            </td>
+                                            <td>
+                                                <input type="number" class="form-control form-control-sm" id="thicknessMaxPred" min="1" max="100" step="1" value="100">
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
@@ -478,7 +514,7 @@
                 <!-- Center Panel - Results Display -->
                 <div class="image-panel">
                     <!-- Results Section -->
-                    <div class="card" id="resultsCard" style="display: none;">
+                    <div class="card" id="resultsCard">
                         <div class="card-header d-flex justify-content-between align-items-center">
                             <h5><i class="fas fa-chart-bar"></i> Analysis Results</h5>
                             <div class="d-flex gap-3">
@@ -509,60 +545,105 @@
                             </div>
                             
                             <!-- Combined Metrics -->
-                            <div class="row mb-3">
+                            <div class="row mb-4">
                                 <div class="col-12">
-                                    <div class="card">
-                                        <div class="card-header">
-                                            <h6><i class="fas fa-chart-line"></i> Combined Analysis Metrics</h6>
+                                    <div class="card border-primary">
+                                        <div class="card-header bg-primary text-white">
+                                            <h5 class="mb-0"><i class="fas fa-chart-line"></i> Combined Analysis Metrics</h5>
                                         </div>
                                         <div class="card-body">
                                             <div id="combinedMetrics" style="display: none;">
-                                                <div class="row">
-                                                    <div class="col-md-4">
-                                                        <small class="text-muted">
-                                                            <strong>Terminal-to-Vellus Ratio:</strong>
-                                                            <span id="terminalToVellusRatio">-</span>
-                                                        </small>
+                                                <div class="row g-3">
+                                                    <div class="col-lg-4 col-md-6">
+                                                        <div class="metric-card p-3 border rounded">
+                                                            <div class="d-flex align-items-center">
+                                                                <div class="metric-icon me-3">
+                                                                    <i class="fas fa-balance-scale text-primary fa-lg"></i>
+                                                                </div>
+                                                                <div>
+                                                                    <div class="metric-label text-muted small">Terminal-to-Vellus Ratio</div>
+                                                                    <div class="metric-value h5 mb-0 text-primary" id="terminalToVellusRatio">-</div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
                                                     </div>
-                                                    <div class="col-md-4">
-                                                        <small class="text-muted">
-                                                            <strong>% Thick Hairs:</strong>
-                                                            <span id="percentThickHairs">-</span>%
-                                                        </small>
+                                                    <div class="col-lg-4 col-md-6">
+                                                        <div class="metric-card p-3 border rounded">
+                                                            <div class="d-flex align-items-center">
+                                                                <div class="metric-icon me-3">
+                                                                    <i class="fas fa-percentage text-success fa-lg"></i>
+                                                                </div>
+                                                                <div>
+                                                                    <div class="metric-label text-muted small">% Thick Hairs</div>
+                                                                    <div class="metric-value h5 mb-0 text-success" id="percentThickHairs">-%</div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
                                                     </div>
-                                                    <div class="col-md-4">
-                                                        <small class="text-muted">
-                                                            <strong>Hair Caliber Index:</strong>
-                                                            <span id="hairCaliberIndex">-</span>
-                                                        </small>
+                                                    <div class="col-lg-4 col-md-6">
+                                                        <div class="metric-card p-3 border rounded">
+                                                            <div class="d-flex align-items-center">
+                                                                <div class="metric-icon me-3">
+                                                                    <i class="fas fa-chart-bar text-info fa-lg"></i>
+                                                                </div>
+                                                                <div>
+                                                                    <div class="metric-label text-muted small">Hair Caliber Index</div>
+                                                                    <div class="metric-value h5 mb-0 text-info" id="hairCaliberIndex">-</div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                                <div class="row mt-1">
-                                                    <div class="col-md-4">
-                                                        <small class="text-muted">
-                                                            <strong>Avg Thickness Score:</strong>
-                                                            <span id="averageThicknessScore">-</span>
-                                                        </small>
+                                                    <div class="col-lg-4 col-md-6">
+                                                        <div class="metric-card p-3 border rounded">
+                                                            <div class="d-flex align-items-center">
+                                                                <div class="metric-icon me-3">
+                                                                    <i class="fas fa-star text-warning fa-lg"></i>
+                                                                </div>
+                                                                <div>
+                                                                    <div class="metric-label text-muted small">Avg Thickness Score</div>
+                                                                    <div class="metric-value h5 mb-0 text-warning" id="averageThicknessScore">-</div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
                                                     </div>
-                                                    <div class="col-md-4">
-                                                        <small class="text-muted">
-                                                            <strong>Hairs per FU:</strong>
-                                                            <span id="hairsPerFU">-</span>
-                                                        </small>
+                                                    <div class="col-lg-4 col-md-6">
+                                                        <div class="metric-card p-3 border rounded">
+                                                            <div class="d-flex align-items-center">
+                                                                <div class="metric-icon me-3">
+                                                                    <i class="fas fa-hashtag text-secondary fa-lg"></i>
+                                                                </div>
+                                                                <div>
+                                                                    <div class="metric-label text-muted small">Hairs per FU</div>
+                                                                    <div class="metric-value h5 mb-0 text-secondary" id="hairsPerFU">-</div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
                                                     </div>
-                                                    <div class="col-md-4">
-                                                        <small class="text-muted">
-                                                            <strong>Hairs per cm²:</strong>
-                                                            <span id="hairsPerCm2">-</span>
-                                                        </small>
+                                                    <div class="col-lg-4 col-md-6">
+                                                        <div class="metric-card p-3 border rounded">
+                                                            <div class="d-flex align-items-center">
+                                                                <div class="metric-icon me-3">
+                                                                    <i class="fas fa-ruler text-danger fa-lg"></i>
+                                                                </div>
+                                                                <div>
+                                                                    <div class="metric-label text-muted small">Hairs per cm²</div>
+                                                                    <div class="metric-value h5 mb-0 text-danger" id="hairsPerCm2">-</div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                                <div class="row mt-1">
-                                                    <div class="col-md-6">
-                                                        <small class="text-muted">
-                                                            <strong>Effective Hair Density:</strong>
-                                                            <span id="effectiveHairDensity">-</span>
-                                                        </small>
+                                                    <div class="col-lg-6 col-md-12">
+                                                        <div class="metric-card p-3 border rounded border-success">
+                                                            <div class="d-flex align-items-center">
+                                                                <div class="metric-icon me-3">
+                                                                    <i class="fas fa-trophy text-success fa-lg"></i>
+                                                                </div>
+                                                                <div>
+                                                                    <div class="metric-label text-muted small">Effective Hair Density</div>
+                                                                    <div class="metric-value h4 mb-0 text-success" id="effectiveHairDensity">-</div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
