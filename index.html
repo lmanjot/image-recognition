@@ -949,15 +949,12 @@
             if (processingTimeEl) processingTimeEl.textContent = processingTime + 's';
             if (runtimeDisplayEl) runtimeDisplayEl.style.display = 'block';
             
-            // Show detection results table
-            const detectionResultsCard = document.getElementById('detectionResultsCard');
+            // Show results card
+            const resultsCard = document.getElementById('resultsCard');
             
-            if (detectionResultsCard) {
-                detectionResultsCard.style.display = 'block';
+            if (resultsCard) {
+                resultsCard.style.display = 'block';
             }
-            
-            // Update parameter display
-            updateParameterDisplay();
             
             // Update follicular metrics display
             updateFollicularMetrics(data.follicular_metrics);
@@ -966,31 +963,24 @@
         }
 
         function updateParameterDisplay() {
-            const confidence = parseFloat(document.getElementById('confidenceThreshold').value).toFixed(2);
-            const padding = parseFloat(document.getElementById('paddingFactor').value).toFixed(2);
-            const nms = parseFloat(document.getElementById('iouThreshold').value).toFixed(2);
-            const maxPred = document.getElementById('maxPredictions').value;
-            
-            const parameterDisplay = document.getElementById('parameterDisplay');
-            if (parameterDisplay) {
-                parameterDisplay.textContent = `Confidence: ${confidence}, Padding: ${padding}, NMS: ${nms}, Max: ${maxPred}`;
-            }
+            // This function is no longer needed since we have separate parameter displays for each model
+            // Parameters are now displayed within each model's results section
         }
 
         function updateFollicularMetrics(metrics) {
-            const metricsContainer = document.getElementById('follicularMetrics');
+            const metricsContainer = document.getElementById('densityMetrics');
             if (!metricsContainer || !metrics) {
                 if (metricsContainer) metricsContainer.style.display = 'none';
                 return;
             }
             
-            // Update metric values
-            const follicularDensity = document.getElementById('follicularDensity');
-            const averageHairsPerUnit = document.getElementById('averageHairsPerUnit');
-            const totalHairs = document.getElementById('totalHairs');
-            const totalFollicularUnits = document.getElementById('totalFollicularUnits');
-            const fuWithOneHair = document.getElementById('fuWithOneHair');
-            const fuWithMultipleHairs = document.getElementById('fuWithMultipleHairs');
+            // Update density metric values
+            const follicularDensity = document.getElementById('densityFollicularDensity');
+            const averageHairsPerUnit = document.getElementById('densityAverageHairs');
+            const totalHairs = document.getElementById('densityTotalHairs');
+            const totalFollicularUnits = document.getElementById('densityTotalFU');
+            const fuWithOneHair = document.getElementById('densityFUWithOneHair');
+            const fuWithMultipleHairs = document.getElementById('densityFUWithMultipleHairs');
             
             if (follicularDensity) follicularDensity.textContent = metrics.follicular_density_per_cm2 || '0';
             if (averageHairsPerUnit) averageHairsPerUnit.textContent = metrics.average_hair_per_unit || '0';
