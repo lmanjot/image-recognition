@@ -6,7 +6,7 @@ from http.server import BaseHTTPRequestHandler
 from urllib.parse import parse_qs, urlparse
 import cgi
 import io
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 import requests
 import time
 
@@ -432,7 +432,7 @@ def parse_multipart_data(body, content_type):
         # Extract form data with new defaults
         image_file = form.getfirst('image')
         confidence_threshold = float(form.getfirst('confidenceThreshold', 0.1))  # Default: 0.1
-        max_predictions = int(form.getfirst('maxPredictions', 100))
+        max_predictions = int(form.getfirst('maxPredictions', 200))
         
         return {
             'image': image_file,
