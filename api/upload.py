@@ -173,16 +173,25 @@ def calculate_follicular_metrics(predictions):
         total_follicular_units += 1
         total_hairs += class_number
         
-        # Count FU breakdown
-        if class_number == 1:
-            fu_with_one_hair += 1
-        else:
-            fu_with_multiple_hairs += 1
-        
         # Track class distribution
         if class_name not in class_counts:
             class_counts[class_name] = 0
         class_counts[class_name] += 1
+    
+    # Calculate FU breakdown from class counts
+    for class_name, count in class_counts.items():
+        try:
+            if class_name.lower().startswith('class'):
+                class_number = int(class_name.lower().replace('class', ''))
+            else:
+                class_number = 1
+        except:
+            class_number = 1
+            
+        if class_number == 1:
+            fu_with_one_hair += count
+        else:
+            fu_with_multiple_hairs += count
     
     # Calculate metrics
     follicular_density = total_follicular_units / AREA_CM2 if AREA_CM2 > 0 else 0
