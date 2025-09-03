@@ -88,6 +88,7 @@
             margin: 0 auto;
             padding: 0 2rem;
             width: 100%;
+            margin-top: -1rem;
         }
         
         .content-grid {
@@ -433,9 +434,7 @@
                             <form id="uploadForm" enctype="multipart/form-data">
                                 <div class="row align-items-end g-3">
                                     <div class="col-md-4">
-                                        <label for="imageFile" class="form-label">Select Image</label>
                                         <input type="file" class="form-control" id="imageFile" accept="image/*" required>
-                                        <div class="form-text">JPG, PNG, GIF, WebP</div>
                                     </div>
                                     
                                     <div class="col-md-4">
@@ -579,15 +578,7 @@
                             <div class="card-body">
                             
                             <!-- Combined Metrics -->
-                            <div class="row mb-4">
-                                <div class="col-12">
-                                    <div class="card border-primary shadow-sm">
-                                        <div class="card-header bg-primary text-white">
-                                            <h5 class="mb-0"><i class="fas fa-chart-line"></i> Combined Analysis Metrics</h5>
-                                            <small class="opacity-75">Advanced metrics combining both density and thickness analysis</small>
-                                        </div>
-                                        <div class="card-body p-4">
-                                            <div id="combinedMetrics" style="display: none;">
+                            <div id="combinedMetrics" style="display: none;">
                                                 <div class="row g-4">
                                                     <div class="col-lg-4 col-md-6">
                                                         <div class="metric-card p-3 border rounded" data-bs-toggle="tooltip" data-bs-placement="top" title="Terminal-to-Vellus Ratio = Weak Hairs / Strong Hairs (Vellus/Terminal)">
@@ -686,54 +677,50 @@
                                     </div>
                                 </div>
                             </div>
+                            </div>
                             
                             <!-- Individual Model Metrics -->
-                            <div class="row g-4">
+                            <div class="row g-3">
                                 <!-- Hair Density Metrics -->
-                                <div class="col-lg-6">
-                                    <div class="card h-100 shadow-sm">
-                                        <div class="card-header bg-primary text-white">
-                                            <h6 class="mb-0"><i class="fas fa-hashtag"></i> Hair Density Analysis</h6>
-                                            <small class="opacity-75">Follicular unit counting and hair density metrics</small>
-                                        </div>
-                                        <div class="card-body p-4">
-                                            <div id="densityMetrics" style="display: none;">
-                                                <div class="row g-3">
-                                                    <div class="col-6">
-                                                        <div class="metric-item p-3 border rounded text-center">
-                                                            <div class="metric-value h4 text-primary mb-1" id="densityFollicularDensity">-</div>
-                                                            <div class="metric-label small text-muted">FU Density per cm²</div>
-                                                        </div>
+                                <div class="col-12">
+                                    <div class="mb-3">
+                                        <h6 class="text-primary mb-2"><i class="fas fa-hashtag"></i> Hair Density Analysis</h6>
+                                        <div id="densityMetrics" style="display: none;">
+                                            <div class="row g-2">
+                                                <div class="col-2">
+                                                    <div class="text-center p-2 border rounded">
+                                                        <div class="h6 text-primary mb-0" id="densityFollicularDensity">-</div>
+                                                        <small class="text-muted">FU Density per cm²</small>
                                                     </div>
-                                                    <div class="col-6">
-                                                        <div class="metric-item p-3 border rounded text-center">
-                                                            <div class="metric-value h4 text-info mb-1" id="densityAverageHairs">-</div>
-                                                            <div class="metric-label small text-muted">Avg Hairs/Unit</div>
-                                                        </div>
+                                                </div>
+                                                <div class="col-2">
+                                                    <div class="text-center p-2 border rounded">
+                                                        <div class="h6 text-info mb-0" id="densityAverageHairs">-</div>
+                                                        <small class="text-muted">Avg Hairs/Unit</small>
                                                     </div>
-                                                    <div class="col-6">
-                                                        <div class="metric-item p-3 border rounded text-center">
-                                                            <div class="metric-value h4 text-success mb-1" id="densityTotalHairs">-</div>
-                                                            <div class="metric-label small text-muted">Total Hairs</div>
-                                                        </div>
+                                                </div>
+                                                <div class="col-2">
+                                                    <div class="text-center p-2 border rounded">
+                                                        <div class="h6 text-success mb-0" id="densityTotalHairs">-</div>
+                                                        <small class="text-muted">Total Hairs</small>
                                                     </div>
-                                                    <div class="col-6">
-                                                        <div class="metric-item p-3 border rounded text-center">
-                                                            <div class="metric-value h4 text-warning mb-1" id="densityTotalFU">-</div>
-                                                            <div class="metric-label small text-muted">Total FU</div>
-                                                        </div>
+                                                </div>
+                                                <div class="col-2">
+                                                    <div class="text-center p-2 border rounded">
+                                                        <div class="h6 text-warning mb-0" id="densityTotalFU">-</div>
+                                                        <small class="text-muted">Total FU</small>
                                                     </div>
-                                                    <div class="col-6">
-                                                        <div class="metric-item p-3 border rounded text-center">
-                                                            <div class="metric-value h4 text-secondary mb-1" id="densityFUWithOneHair">-</div>
-                                                            <div class="metric-label small text-muted">FU with 1 Hair</div>
-                                                        </div>
+                                                </div>
+                                                <div class="col-2">
+                                                    <div class="text-center p-2 border rounded">
+                                                        <div class="h6 text-secondary mb-0" id="densityFUWithOneHair">-</div>
+                                                        <small class="text-muted">FU with 1 Hair</small>
                                                     </div>
-                                                    <div class="col-6">
-                                                        <div class="metric-item p-3 border rounded text-center">
-                                                            <div class="metric-value h4 text-danger mb-1" id="densityFUWithMultipleHairs">-</div>
-                                                            <div class="metric-label small text-muted">FU with 2+ Hairs</div>
-                                                        </div>
+                                                </div>
+                                                <div class="col-2">
+                                                    <div class="text-center p-2 border rounded">
+                                                        <div class="h6 text-danger mb-0" id="densityFUWithMultipleHairs">-</div>
+                                                        <small class="text-muted">FU with 2+ Hairs</small>
                                                     </div>
                                                 </div>
                                             </div>
@@ -742,44 +729,39 @@
                                 </div>
                                 
                                 <!-- Hair Thickness Metrics -->
-                                <div class="col-lg-6">
-                                    <div class="card h-100 shadow-sm">
-                                        <div class="card-header bg-success text-white">
-                                            <h6 class="mb-0"><i class="fas fa-weight"></i> Hair Thickness Analysis</h6>
-                                            <small class="opacity-75">Hair caliber classification and thickness distribution</small>
-                                        </div>
-                                        <div class="card-body p-4">
-                                            <div id="thicknessMetrics" style="display: none;">
-                                                <div class="row g-3">
-                                                    <div class="col-4">
-                                                        <div class="metric-item p-3 border rounded text-center">
-                                                            <div class="metric-value h4 text-success mb-1" id="thicknessStrong">-</div>
-                                                            <div class="metric-label small text-muted">Strong</div>
-                                                        </div>
+                                <div class="col-12">
+                                    <div class="mb-3">
+                                        <h6 class="text-success mb-2"><i class="fas fa-weight"></i> Hair Thickness Analysis</h6>
+                                        <div id="thicknessMetrics" style="display: none;">
+                                            <div class="row g-2">
+                                                <div class="col-2">
+                                                    <div class="text-center p-2 border rounded">
+                                                        <div class="h6 text-success mb-0" id="thicknessStrong">-</div>
+                                                        <small class="text-muted">Strong</small>
                                                     </div>
-                                                    <div class="col-4">
-                                                        <div class="metric-item p-3 border rounded text-center">
-                                                            <div class="metric-value h4 text-warning mb-1" id="thicknessMedium">-</div>
-                                                            <div class="metric-label small text-muted">Medium</div>
-                                                        </div>
+                                                </div>
+                                                <div class="col-2">
+                                                    <div class="text-center p-2 border rounded">
+                                                        <div class="h6 text-warning mb-0" id="thicknessMedium">-</div>
+                                                        <small class="text-muted">Medium</small>
                                                     </div>
-                                                    <div class="col-4">
-                                                        <div class="metric-item p-3 border rounded text-center">
-                                                            <div class="metric-value h4 text-danger mb-1" id="thicknessWeak">-</div>
-                                                            <div class="metric-label small text-muted">Weak</div>
-                                                        </div>
+                                                </div>
+                                                <div class="col-2">
+                                                    <div class="text-center p-2 border rounded">
+                                                        <div class="h6 text-danger mb-0" id="thicknessWeak">-</div>
+                                                        <small class="text-muted">Weak</small>
                                                     </div>
-                                                    <div class="col-6">
-                                                        <div class="metric-item p-3 border rounded text-center">
-                                                            <div class="metric-value h4 text-primary mb-1" id="thicknessTotalDetections">-</div>
-                                                            <div class="metric-label small text-muted">Total Detections</div>
-                                                        </div>
+                                                </div>
+                                                <div class="col-3">
+                                                    <div class="text-center p-2 border rounded">
+                                                        <div class="h6 text-primary mb-0" id="thicknessTotalDetections">-</div>
+                                                        <small class="text-muted">Total Detections</small>
                                                     </div>
-                                                    <div class="col-6">
-                                                        <div class="metric-item p-3 border rounded text-center">
-                                                            <div class="metric-value h4 text-info mb-1" id="thicknessProcessingTime">-</div>
-                                                            <div class="metric-label small text-muted">Processing Time (s)</div>
-                                                        </div>
+                                                </div>
+                                                <div class="col-3">
+                                                    <div class="text-center p-2 border rounded">
+                                                        <div class="h6 text-info mb-0" id="thicknessProcessingTime">-</div>
+                                                        <small class="text-muted">Processing Time (s)</small>
                                                     </div>
                                                 </div>
                                             </div>
