@@ -415,7 +415,10 @@
                                     <input type="range" class="form-range" id="confidenceThreshold" min="0.01" max="1.0" step="0.01" value="0.1">
                                 </div>
                                 
-
+                                <div class="mb-3">
+                                    <label for="iouThreshold" class="form-label">IoU Threshold: <span id="iouValue">0.00</span></label>
+                                    <input type="range" class="form-range" id="iouThreshold" min="0.0" max="1.0" step="0.01" value="0.0">
+                                </div>
                                 
                                 <div class="mb-3">
                                     <label for="maxPredictions" class="form-label">Max Predictions: <span id="maxPredictionsValue">100</span></label>
@@ -560,6 +563,7 @@
             uploadForm.addEventListener('submit', handleFormSubmit);
             
             const confidenceSlider = document.getElementById('confidenceThreshold');
+            const iouSlider = document.getElementById('iouThreshold');
             const maxPredictionsSlider = document.getElementById('maxPredictions');
             
             confidenceSlider.addEventListener('input', function() {
@@ -610,6 +614,8 @@
         function updateRangeDisplays() {
             document.getElementById('confidenceValue').textContent = 
                 parseFloat(document.getElementById('confidenceThreshold').value).toFixed(2);
+            document.getElementById('iouValue').textContent = 
+                parseFloat(document.getElementById('iouThreshold').value).toFixed(2);
             document.getElementById('maxPredictionsValue').textContent = 
                 document.getElementById('maxPredictions').value;
         }
@@ -652,6 +658,7 @@
             
             formData.append('image', file);
             formData.append('confidenceThreshold', document.getElementById('confidenceThreshold').value);
+            formData.append('iouThreshold', document.getElementById('iouThreshold').value);
             formData.append('maxPredictions', document.getElementById('maxPredictions').value);
             
             // Show loading state
@@ -820,7 +827,7 @@
             const historyItem = {
                 id: Date.now(),
                 timestamp: new Date(),
-                imageData: currentImageData,
+                imageData: currentImageData || getOriginalImageData(),
                 totalPredictions: data.total_predictions,
                 predictions: data.predictions || [],
                 processingTime: processingTime

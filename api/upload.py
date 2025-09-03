@@ -115,7 +115,7 @@ def get_google_access_token(credentials_json):
         print(f"❌ Error getting access token: {e}")
         return None
 
-def call_vertex_ai_endpoint(image_bytes, confidence_threshold, max_predictions, access_token):
+def call_vertex_ai_endpoint(image_bytes, confidence_threshold, iou_threshold, max_predictions, access_token):
     """Make actual API call to Vertex AI endpoint"""
     try:
         print("🚀 Making API call to Vertex AI endpoint...")
@@ -131,6 +131,7 @@ def call_vertex_ai_endpoint(image_bytes, confidence_threshold, max_predictions, 
             }],
             "parameters": {
                 "confidenceThreshold": confidence_threshold,
+                "iouThreshold": iou_threshold,
                 "maxPredictions": max_predictions
             }
         }
@@ -243,11 +244,12 @@ def call_vertex_ai_endpoint(image_bytes, confidence_threshold, max_predictions, 
         traceback.print_exc()
         return None
 
-def predict_image_object_detection_rest(image_bytes, confidence_threshold, max_predictions):
+def predict_image_object_detection_rest(image_bytes, confidence_threshold, iou_threshold, max_predictions):
     """Call Vertex AI endpoint using REST API (lightweight approach)"""
     print(f"\n🔍 Starting Vertex AI prediction process...")
     print(f"  - Image size: {len(image_bytes)} bytes")
     print(f"  - Confidence threshold: {confidence_threshold}")
+    print(f"  - IoU threshold: {iou_threshold}")
     print(f"  - Max predictions: {max_predictions}")
     
     # Check Vertex AI configuration at runtime (only once)
@@ -282,6 +284,7 @@ def predict_image_object_detection_rest(image_bytes, confidence_threshold, max_p
         predictions = call_vertex_ai_endpoint(
             image_bytes, 
             confidence_threshold, 
+            iou_threshold,
             max_predictions, 
             access_token
         )
@@ -303,11 +306,11 @@ def predict_image_object_detection_rest(image_bytes, confidence_threshold, max_p
         print("🔄 Falling back to mock data")
         return get_mock_predictions()
 
-def predict_image_object_detection(image_bytes, confidence_threshold, max_predictions):
+def predict_image_object_detection(image_bytes, confidence_threshold, iou_threshold, max_predictions):
     """Main prediction function - optimized to reduce redundant calls"""
     # Single call to the REST function - no more redundant calls
     return predict_image_object_detection_rest(
-        image_bytes, confidence_threshold, max_predictions
+        image_bytes, confidence_threshold, iou_threshold, max_predictions
     )
 
 def create_annotated_image(image_bytes, predictions):
@@ -347,8 +350,11 @@ def create_annotated_image(image_bytes, predictions):
         except:
             font = ImageFont.load_default()
         
-        # Define colors for different classes (cycling through them)
+        # Define colors for different classes
         colors = ['red', 'blue', 'green', 'yellow', 'purple', 'orange', 'cyan', 'magenta']
+        
+        # Track colors assigned to each class
+        class_colors = {}
         
         # Draw bounding boxes and labels
         for i, pred in enumerate(predictions):
@@ -376,8 +382,10 @@ def create_annotated_image(image_bytes, predictions):
                 print(f"⚠️ Skipping invalid bounding box: {bbox}")
                 continue
             
-            # Choose color for this detection
-            color = colors[i % len(colors)]
+            # Choose color based on class name (consistent for same class)
+            if class_name not in class_colors:
+                class_colors[class_name] = colors[len(class_colors) % len(colors)]
+            color = class_colors[class_name]
             
             # Draw the bounding box with thicker outline
             draw.rectangle(
@@ -432,11 +440,13 @@ def parse_multipart_data(body, content_type):
         # Extract form data with new defaults
         image_file = form.getfirst('image')
         confidence_threshold = float(form.getfirst('confidenceThreshold', 0.1))  # Default: 0.1
+        iou_threshold = float(form.getfirst('iouThreshold', 0.0))  # Default: 0.0
         max_predictions = int(form.getfirst('maxPredictions', 200))
         
         return {
             'image': image_file,
             'confidence_threshold': confidence_threshold,
+            'iou_threshold': iou_threshold,
             'max_predictions': max_predictions
         }
     except Exception as e:
@@ -483,9 +493,10 @@ class handler(BaseHTTPRequestHandler):
             
             # Get parameters
             confidence_threshold = form_data['confidence_threshold']
+            iou_threshold = form_data['iou_threshold']
             max_predictions = form_data['max_predictions']
             
-            print(f"🖼️ Processing image with parameters: conf={confidence_threshold}, max={max_predictions}")
+            print(f"🖼️ Processing image with parameters: conf={confidence_threshold}, IoU={iou_threshold}, max={max_predictions}")
             
             # Convert image file to bytes
             if hasattr(form_data['image'], 'file'):
@@ -497,6 +508,7 @@ class handler(BaseHTTPRequestHandler):
             predictions = predict_image_object_detection(
                 image_bytes, 
                 confidence_threshold, 
+                iou_threshold,
                 max_predictions
             )
             
