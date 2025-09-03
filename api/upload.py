@@ -488,15 +488,15 @@ def predict_image_object_detection(image_bytes, confidence_threshold, iou_thresh
     )
 
 def call_thickness_vertex_ai_endpoint(image_bytes, confidence_threshold, iou_threshold, max_predictions, access_token):
-    """Make actual API call to Thickness Vertex AI endpoint"""
+    """Make actual API call to Thickness Vertex AI endpoint - SAME AS DENSITY MODEL"""
     try:
         print("🚀 Making API call to Thickness Vertex AI endpoint...")
         
-        # Construct the Thickness Vertex AI endpoint URL
+        # Construct the Thickness Vertex AI endpoint URL - ONLY DIFFERENCE FROM DENSITY MODEL
         endpoint_url = f"https://{thickness_location}-aiplatform.googleapis.com/v1/projects/{thickness_project_id}/locations/{thickness_location}/endpoints/{thickness_endpoint_id}:predict"
         print(f"  - Thickness Endpoint URL: {endpoint_url}")
         
-        # Prepare the request payload - using correct Vertex AI format
+        # Prepare the request payload - EXACT SAME AS DENSITY MODEL
         payload = {
             "instances": [
                 {
@@ -510,7 +510,7 @@ def call_thickness_vertex_ai_endpoint(image_bytes, confidence_threshold, iou_thr
             }
         }
         
-        # Make the API request
+        # Make the API request - EXACT SAME AS DENSITY MODEL
         headers = {
             'Authorization': f'Bearer {access_token}',
             'Content-Type': 'application/json'
@@ -524,7 +524,7 @@ def call_thickness_vertex_ai_endpoint(image_bytes, confidence_threshold, iou_thr
             result = response.json()
             print(f"✅ Thickness Vertex AI API call successful")
             
-            # Parse predictions from response
+            # Parse predictions from response - EXACT SAME AS DENSITY MODEL
             predictions = []
             if 'predictions' in result and result['predictions']:
                 for pred in result['predictions']:
@@ -552,7 +552,7 @@ def call_thickness_vertex_ai_endpoint(image_bytes, confidence_threshold, iou_thr
         return []
 
 def predict_thickness_model_rest(image_bytes, confidence_threshold, iou_threshold, padding_factor, max_predictions):
-    """Call Thickness Vertex AI endpoint using REST API"""
+    """Call Thickness Vertex AI endpoint using REST API - EXACT SAME AS DENSITY MODEL"""
     print(f"\n🔍 Starting Thickness Vertex AI prediction process...")
     print(f"  - Original image size: {len(image_bytes)} bytes")
     print(f"  - Confidence threshold: {confidence_threshold}")
@@ -560,55 +560,66 @@ def predict_thickness_model_rest(image_bytes, confidence_threshold, iou_threshol
     print(f"  - Padding factor: {padding_factor}")
     print(f"  - Max predictions: {max_predictions}")
     
-    # Compress image if it's too large for Vertex AI
+    # Compress image if it's too large for Vertex AI - SAME AS DENSITY MODEL
     compressed_image_bytes = compress_image(image_bytes, max_size_mb=0.8)
     print(f"  - Compressed image size: {len(compressed_image_bytes)} bytes")
     
-    # Check Vertex AI configuration at runtime
+    # Check Vertex AI configuration at runtime - SAME AS DENSITY MODEL
     vertex_ai_enabled = check_vertex_ai_enabled()
     
     if not vertex_ai_enabled:
         print("⚠️ Vertex AI not configured, using mock data for thickness model")
+        print("  - Missing environment variables")
         return get_mock_thickness_predictions()
     
     try:
-        # Get access token for thickness model (same authentication)
-        access_token = get_access_token()
+        print("🔍 Vertex AI configured - attempting real API call for thickness model")
+        
+        # Get the service account credentials from environment - SAME AS DENSITY MODEL
+        credentials_json = os.getenv('GOOGLE_CREDENTIALS')
+        if not credentials_json:
+            print("❌ No credentials found in environment")
+            return get_mock_thickness_predictions()
+        
+        print("✅ Credentials found in environment")
+        print(f"  - Credentials length: {len(credentials_json)} characters")
+        
+        # Get access token - SAME AS DENSITY MODEL
+        access_token = get_google_access_token(credentials_json)
         if not access_token:
-            print("❌ Failed to get access token for thickness model")
+            print("❌ Failed to get access token")
             return get_mock_thickness_predictions()
         
         print("✅ Access token obtained for thickness model")
         
-        # Call Vertex AI endpoint for thickness model
+        # Make actual API call to Thickness Vertex AI - SAME AS DENSITY MODEL
         predictions = call_thickness_vertex_ai_endpoint(
-            compressed_image_bytes, 
-            confidence_threshold,
+            compressed_image_bytes,  # Use compressed image
+            confidence_threshold, 
             0.99,  # Very high IoU threshold to get all raw detections
             200,   # High max predictions to get all detections
             access_token
         )
         
-        if not predictions:
-            print("⚠️ No predictions from thickness model, using mock data")
+        if predictions:
+            print("🎉 Real Thickness Vertex AI predictions received!")
+            print(f"  - Number of raw predictions: {len(predictions)}")
+            for i, pred in enumerate(predictions):
+                print(f"    {i+1}. {pred.get('displayName', 'Unknown')} - {pred.get('confidence', 0.0):.3f}")
+            
+            # Apply our own NMS to filter overlapping detections - SAME AS DENSITY MODEL
+            filtered_predictions = apply_nms(predictions, iou_threshold, padding_factor, max_predictions)
+            print(f"  - Number of predictions after NMS: {len(filtered_predictions)}")
+            return filtered_predictions
+        else:
+            print("⚠️ Thickness Vertex AI call failed, falling back to mock data")
             return get_mock_thickness_predictions()
         
-        print(f"✅ Thickness model returned {len(predictions)} predictions")
-        
-        # Apply padding to bounding boxes before NMS
-        for pred in predictions:
-            if 'bbox' in pred:
-                pred['bbox'] = apply_padding_to_bbox(pred['bbox'], padding_factor)
-        
-        # Apply NMS
-        filtered_predictions = apply_nms(predictions, iou_threshold, padding_factor, max_predictions)
-        
-        print(f"✅ After NMS: {len(filtered_predictions)} thickness predictions")
-        return filtered_predictions
-        
     except Exception as e:
-        print(f"❌ Error calling thickness Vertex AI endpoint: {e}")
-        print("⚠️ Falling back to mock data for thickness model")
+        print(f"❌ Error calling Thickness Vertex AI: {e}")
+        import traceback
+        traceback.print_exc()
+        print("🔄 Falling back to mock data for thickness model")
         return get_mock_thickness_predictions()
 
 def get_mock_thickness_predictions():
