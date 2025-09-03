@@ -227,6 +227,95 @@ def calculate_follicular_metrics(predictions):
     
     return metrics
 
+def calculate_combined_metrics(density_predictions, thickness_predictions):
+    """
+    Calculate combined metrics from both density and thickness models.
+    """
+    if not density_predictions and not thickness_predictions:
+        return {
+            'terminal_to_vellus_ratio': 0.0,
+            'percent_thick_hairs': 0.0,
+            'hair_caliber_index': 0,
+            'average_thickness_score': 0.0,
+            'hairs_per_fu': 0.0,
+            'hairs_per_cm2': 0.0,
+            'effective_hair_density': 0.0
+        }
+    
+    # Known area in cm²
+    AREA_CM2 = 0.273
+    
+    # Calculate density metrics
+    density_metrics = calculate_follicular_metrics(density_predictions) if density_predictions else {
+        'total_follicular_units': 0,
+        'total_hairs': 0
+    }
+    
+    # Calculate thickness metrics
+    thickness_metrics = {}
+    if thickness_predictions:
+        thickness_metrics = {
+            'strong': sum(1 for p in thickness_predictions if p['displayName'] == 'strong'),
+            'medium': sum(1 for p in thickness_predictions if p['displayName'] == 'medium'),
+            'weak': sum(1 for p in thickness_predictions if p['displayName'] == 'weak'),
+            'total_detections': len(thickness_predictions)
+        }
+    else:
+        thickness_metrics = {
+            'strong': 0,
+            'medium': 0,
+            'weak': 0,
+            'total_detections': 0
+        }
+    
+    # Extract values
+    total_hairs = density_metrics['total_hairs']
+    total_fu = density_metrics['total_follicular_units']
+    thick_hairs = thickness_metrics['strong']
+    medium_hairs = thickness_metrics['medium']
+    thin_hairs = thickness_metrics['weak']
+    
+    # Calculate combined metrics
+    # Terminal-to-Vellus Ratio = thick_hairs / thin_hairs (return 0 if thin_hairs = 0)
+    terminal_to_vellus_ratio = thick_hairs / thin_hairs if thin_hairs > 0 else 0.0
+    
+    # % Thick Hairs = (thick_hairs / total_hairs) * 100
+    percent_thick_hairs = (thick_hairs / total_hairs * 100) if total_hairs > 0 else 0.0
+    
+    # Hair Caliber Index (HCI) = (thick_hairs * 3) + (medium_hairs * 2) + (thin_hairs * 1)
+    hair_caliber_index = (thick_hairs * 3) + (medium_hairs * 2) + (thin_hairs * 1)
+    
+    # Average Thickness Score = HCI / total_hairs
+    average_thickness_score = hair_caliber_index / total_hairs if total_hairs > 0 else 0.0
+    
+    # Hairs per FU = total_hairs / total_FU
+    hairs_per_fu = total_hairs / total_fu if total_fu > 0 else 0.0
+    
+    # Hairs per cm2 = total_hairs / picture_area_cm2
+    hairs_per_cm2 = total_hairs / AREA_CM2 if AREA_CM2 > 0 else 0.0
+    
+    # Effective Hair Density = (total_hairs / picture_area_cm2) * (Average Thickness Score / 3)
+    effective_hair_density = hairs_per_cm2 * (average_thickness_score / 3.0)
+    
+    print(f"📊 Combined Metrics:")
+    print(f"  - Terminal-to-Vellus Ratio: {terminal_to_vellus_ratio:.2f}")
+    print(f"  - % Thick Hairs: {percent_thick_hairs:.1f}%")
+    print(f"  - Hair Caliber Index: {hair_caliber_index}")
+    print(f"  - Average Thickness Score: {average_thickness_score:.2f}")
+    print(f"  - Hairs per FU: {hairs_per_fu:.2f}")
+    print(f"  - Hairs per cm²: {hairs_per_cm2:.1f}")
+    print(f"  - Effective Hair Density: {effective_hair_density:.1f}")
+    
+    return {
+        'terminal_to_vellus_ratio': round(terminal_to_vellus_ratio, 2),
+        'percent_thick_hairs': round(percent_thick_hairs, 1),
+        'hair_caliber_index': hair_caliber_index,
+        'average_thickness_score': round(average_thickness_score, 2),
+        'hairs_per_fu': round(hairs_per_fu, 2),
+        'hairs_per_cm2': round(hairs_per_cm2, 1),
+        'effective_hair_density': round(effective_hair_density, 1)
+    }
+
 def get_mock_predictions():
     """Return empty predictions when Vertex AI is not available - no mock data"""
     print("⚠️ Returning empty predictions - Vertex AI not available")
@@ -1255,6 +1344,12 @@ class handler(BaseHTTPRequestHandler):
                 )
                 if combined_image:
                     response_data['combined_annotated_image'] = combined_image
+            
+            # Calculate combined metrics if we have any predictions
+            if density_predictions or thickness_predictions:
+                print("📊 Calculating combined metrics...")
+                combined_metrics = calculate_combined_metrics(density_predictions, thickness_predictions)
+                response_data['combined_metrics'] = combined_metrics
             
             self.send_success_response(response_data)
             

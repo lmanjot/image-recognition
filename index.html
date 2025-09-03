@@ -403,58 +403,63 @@
                         </div>
                     </div>
 
-                    <!-- Hair Density Model Parameters -->
-                    <div class="card mt-3" id="densityModelCard">
-                        <div class="card-header">
-                            <h6><i class="fas fa-hashtag"></i> Hair Density Model Parameters</h6>
+                    <!-- Compact Model Parameters -->
+                    <div class="row mt-3">
+                        <!-- Hair Density Model Parameters -->
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6><i class="fas fa-hashtag"></i> Density Model</h6>
+                                </div>
+                                <div class="card-body p-2">
+                                    <div class="row g-2">
+                                        <div class="col-6">
+                                            <label class="form-label small">Confidence</label>
+                                            <input type="number" class="form-control form-control-sm" id="densityConfidence" min="0.01" max="1.0" step="0.01" value="0.2">
+                                        </div>
+                                        <div class="col-6">
+                                            <label class="form-label small">Padding</label>
+                                            <input type="number" class="form-control form-control-sm" id="densityPadding" min="0.0" max="1.0" step="0.01" value="0.5">
+                                        </div>
+                                        <div class="col-6">
+                                            <label class="form-label small">NMS</label>
+                                            <input type="number" class="form-control form-control-sm" id="densityNMS" min="0.0" max="1.0" step="0.01" value="0.0">
+                                        </div>
+                                        <div class="col-6">
+                                            <label class="form-label small">Max Pred</label>
+                                            <input type="number" class="form-control form-control-sm" id="densityMaxPred" min="1" max="100" step="1" value="100">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="card-body">
-                            <div class="mb-3">
-                                <label for="densityConfidence" class="form-label">Confidence: <span id="densityConfidenceValue">0.20</span></label>
-                                <input type="range" class="form-range" id="densityConfidence" min="0.01" max="1.0" step="0.01" value="0.2">
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="densityPadding" class="form-label">Padding: <span id="densityPaddingValue">0.50</span></label>
-                                <input type="range" class="form-range" id="densityPadding" min="0.0" max="1.0" step="0.01" value="0.5">
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="densityNMS" class="form-label">NMS: <span id="densityNMSValue">0.00</span></label>
-                                <input type="range" class="form-range" id="densityNMS" min="0.0" max="1.0" step="0.01" value="0.0">
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="densityMaxPred" class="form-label">Max Predictions: <span id="densityMaxPredValue">100</span></label>
-                                <input type="range" class="form-range" id="densityMaxPred" min="1" max="100" step="1" value="100">
-                            </div>
-                        </div>
-                    </div>
 
-                    <!-- Hair Thickness Model Parameters -->
-                    <div class="card mt-3" id="thicknessModelCard">
-                        <div class="card-header">
-                            <h6><i class="fas fa-weight"></i> Hair Thickness Model Parameters</h6>
-                        </div>
-                        <div class="card-body">
-                            <div class="mb-3">
-                                <label for="thicknessConfidence" class="form-label">Confidence: <span id="thicknessConfidenceValue">0.20</span></label>
-                                <input type="range" class="form-range" id="thicknessConfidence" min="0.01" max="1.0" step="0.01" value="0.2">
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="thicknessPadding" class="form-label">Padding: <span id="thicknessPaddingValue">0.50</span></label>
-                                <input type="range" class="form-range" id="thicknessPadding" min="0.0" max="1.0" step="0.01" value="0.5">
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="thicknessNMS" class="form-label">NMS: <span id="thicknessNMSValue">0.00</span></label>
-                                <input type="range" class="form-range" id="thicknessNMS" min="0.0" max="1.0" step="0.01" value="0.0">
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="thicknessMaxPred" class="form-label">Max Predictions: <span id="thicknessMaxPredValue">100</span></label>
-                                <input type="range" class="form-range" id="thicknessMaxPred" min="1" max="100" step="1" value="100">
+                        <!-- Hair Thickness Model Parameters -->
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6><i class="fas fa-weight"></i> Thickness Model</h6>
+                                </div>
+                                <div class="card-body p-2">
+                                    <div class="row g-2">
+                                        <div class="col-6">
+                                            <label class="form-label small">Confidence</label>
+                                            <input type="number" class="form-control form-control-sm" id="thicknessConfidence" min="0.01" max="1.0" step="0.01" value="0.2">
+                                        </div>
+                                        <div class="col-6">
+                                            <label class="form-label small">Padding</label>
+                                            <input type="number" class="form-control form-control-sm" id="thicknessPadding" min="0.0" max="1.0" step="0.01" value="0.5">
+                                        </div>
+                                        <div class="col-6">
+                                            <label class="form-label small">NMS</label>
+                                            <input type="number" class="form-control form-control-sm" id="thicknessNMS" min="0.0" max="1.0" step="0.01" value="0.0">
+                                        </div>
+                                        <div class="col-6">
+                                            <label class="form-label small">Max Pred</label>
+                                            <input type="number" class="form-control form-control-sm" id="thicknessMaxPred" min="1" max="100" step="1" value="100">
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -470,25 +475,10 @@
                     </div>
                 </div>
 
-                <!-- Center Panel - Image Display -->
+                <!-- Center Panel - Results Display -->
                 <div class="image-panel">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5><i class="fas fa-image"></i> Image Preview</h5>
-                        </div>
-                        <div class="card-body p-0">
-                            <div class="image-container" id="imageContainer">
-                                <div class="placeholder-image">
-                                    <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
-                                    <h5 class="text-muted">No image selected</h5>
-                                    <p class="text-muted">Upload an image to get started</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
                     <!-- Results Section -->
-                    <div class="card mt-3" id="resultsCard" style="display: none;">
+                    <div class="card" id="resultsCard" style="display: none;">
                         <div class="card-header d-flex justify-content-between align-items-center">
                             <h5><i class="fas fa-chart-bar"></i> Analysis Results</h5>
                             <div class="d-flex gap-3">
@@ -518,7 +508,70 @@
                                 </div>
                             </div>
                             
-                            <!-- Metrics Row -->
+                            <!-- Combined Metrics -->
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h6><i class="fas fa-chart-line"></i> Combined Analysis Metrics</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div id="combinedMetrics" style="display: none;">
+                                                <div class="row">
+                                                    <div class="col-md-4">
+                                                        <small class="text-muted">
+                                                            <strong>Terminal-to-Vellus Ratio:</strong>
+                                                            <span id="terminalToVellusRatio">-</span>
+                                                        </small>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <small class="text-muted">
+                                                            <strong>% Thick Hairs:</strong>
+                                                            <span id="percentThickHairs">-</span>%
+                                                        </small>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <small class="text-muted">
+                                                            <strong>Hair Caliber Index:</strong>
+                                                            <span id="hairCaliberIndex">-</span>
+                                                        </small>
+                                                    </div>
+                                                </div>
+                                                <div class="row mt-1">
+                                                    <div class="col-md-4">
+                                                        <small class="text-muted">
+                                                            <strong>Avg Thickness Score:</strong>
+                                                            <span id="averageThicknessScore">-</span>
+                                                        </small>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <small class="text-muted">
+                                                            <strong>Hairs per FU:</strong>
+                                                            <span id="hairsPerFU">-</span>
+                                                        </small>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <small class="text-muted">
+                                                            <strong>Hairs per cm²:</strong>
+                                                            <span id="hairsPerCm2">-</span>
+                                                        </small>
+                                                    </div>
+                                                </div>
+                                                <div class="row mt-1">
+                                                    <div class="col-md-6">
+                                                        <small class="text-muted">
+                                                            <strong>Effective Hair Density:</strong>
+                                                            <span id="effectiveHairDensity">-</span>
+                                                        </small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Individual Model Metrics -->
                             <div class="row">
                                 <!-- Hair Density Metrics -->
                                 <div class="col-md-6">
@@ -660,7 +713,7 @@
 
         function initializeApp() {
             setupEventListeners();
-            updateRangeDisplays();
+
             setupDragAndDrop();
 
         }
@@ -669,49 +722,7 @@
             const uploadForm = document.getElementById('uploadForm');
             uploadForm.addEventListener('submit', handleFormSubmit);
             
-            // Density model sliders
-            const densityConfidenceSlider = document.getElementById('densityConfidence');
-            const densityPaddingSlider = document.getElementById('densityPadding');
-            const densityNMSSlider = document.getElementById('densityNMS');
-            const densityMaxPredSlider = document.getElementById('densityMaxPred');
-            
-            densityConfidenceSlider.addEventListener('input', function() {
-                document.getElementById('densityConfidenceValue').textContent = parseFloat(this.value).toFixed(2);
-            });
-            
-            densityPaddingSlider.addEventListener('input', function() {
-                document.getElementById('densityPaddingValue').textContent = parseFloat(this.value).toFixed(2);
-            });
-            
-            densityNMSSlider.addEventListener('input', function() {
-                document.getElementById('densityNMSValue').textContent = parseFloat(this.value).toFixed(2);
-            });
-            
-            densityMaxPredSlider.addEventListener('input', function() {
-                document.getElementById('densityMaxPredValue').textContent = this.value;
-            });
-            
-            // Thickness model sliders
-            const thicknessConfidenceSlider = document.getElementById('thicknessConfidence');
-            const thicknessPaddingSlider = document.getElementById('thicknessPadding');
-            const thicknessNMSSlider = document.getElementById('thicknessNMS');
-            const thicknessMaxPredSlider = document.getElementById('thicknessMaxPred');
-            
-            thicknessConfidenceSlider.addEventListener('input', function() {
-                document.getElementById('thicknessConfidenceValue').textContent = parseFloat(this.value).toFixed(2);
-            });
-            
-            thicknessPaddingSlider.addEventListener('input', function() {
-                document.getElementById('thicknessPaddingValue').textContent = parseFloat(this.value).toFixed(2);
-            });
-            
-            thicknessNMSSlider.addEventListener('input', function() {
-                document.getElementById('thicknessNMSValue').textContent = parseFloat(this.value).toFixed(2);
-            });
-            
-            thicknessMaxPredSlider.addEventListener('input', function() {
-                document.getElementById('thicknessMaxPredValue').textContent = this.value;
-            });
+
             
             const imageInput = document.getElementById('imageFile');
             imageInput.addEventListener('change', handleImagePreview);
@@ -746,27 +757,7 @@
             });
         }
 
-        function updateRangeDisplays() {
-            // Density model displays
-            document.getElementById('densityConfidenceValue').textContent = 
-                parseFloat(document.getElementById('densityConfidence').value).toFixed(2);
-            document.getElementById('densityPaddingValue').textContent = 
-                parseFloat(document.getElementById('densityPadding').value).toFixed(2);
-            document.getElementById('densityNMSValue').textContent = 
-                parseFloat(document.getElementById('densityNMS').value).toFixed(2);
-            document.getElementById('densityMaxPredValue').textContent = 
-                document.getElementById('densityMaxPred').value;
-                
-            // Thickness model displays
-            document.getElementById('thicknessConfidenceValue').textContent = 
-                parseFloat(document.getElementById('thicknessConfidence').value).toFixed(2);
-            document.getElementById('thicknessPaddingValue').textContent = 
-                parseFloat(document.getElementById('thicknessPadding').value).toFixed(2);
-            document.getElementById('thicknessNMSValue').textContent = 
-                parseFloat(document.getElementById('thicknessNMS').value).toFixed(2);
-            document.getElementById('thicknessMaxPredValue').textContent = 
-                document.getElementById('thicknessMaxPred').value;
-        }
+
 
         function handleImagePreview() {
             const fileInput = document.getElementById('imageFile');
@@ -972,6 +963,11 @@
             if (accumulatedResults.thickness_results) {
                 displayThicknessResults(accumulatedResults.thickness_results);
             }
+            
+            // Display combined metrics if available
+            if (data.combined_metrics) {
+                displayCombinedMetrics(data.combined_metrics);
+            }
         }
         
         function displayCombinedImage(data) {
@@ -1015,6 +1011,21 @@
                 document.getElementById('thicknessTotalDetections').textContent = thicknessData.thickness_metrics.total_detections || '0';
                 
                 thicknessMetrics.style.display = 'block';
+            }
+        }
+        
+        function displayCombinedMetrics(combinedMetrics) {
+            const combinedMetricsEl = document.getElementById('combinedMetrics');
+            if (combinedMetricsEl && combinedMetrics) {
+                document.getElementById('terminalToVellusRatio').textContent = combinedMetrics.terminal_to_vellus_ratio || '0.00';
+                document.getElementById('percentThickHairs').textContent = combinedMetrics.percent_thick_hairs || '0.0';
+                document.getElementById('hairCaliberIndex').textContent = combinedMetrics.hair_caliber_index || '0';
+                document.getElementById('averageThicknessScore').textContent = combinedMetrics.average_thickness_score || '0.00';
+                document.getElementById('hairsPerFU').textContent = combinedMetrics.hairs_per_fu || '0.00';
+                document.getElementById('hairsPerCm2').textContent = combinedMetrics.hairs_per_cm2 || '0.0';
+                document.getElementById('effectiveHairDensity').textContent = combinedMetrics.effective_hair_density || '0.0';
+                
+                combinedMetricsEl.style.display = 'block';
             }
         }
 
