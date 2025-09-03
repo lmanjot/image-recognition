@@ -25,6 +25,11 @@ project_id = os.getenv('GOOGLE_CLOUD_PROJECT', '27458468732')
 endpoint_id = os.getenv('VERTEX_ENDPOINT_ID', '3349211374252195840')
 location = os.getenv('VERTEX_LOCATION', 'europe-west4')
 
+# Thickness Model Configuration
+thickness_project_id = os.getenv('THICKNESS_PROJECT_ID', '27458468732')
+thickness_endpoint_id = os.getenv('THICKNESS_ENDPOINT_ID', '8594040168418115584')
+thickness_location = os.getenv('THICKNESS_LOCATION', 'europe-west4')
+
 def check_vertex_ai_enabled():
     """Check if Vertex AI is properly configured - called at runtime"""
     if not GOOGLE_AUTH_AVAILABLE:
