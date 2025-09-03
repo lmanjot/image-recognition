@@ -158,11 +158,30 @@ def create_annotated_image(file, predictions):
         except:
             font = ImageFont.load_default()
         
+        # Define consistent colors based on class names
+        def get_class_color(class_name):
+            class_name_lower = class_name.lower()
+            if 'weak' in class_name_lower:
+                return 'red'
+            elif 'medium' in class_name_lower:
+                return 'yellow'
+            elif 'thick' in class_name_lower:
+                return 'green'
+            elif class_name_lower == '1':
+                return 'blue'
+            elif class_name_lower == '2':
+                return 'white'
+            else:
+                return 'red'  # default color
+        
         # Draw bounding boxes and labels
         for pred in predictions:
             bbox = pred.get('bbox', [0, 0, 0, 0])
             class_name = pred.get('displayName', 'Unknown')
             confidence = pred.get('confidence', 0.0)
+            
+            # Get consistent color for this class
+            color = get_class_color(class_name)
             
             # Convert normalized coordinates to pixel coordinates
             width, height = image.size
@@ -172,15 +191,16 @@ def create_annotated_image(file, predictions):
             y2 = int(bbox[3] * height)
             
             # Draw bounding box
-            draw.rectangle([x1, y1, x2, y2], outline='red', width=3)
+            draw.rectangle([x1, y1, x2, y2], outline=color, width=3)
             
             # Draw label background
             label = f"{class_name}: {confidence:.2f}"
             bbox_text = draw.textbbox((x1, y1 - 20), label, font=font)
-            draw.rectangle(bbox_text, fill='red')
+            draw.rectangle(bbox_text, fill=color)
             
-            # Draw label text
-            draw.text((x1, y1 - 20), label, fill='white', font=font)
+            # Draw label text - use black text for yellow background, white for others
+            text_color = 'black' if color == 'yellow' else 'white'
+            draw.text((x1, y1 - 20), label, fill=text_color, font=font)
         
         # Convert to base64 for sending to frontend
         buffer = BytesIO()
