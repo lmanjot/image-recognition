@@ -782,7 +782,7 @@
             }
             
             // Update detection results table
-            updateDetectionResultsTable(data.predictions);
+            updateDetectionResultsTable(data.predictions, data.is_fallback);
             
             // Update parameter display
             updateParameterDisplay();
@@ -809,7 +809,7 @@
             }
         }
 
-        function updateDetectionResultsTable(predictions) {
+        function updateDetectionResultsTable(predictions, isFallback = false) {
             const tableBody = document.getElementById('detectionResultsTable');
             if (!tableBody) return;
             
@@ -818,7 +818,11 @@
                 predictions.some(pred => pred.confidence && pred.confidence > 0);
             
             if (!hasRealPredictions) {
-                tableBody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">No objects detected</td></tr>';
+                if (isFallback) {
+                    tableBody.innerHTML = '<tr><td colspan="3" class="text-center text-warning"><i class="fas fa-exclamation-triangle"></i> Couldn\'t analyze this picture - try a different picture</td></tr>';
+                } else {
+                    tableBody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">No objects detected</td></tr>';
+                }
                 return;
             }
             
@@ -876,7 +880,8 @@
                 totalPredictions: data.total_predictions,
                 predictions: data.predictions || [],
                 processingTime: processingTime,
-                parameters: parameters // Store the parameters used
+                parameters: parameters, // Store the parameters used
+                is_fallback: data.is_fallback || false // Store fallback status
             };
             
             sessionHistory.unshift(historyItem);
@@ -950,7 +955,8 @@
             displayResults({
                 total_predictions: item.totalPredictions,
                 predictions: item.predictions,
-                annotated_image: imageToShow
+                annotated_image: imageToShow,
+                is_fallback: item.is_fallback || false
             }, item.processingTime);
             
             // Display the stored parameters

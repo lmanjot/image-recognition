@@ -49,24 +49,9 @@ def check_vertex_ai_enabled():
     return enabled
 
 def get_mock_predictions():
-    """Return mock predictions as fallback when Vertex AI is not available"""
-    return [
-        {
-            'displayName': 'person',
-            'confidence': 0.95,
-            'bbox': [0.1, 0.3, 0.1, 0.8]  # [xMin, xMax, yMin, yMax] - normalized coordinates
-        },
-        {
-            'displayName': 'car',
-            'confidence': 0.87,
-            'bbox': [0.4, 0.9, 0.3, 0.7]  # [xMin, xMax, yMin, yMax] - normalized coordinates (fixed y coords)
-        },
-        {
-            'displayName': 'dog',
-            'confidence': 0.78,
-            'bbox': [0.6, 0.8, 0.2, 0.5]  # [xMin, xMax, yMin, yMax] - normalized coordinates
-        }
-    ]
+    """Return empty predictions when Vertex AI is not available - no mock data"""
+    print("⚠️ Returning empty predictions - Vertex AI not available")
+    return []
 
 # JWT token creation removed - now using Google Auth library for better performance
 
@@ -702,6 +687,10 @@ class handler(BaseHTTPRequestHandler):
             # Determine model status
             model_used = "Vertex AI" if check_vertex_ai_enabled() else "Mock Data"
             
+            # Check if this was a fallback (no Vertex AI available)
+            vertex_ai_was_available = check_vertex_ai_enabled()
+            is_fallback = len(predictions) == 0 and not vertex_ai_was_available
+            
             # Send success response
             response_data = {
                 'success': True,
@@ -709,7 +698,8 @@ class handler(BaseHTTPRequestHandler):
                 'predictions': predictions,
                 'class_counts': class_counts,
                 'total_predictions': len(predictions),
-                'model_used': model_used
+                'model_used': model_used,
+                'is_fallback': is_fallback
             }
             
             self.send_success_response(response_data)
