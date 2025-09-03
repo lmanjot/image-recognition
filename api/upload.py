@@ -314,18 +314,51 @@ def predict_image_object_detection(image_bytes, confidence_threshold, iou_thresh
     )
 
 def create_annotated_image(image_bytes, predictions):
-    """Return the original image without any annotations"""
+    """Create an annotated image with bounding boxes and labels"""
     try:
-        print(f"🎨 Returning original image (no annotations)")
+        print(f"🎨 Creating annotated image with {len(predictions)} predictions")
         
-        # Just return the original image as base64
-        img_str = base64.b64encode(image_bytes).decode('utf-8')
+        # Open image from bytes
+        image = Image.open(io.BytesIO(image_bytes))
+        draw = ImageDraw.Draw(image)
         
-        print(f"✅ Original image returned successfully")
+        # Use default font
+        font = ImageFont.load_default()
+        
+        # Draw bounding boxes and labels
+        for pred in predictions:
+            bbox = pred.get('bbox', [0, 0, 0, 0])
+            class_name = pred.get('displayName', 'Unknown')
+            confidence = pred.get('confidence', 0.0)
+            
+            # Convert normalized coordinates to pixel coordinates
+            width, height = image.size
+            x1 = int(bbox[0] * width)
+            y1 = int(bbox[1] * height)
+            x2 = int(bbox[2] * width)
+            y2 = int(bbox[3] * height)
+            
+            # Draw bounding box
+            draw.rectangle([x1, y1, x2, y2], outline='red', width=3)
+            
+            # Draw label background
+            label = f"{class_name}: {confidence:.2f}"
+            bbox_text = draw.textbbox((x1, y1 - 20), label, font=font)
+            draw.rectangle(bbox_text, fill='red')
+            
+            # Draw label text
+            draw.text((x1, y1 - 20), label, fill='white', font=font)
+        
+        # Convert to base64 for sending to frontend
+        buffer = io.BytesIO()
+        image.save(buffer, format='JPEG')
+        img_str = base64.b64encode(buffer.getvalue()).decode('utf-8')
+        
+        print(f"✅ Annotated image created successfully")
         return f"data:image/jpeg;base64,{img_str}"
         
     except Exception as e:
-        print(f"❌ Error processing image: {str(e)}")
+        print(f"❌ Error creating annotated image: {e}")
         import traceback
         traceback.print_exc()
         return None
