@@ -524,24 +524,44 @@
                     
                     <!-- Results Section -->
                     <div class="card mt-3" id="resultsCard" style="display: none;">
-                        <div class="card-header">
+                        <div class="card-header d-flex justify-content-between align-items-center">
                             <h5><i class="fas fa-chart-bar"></i> Analysis Results</h5>
+                            <div class="d-flex gap-3">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" id="showDensityOverlay" checked>
+                                    <label class="form-check-label" for="showDensityOverlay">
+                                        <i class="fas fa-circle text-primary"></i> Hair Density
+                                    </label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" id="showThicknessOverlay" checked>
+                                    <label class="form-check-label" for="showThicknessOverlay">
+                                        <i class="fas fa-circle text-success"></i> Hair Thickness
+                                    </label>
+                                </div>
+                            </div>
                         </div>
                         <div class="card-body">
+                            <!-- Main Image with Combined Overlays -->
+                            <div class="text-center mb-4">
+                                <div id="imageContainer" class="position-relative d-inline-block">
+                                    <img id="mainImagePreview" src="" alt="Analysis Preview" class="img-fluid" style="display: none; max-height: 500px;">
+                                    <div id="imagePlaceholder" class="text-muted">
+                                        <i class="fas fa-image fa-3x mb-3"></i>
+                                        <p>Analysis preview will appear here</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Metrics Row -->
                             <div class="row">
-                                <!-- Hair Density Results -->
+                                <!-- Hair Density Metrics -->
                                 <div class="col-md-6">
                                     <div class="card">
                                         <div class="card-header">
                                             <h6><i class="fas fa-hashtag"></i> Hair Density Analysis</h6>
                                         </div>
                                         <div class="card-body">
-                                            <!-- Density Image Preview -->
-                                            <div class="mb-3">
-                                                <img id="densityImagePreview" src="" alt="Density Analysis" class="img-fluid" style="display: none;">
-                                            </div>
-                                            
-                                            <!-- Density Metrics -->
                                             <div id="densityMetrics" style="display: none;">
                                                 <div class="row">
                                                     <div class="col-6">
@@ -590,19 +610,13 @@
                                     </div>
                                 </div>
                                 
-                                <!-- Hair Thickness Results -->
+                                <!-- Hair Thickness Metrics -->
                                 <div class="col-md-6">
                                     <div class="card">
                                         <div class="card-header">
                                             <h6><i class="fas fa-weight"></i> Hair Thickness Analysis</h6>
                                         </div>
                                         <div class="card-body">
-                                            <!-- Thickness Image Preview -->
-                                            <div class="mb-3">
-                                                <img id="thicknessImagePreview" src="" alt="Thickness Analysis" class="img-fluid" style="display: none;">
-                                            </div>
-                                            
-                                            <!-- Thickness Metrics -->
                                             <div id="thicknessMetrics" style="display: none;">
                                                 <div class="row">
                                                     <div class="col-4">
@@ -919,8 +933,62 @@
             if (runtimeDisplay) runtimeDisplay.style.display = 'none';
         }
 
+        // Store current results data for overlay toggling
+        let currentResults = null;
+        
+        // Add event listeners for overlay toggles
+        document.addEventListener('DOMContentLoaded', function() {
+            const showDensityOverlay = document.getElementById('showDensityOverlay');
+            const showThicknessOverlay = document.getElementById('showThicknessOverlay');
+            
+            if (showDensityOverlay) {
+                showDensityOverlay.addEventListener('change', toggleOverlays);
+            }
+            if (showThicknessOverlay) {
+                showThicknessOverlay.addEventListener('change', toggleOverlays);
+            }
+        });
+        
+        function toggleOverlays() {
+            if (!currentResults) return;
+            
+            const showDensity = document.getElementById('showDensityOverlay').checked;
+            const showThickness = document.getElementById('showThicknessOverlay').checked;
+            
+            let imageToShow = null;
+            
+            // If both are selected and we have a combined image, show that
+            if (showDensity && showThickness && currentResults.combined_annotated_image) {
+                imageToShow = currentResults.combined_annotated_image;
+            }
+            // If only density is selected, show density image
+            else if (showDensity && currentResults.density_results && currentResults.density_results.annotated_image) {
+                imageToShow = currentResults.density_results.annotated_image;
+            }
+            // If only thickness is selected, show thickness image
+            else if (showThickness && currentResults.thickness_results && currentResults.thickness_results.annotated_image) {
+                imageToShow = currentResults.thickness_results.annotated_image;
+            }
+            // If neither is selected, show original image (if available)
+            else if (!showDensity && !showThickness) {
+                // Show original image without overlays
+                const originalImage = getOriginalImageData();
+                if (originalImage) {
+                    imageToShow = originalImage;
+                }
+            }
+            
+            const mainImagePreview = document.getElementById('mainImagePreview');
+            if (mainImagePreview && imageToShow) {
+                mainImagePreview.src = imageToShow;
+            }
+        }
+        
         function displayResults(data, processingTime) {
             console.log('Displaying results:', data);
+            
+            // Store results for overlay toggling
+            currentResults = data;
             
             // Show results card
             const resultsCard = document.getElementById('resultsCard');
@@ -935,6 +1003,9 @@
             if (processingTimeEl) processingTimeEl.textContent = processingTime + 's';
             if (runtimeDisplayEl) runtimeDisplayEl.style.display = 'block';
             
+            // Display combined image with overlays
+            displayCombinedImage(data);
+            
             // Display density results if available
             if (data.density_results) {
                 displayDensityResults(data.density_results);
@@ -946,26 +1017,38 @@
             }
         }
         
-        function displayDensityResults(densityData) {
-            // Show density image preview
-            const densityImagePreview = document.getElementById('densityImagePreview');
-            if (densityImagePreview && densityData.annotated_image) {
-                densityImagePreview.src = densityData.annotated_image;
-                densityImagePreview.style.display = 'block';
-            }
+        function displayCombinedImage(data) {
+            const mainImagePreview = document.getElementById('mainImagePreview');
+            const imagePlaceholder = document.getElementById('imagePlaceholder');
             
+            if (mainImagePreview && imagePlaceholder) {
+                // Use combined image if available, otherwise use individual images
+                let baseImage = null;
+                if (data.combined_annotated_image) {
+                    baseImage = data.combined_annotated_image;
+                } else if (data.density_results && data.density_results.annotated_image) {
+                    baseImage = data.density_results.annotated_image;
+                } else if (data.thickness_results && data.thickness_results.annotated_image) {
+                    baseImage = data.thickness_results.annotated_image;
+                }
+                
+                if (baseImage) {
+                    mainImagePreview.src = baseImage;
+                    mainImagePreview.style.display = 'block';
+                    imagePlaceholder.style.display = 'none';
+                } else {
+                    mainImagePreview.style.display = 'none';
+                    imagePlaceholder.style.display = 'block';
+                }
+            }
+        }
+        
+        function displayDensityResults(densityData) {
             // Update density metrics
             updateFollicularMetrics(densityData.follicular_metrics);
         }
         
         function displayThicknessResults(thicknessData) {
-            // Show thickness image preview
-            const thicknessImagePreview = document.getElementById('thicknessImagePreview');
-            if (thicknessImagePreview && thicknessData.annotated_image) {
-                thicknessImagePreview.src = thicknessData.annotated_image;
-                thicknessImagePreview.style.display = 'block';
-            }
-            
             // Update thickness metrics
             const thicknessMetrics = document.getElementById('thicknessMetrics');
             if (thicknessMetrics && thicknessData.thickness_metrics) {

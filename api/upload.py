@@ -667,6 +667,120 @@ def get_mock_thickness_predictions():
         {'displayName': 'weak', 'confidence': 0.78, 'bbox': [0.6, 0.8, 0.2, 0.5]}
     ]
 
+def create_combined_annotated_image(image_bytes, density_predictions, thickness_predictions, padding_factor):
+    """Create a single image with both density and thickness overlays"""
+    try:
+        print("🎨 Creating combined annotated image...")
+        
+        # Load the original image
+        image = Image.open(io.BytesIO(image_bytes))
+        draw = ImageDraw.Draw(image)
+        
+        # Get image dimensions
+        img_width, img_height = image.size
+        print(f"  - Image dimensions: {img_width}x{img_height}")
+        
+        # Try to load a font
+        try:
+            # Try different font paths for different platforms
+            font_paths = [
+                "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+                "/System/Library/Fonts/Arial.ttf",
+                "C:/Windows/Fonts/arial.ttf",
+                "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf"
+            ]
+            
+            font = None
+            for font_path in font_paths:
+                try:
+                    font = ImageFont.truetype(font_path, 16)
+                    print(f"  - Using font: {font_path}")
+                    break
+                except:
+                    continue
+            
+            if font is None:
+                font = ImageFont.load_default()
+                print("  - Using default font")
+                
+        except Exception as e:
+            print(f"  - Font loading error: {e}")
+            font = ImageFont.load_default()
+        
+        # Draw density predictions (blue boxes)
+        if density_predictions:
+            print(f"  - Drawing {len(density_predictions)} density predictions")
+            for pred in density_predictions:
+                bbox = pred.get('bbox', [])
+                if len(bbox) == 4:
+                    # Apply padding to bounding box
+                    padded_bbox = apply_padding_to_bbox(bbox, padding_factor)
+                    
+                    # Convert normalized coordinates to absolute pixels
+                    x_min = int(padded_bbox[0] * img_width)
+                    y_min = int(padded_bbox[2] * img_height)
+                    x_max = int(padded_bbox[1] * img_width)
+                    y_max = int(padded_bbox[3] * img_height)
+                    
+                    # Draw blue rectangle for density
+                    draw.rectangle([x_min, y_min, x_max, y_max], outline='blue', width=2)
+                    
+                    # Add label
+                    class_name = pred.get('displayName', 'Unknown')
+                    confidence = pred.get('confidence', 0.0)
+                    label = f"{class_name}: {confidence:.2f}"
+                    
+                    # Draw label background
+                    bbox_text = draw.textbbox((x_min, y_min - 20), label, font=font)
+                    draw.rectangle(bbox_text, fill='blue')
+                    draw.text((x_min, y_min - 20), label, fill='white', font=font)
+        
+        # Draw thickness predictions (green boxes)
+        if thickness_predictions:
+            print(f"  - Drawing {len(thickness_predictions)} thickness predictions")
+            for pred in thickness_predictions:
+                bbox = pred.get('bbox', [])
+                if len(bbox) == 4:
+                    # Apply padding to bounding box
+                    padded_bbox = apply_padding_to_bbox(bbox, padding_factor)
+                    
+                    # Convert normalized coordinates to absolute pixels
+                    x_min = int(padded_bbox[0] * img_width)
+                    y_min = int(padded_bbox[2] * img_height)
+                    x_max = int(padded_bbox[1] * img_width)
+                    y_max = int(padded_bbox[3] * img_height)
+                    
+                    # Draw green rectangle for thickness
+                    draw.rectangle([x_min, y_min, x_max, y_max], outline='green', width=2)
+                    
+                    # Add label
+                    class_name = pred.get('displayName', 'Unknown')
+                    confidence = pred.get('confidence', 0.0)
+                    label = f"{class_name}: {confidence:.2f}"
+                    
+                    # Draw label background
+                    bbox_text = draw.textbbox((x_min, y_min - 20), label, font=font)
+                    draw.rectangle(bbox_text, fill='green')
+                    draw.text((x_min, y_min - 20), label, fill='white', font=font)
+        
+        # Convert to base64
+        img_buffer = io.BytesIO()
+        image.save(img_buffer, format='PNG')
+        img_buffer.seek(0)
+        
+        # Encode as base64
+        img_base64 = base64.b64encode(img_buffer.getvalue()).decode('utf-8')
+        data_url = f"data:image/png;base64,{img_base64}"
+        
+        print("✅ Combined annotated image created successfully")
+        return data_url
+        
+    except Exception as e:
+        print(f"❌ Error creating combined annotated image: {e}")
+        import traceback
+        traceback.print_exc()
+        return None
+
 def calculate_iou(box1, box2):
     """
     Calculate Intersection over Union (IoU) of two bounding boxes.
@@ -1043,8 +1157,13 @@ class handler(BaseHTTPRequestHandler):
             response_data = {
                 'success': True,
                 'density_results': None,
-                'thickness_results': None
+                'thickness_results': None,
+                'combined_annotated_image': None
             }
+            
+            # Store predictions for combined image
+            density_predictions = None
+            thickness_predictions = None
             
             # Process density model if selected
             if run_density_model:
@@ -1096,6 +1215,18 @@ class handler(BaseHTTPRequestHandler):
                         'thickness_metrics': thickness_metrics,
                         'total_predictions': len(thickness_predictions)
                     }
+            
+            # Create combined annotated image if both models were run
+            if density_predictions and thickness_predictions:
+                print("🎨 Creating combined image with both overlays...")
+                combined_image = create_combined_annotated_image(
+                    image_bytes, 
+                    density_predictions, 
+                    thickness_predictions, 
+                    max(form_data['density_padding_factor'], form_data['thickness_padding_factor'])
+                )
+                if combined_image:
+                    response_data['combined_annotated_image'] = combined_image
             
             self.send_success_response(response_data)
             
