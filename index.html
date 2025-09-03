@@ -503,6 +503,38 @@
                                         </table>
                                     </div>
                                     
+                                    <!-- Follicular Metrics -->
+                                    <div class="mt-3" id="follicularMetrics" style="display: none;">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <small class="text-muted">
+                                                    <strong>Follicular Unit Density:</strong>
+                                                    <span id="follicularDensity">-</span> per cm²
+                                                </small>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <small class="text-muted">
+                                                    <strong>Average Hairs per Unit:</strong>
+                                                    <span id="averageHairsPerUnit">-</span>
+                                                </small>
+                                            </div>
+                                        </div>
+                                        <div class="row mt-1">
+                                            <div class="col-md-6">
+                                                <small class="text-muted">
+                                                    <strong>Total Hairs:</strong>
+                                                    <span id="totalHairs">-</span>
+                                                </small>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <small class="text-muted">
+                                                    <strong>Total Follicular Units:</strong>
+                                                    <span id="totalFollicularUnits">-</span>
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
                                     <!-- Parameter Information -->
                                     <div class="mt-3">
                                         <small class="text-muted">
@@ -787,6 +819,9 @@
             // Update parameter display
             updateParameterDisplay();
             
+            // Update follicular metrics display
+            updateFollicularMetrics(data.follicular_metrics);
+            
             // Update total count to show 0 if no real predictions
             const hasRealPredictions = data.predictions && data.predictions.length > 0 && 
                 data.predictions.some(pred => pred.confidence && pred.confidence > 0);
@@ -807,6 +842,28 @@
             if (parameterDisplay) {
                 parameterDisplay.textContent = `Confidence: ${confidence}, Padding: ${padding}, NMS: ${nms}, Max: ${maxPred}`;
             }
+        }
+
+        function updateFollicularMetrics(metrics) {
+            const metricsContainer = document.getElementById('follicularMetrics');
+            if (!metricsContainer || !metrics) {
+                if (metricsContainer) metricsContainer.style.display = 'none';
+                return;
+            }
+            
+            // Update metric values
+            const follicularDensity = document.getElementById('follicularDensity');
+            const averageHairsPerUnit = document.getElementById('averageHairsPerUnit');
+            const totalHairs = document.getElementById('totalHairs');
+            const totalFollicularUnits = document.getElementById('totalFollicularUnits');
+            
+            if (follicularDensity) follicularDensity.textContent = metrics.follicular_density_per_cm2 || '0';
+            if (averageHairsPerUnit) averageHairsPerUnit.textContent = metrics.average_hair_per_unit || '0';
+            if (totalHairs) totalHairs.textContent = metrics.total_hairs || '0';
+            if (totalFollicularUnits) totalFollicularUnits.textContent = metrics.total_follicular_units || '0';
+            
+            // Show the metrics container
+            metricsContainer.style.display = 'block';
         }
 
         function updateDetectionResultsTable(predictions, isFallback = false) {
@@ -881,7 +938,8 @@
                 predictions: data.predictions || [],
                 processingTime: processingTime,
                 parameters: parameters, // Store the parameters used
-                is_fallback: data.is_fallback || false // Store fallback status
+                is_fallback: data.is_fallback || false, // Store fallback status
+                follicular_metrics: data.follicular_metrics || null // Store follicular metrics
             };
             
             sessionHistory.unshift(historyItem);
@@ -956,7 +1014,8 @@
                 total_predictions: item.totalPredictions,
                 predictions: item.predictions,
                 annotated_image: imageToShow,
-                is_fallback: item.is_fallback || false
+                is_fallback: item.is_fallback || false,
+                follicular_metrics: item.follicular_metrics || null
             }, item.processingTime);
             
             // Display the stored parameters

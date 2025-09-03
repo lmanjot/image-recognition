@@ -131,6 +131,72 @@ def compress_image(image_bytes, max_size_mb=0.8, quality=85):
         # Return original if compression fails
         return image_bytes
 
+def calculate_follicular_metrics(predictions):
+    """
+    Calculate follicular unit density and hair metrics based on known area.
+    
+    Args:
+        predictions: List of prediction dictionaries with displayName and confidence
+    
+    Returns:
+        Dictionary with calculated metrics
+    """
+    # Known area: 7mm x 3.94mm = 0.273 cm²
+    AREA_CM2 = 0.273
+    
+    # Initialize counters
+    total_follicular_units = 0
+    total_hairs = 0
+    class_counts = {}
+    
+    for pred in predictions:
+        class_name = pred.get('displayName', 'Unknown')
+        confidence = pred.get('confidence', 0.0)
+        
+        # Skip low confidence predictions
+        if confidence < 0.1:  # Use same threshold as confidence filter
+            continue
+            
+        # Extract class number (e.g., "class1" -> 1, "class2" -> 2)
+        try:
+            if class_name.lower().startswith('class'):
+                class_number = int(class_name.lower().replace('class', ''))
+            else:
+                # For non-class names, assume 1 hair per unit
+                class_number = 1
+        except:
+            class_number = 1
+        
+        # Count follicular units and hairs
+        total_follicular_units += 1
+        total_hairs += class_number
+        
+        # Track class distribution
+        if class_name not in class_counts:
+            class_counts[class_name] = 0
+        class_counts[class_name] += 1
+    
+    # Calculate metrics
+    follicular_density = total_follicular_units / AREA_CM2 if AREA_CM2 > 0 else 0
+    average_hair_per_unit = total_hairs / total_follicular_units if total_follicular_units > 0 else 0
+    
+    metrics = {
+        'total_follicular_units': total_follicular_units,
+        'total_hairs': total_hairs,
+        'follicular_density_per_cm2': round(follicular_density, 2),
+        'average_hair_per_unit': round(average_hair_per_unit, 2),
+        'area_cm2': AREA_CM2,
+        'class_distribution': class_counts
+    }
+    
+    print(f"📊 Follicular Metrics:")
+    print(f"  - Total FU: {total_follicular_units}")
+    print(f"  - Total Hairs: {total_hairs}")
+    print(f"  - FU Density: {follicular_density:.2f} per cm²")
+    print(f"  - Avg Hairs/FU: {average_hair_per_unit:.2f}")
+    
+    return metrics
+
 def get_mock_predictions():
     """Return empty predictions when Vertex AI is not available - no mock data"""
     print("⚠️ Returning empty predictions - Vertex AI not available")
@@ -771,6 +837,9 @@ class handler(BaseHTTPRequestHandler):
             
             print(f"📊 Results: {len(predictions)} objects, classes: {list(class_counts.keys())}")
             
+            # Calculate follicular metrics
+            follicular_metrics = calculate_follicular_metrics(predictions)
+            
             # Determine model status
             model_used = "Vertex AI" if check_vertex_ai_enabled() else "Mock Data"
             
@@ -786,7 +855,8 @@ class handler(BaseHTTPRequestHandler):
                 'class_counts': class_counts,
                 'total_predictions': len(predictions),
                 'model_used': model_used,
-                'is_fallback': is_fallback
+                'is_fallback': is_fallback,
+                'follicular_metrics': follicular_metrics
             }
             
             self.send_success_response(response_data)
