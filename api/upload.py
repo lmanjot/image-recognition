@@ -518,11 +518,33 @@ def call_thickness_vertex_ai_endpoint(image_bytes, confidence_threshold, iou_thr
         
         print(f"  - Making request with confidence: {confidence_threshold}, max: {max_predictions}, IoU: {iou_threshold}")
         
+        # Log the exact API call being made
+        print(f"🔍 EXACT API CALL DETAILS:")
+        print(f"  - URL: {endpoint_url}")
+        print(f"  - Method: POST")
+        print(f"  - Headers: {headers}")
+        print(f"  - Payload: {payload}")
+        
+        # Generate curl command for debugging
+        curl_command = f"""curl -X POST '{endpoint_url}' \\
+  -H 'Authorization: Bearer {access_token}' \\
+  -H 'Content-Type: application/json' \\
+  -d '{json.dumps(payload)}'"""
+        print(f"🔍 CURL COMMAND:")
+        print(curl_command)
+        
         response = requests.post(endpoint_url, json=payload, headers=headers, timeout=30)
+        
+        # Log response details
+        print(f"🔍 API RESPONSE DETAILS:")
+        print(f"  - Status Code: {response.status_code}")
+        print(f"  - Response Headers: {dict(response.headers)}")
+        print(f"  - Response Text: {response.text}")
         
         if response.status_code == 200:
             result = response.json()
             print(f"✅ Thickness Vertex AI API call successful")
+            print(f"  - Full Response JSON: {json.dumps(result, indent=2)}")
             
             # Parse predictions from response - EXACT SAME AS DENSITY MODEL
             predictions = []
