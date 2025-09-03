@@ -251,30 +251,46 @@ def calculate_combined_metrics(density_predictions, thickness_predictions):
         'total_hairs': 0
     }
     
-    # Calculate thickness metrics
-    thickness_metrics = {}
-    if thickness_predictions:
-        thickness_metrics = {
-            'strong': sum(1 for p in thickness_predictions if p['displayName'] == 'strong'),
-            'medium': sum(1 for p in thickness_predictions if p['displayName'] == 'medium'),
-            'weak': sum(1 for p in thickness_predictions if p['displayName'] == 'weak'),
-            'total_detections': len(thickness_predictions)
-        }
-    else:
-        thickness_metrics = {
-            'strong': 0,
-            'medium': 0,
-            'weak': 0,
-            'total_detections': 0
-        }
-    
-    # Extract values
+    # Extract values from density model (ground truth for hair count)
     total_hairs = density_metrics['total_hairs']
     total_fu = density_metrics['total_follicular_units']
-    strong_hairs = thickness_metrics['strong']
-    medium_hairs = thickness_metrics['medium']
-    weak_hairs = thickness_metrics['weak']
-    total_thickness_detections = thickness_metrics['total_detections']
+    
+    # Calculate raw thickness metrics
+    if thickness_predictions:
+        strong_hairs_raw = sum(1 for p in thickness_predictions if p['displayName'] == 'strong')
+        medium_hairs_raw = sum(1 for p in thickness_predictions if p['displayName'] == 'medium')
+        weak_hairs_raw = sum(1 for p in thickness_predictions if p['displayName'] == 'weak')
+        total_thickness_detections_raw = len(thickness_predictions)
+    else:
+        strong_hairs_raw = 0
+        medium_hairs_raw = 0
+        weak_hairs_raw = 0
+        total_thickness_detections_raw = 0
+    
+    # Scale thickness model results proportionally to match density model hair count
+    # This fixes the issue where models detect different numbers of hairs
+    if total_thickness_detections_raw > 0 and total_hairs > 0:
+        # Calculate percentages from thickness model
+        strong_percentage = strong_hairs_raw / total_thickness_detections_raw
+        medium_percentage = medium_hairs_raw / total_thickness_detections_raw
+        weak_percentage = weak_hairs_raw / total_thickness_detections_raw
+        
+        # Scale to density model hair count
+        strong_hairs = strong_percentage * total_hairs
+        medium_hairs = medium_percentage * total_hairs
+        weak_hairs = weak_percentage * total_hairs
+        total_thickness_detections = total_hairs  # Use density model count as ground truth
+        
+        print(f"🔧 Scaling thickness results:")
+        print(f"  - Raw thickness detections: {total_thickness_detections_raw} (strong: {strong_hairs_raw}, medium: {medium_hairs_raw}, weak: {weak_hairs_raw})")
+        print(f"  - Density model hair count: {total_hairs}")
+        print(f"  - Scaled thickness: strong: {strong_hairs:.1f}, medium: {medium_hairs:.1f}, weak: {weak_hairs:.1f}")
+    else:
+        # Fallback if no thickness detections
+        strong_hairs = 0
+        medium_hairs = 0
+        weak_hairs = 0
+        total_thickness_detections = 0
     
     # Calculate combined metrics
     # Terminal-to-Vellus Ratio = weak/strong (vellus/terminal) (return 0 if strong = 0)
@@ -302,16 +318,16 @@ def calculate_combined_metrics(density_predictions, thickness_predictions):
     # Effective Hair Density = (total_hairs / picture_area_cm2) * (Average Thickness Score / 3)
     effective_hair_density = hairs_per_cm2 * (average_thickness_score / 3.0)
     
-    print(f"📊 Combined Metrics:")
+    print(f"📊 Combined Metrics (using density model hair count as ground truth):")
     print(f"  - Terminal-to-Vellus Ratio (weak/strong): {terminal_to_vellus_ratio:.2f}")
     print(f"  - % Thick Hairs (strong/total): {percent_thick_hairs:.1f}%")
-    print(f"  - Hair Caliber Index: {hair_caliber_index}")
+    print(f"  - Hair Caliber Index: {hair_caliber_index:.1f}")
     print(f"  - Hair Caliber Index %: {hair_caliber_index_percentage:.1f}%")
     print(f"  - Average Thickness Score: {average_thickness_score:.2f}")
     print(f"  - Hairs per FU: {hairs_per_fu:.2f}")
     print(f"  - Hairs per cm²: {hairs_per_cm2:.1f}")
     print(f"  - Effective Hair Density: {effective_hair_density:.1f}")
-    print(f"  - Thickness breakdown: {strong_hairs} strong, {medium_hairs} medium, {weak_hairs} weak")
+    print(f"  - Final thickness breakdown: {strong_hairs:.1f} strong, {medium_hairs:.1f} medium, {weak_hairs:.1f} weak")
     
     return {
         'terminal_to_vellus_ratio': round(terminal_to_vellus_ratio, 2),
