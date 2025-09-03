@@ -477,10 +477,11 @@ def apply_nms(predictions, iou_threshold, padding_factor, max_predictions):
     print(f"🎯 NMS complete: {len(filtered_predictions)} final predictions")
     return filtered_predictions
 
-def create_annotated_image(image_bytes, predictions):
+def create_annotated_image(image_bytes, predictions, padding_factor=0.0):
     """
     Create an annotated image with bounding boxes and labels.
     Properly handles Vertex AI normalized coordinates [xMin, xMax, yMin, yMax].
+    Applies padding factor to expand bounding boxes before drawing.
     """
     try:
         print(f"🎨 Creating annotated image with {len(predictions)} predictions")
@@ -528,12 +529,15 @@ def create_annotated_image(image_bytes, predictions):
             
             print(f"🎯 Drawing box {i+1}: {class_name} ({confidence:.2f}) at {bbox}")
             
+            # Apply padding factor to the bounding box before drawing
+            padded_bbox = apply_padding_to_bbox(bbox, padding_factor)
+            
             # Vertex AI returns normalized coordinates as [xMin, xMax, yMin, yMax]
             # Convert to absolute pixel coordinates
-            x_min = bbox[0] * img_width
-            x_max = bbox[1] * img_width
-            y_min = bbox[2] * img_height
-            y_max = bbox[3] * img_height
+            x_min = padded_bbox[0] * img_width
+            x_max = padded_bbox[1] * img_width
+            y_min = padded_bbox[2] * img_height
+            y_max = padded_bbox[3] * img_height
             
             # Ensure coordinates are within image bounds
             x_min = max(0, min(x_min, img_width))
@@ -606,7 +610,7 @@ def parse_multipart_data(body, content_type):
         confidence_threshold = float(form.getfirst('confidenceThreshold', 0.1))  # Default: 0.1
         iou_threshold = float(form.getfirst('iouThreshold', 0.0))  # Default: 0.0
         padding_factor = float(form.getfirst('paddingFactor', 0.0))  # Default: 0.0
-        max_predictions = int(form.getfirst('maxPredictions', 200))
+        max_predictions = int(form.getfirst('maxPredictions', 100))
         
         return {
             'image': image_file,
@@ -685,7 +689,7 @@ class handler(BaseHTTPRequestHandler):
                 return
             
             # Process predictions and create annotated image
-            annotated_image_data = create_annotated_image(image_bytes, predictions)
+            annotated_image_data = create_annotated_image(image_bytes, predictions, padding_factor)
             
             # Count predictions by class
             class_counts = {}
