@@ -249,7 +249,7 @@ def predict_image_object_detection_rest(image_bytes, confidence_threshold, iou_t
     print(f"\n🔍 Starting Vertex AI prediction process...")
     print(f"  - Image size: {len(image_bytes)} bytes")
     print(f"  - Confidence threshold: {confidence_threshold}")
-    print(f"  - IoU threshold: {iou_threshold}")
+    print(f"  - NMS threshold: {iou_threshold}")
     print(f"  - Max predictions: {max_predictions}")
     
     # Check Vertex AI configuration at runtime (only once)
@@ -280,21 +280,26 @@ def predict_image_object_detection_rest(image_bytes, confidence_threshold, iou_t
         
         print("✅ Access token obtained")
         
-        # Make actual API call to Vertex AI
+        # Make actual API call to Vertex AI with high IoU threshold to get all raw detections
+        # We'll apply our own NMS later
         predictions = call_vertex_ai_endpoint(
             image_bytes, 
             confidence_threshold, 
-            iou_threshold,
-            max_predictions, 
+            0.99,  # Very high IoU threshold to get all raw detections
+            200,   # High max predictions to get all detections
             access_token
         )
         
         if predictions:
             print("🎉 Real Vertex AI predictions received!")
-            print(f"  - Number of predictions: {len(predictions)}")
+            print(f"  - Number of raw predictions: {len(predictions)}")
             for i, pred in enumerate(predictions):
                 print(f"    {i+1}. {pred.get('displayName', 'Unknown')} - {pred.get('confidence', 0.0):.3f}")
-            return predictions
+            
+            # Apply our own NMS to filter overlapping detections
+            filtered_predictions = apply_nms(predictions, iou_threshold, max_predictions)
+            print(f"  - Number of predictions after NMS: {len(filtered_predictions)}")
+            return filtered_predictions
         else:
             print("⚠️ Vertex AI call failed, falling back to mock data")
             return get_mock_predictions()
@@ -312,6 +317,103 @@ def predict_image_object_detection(image_bytes, confidence_threshold, iou_thresh
     return predict_image_object_detection_rest(
         image_bytes, confidence_threshold, iou_threshold, max_predictions
     )
+
+def calculate_iou(box1, box2):
+    """
+    Calculate Intersection over Union (IoU) of two bounding boxes.
+    Boxes are in format [xMin, xMax, yMin, yMax] (normalized coordinates).
+    """
+    # Extract coordinates
+    x1_min, x1_max, y1_min, y1_max = box1
+    x2_min, x2_max, y2_min, y2_max = box2
+    
+    # Calculate intersection area
+    x_left = max(x1_min, x2_min)
+    y_top = max(y1_min, y2_min)
+    x_right = min(x1_max, x2_max)
+    y_bottom = min(y1_max, y2_max)
+    
+    if x_right < x_left or y_bottom < y_top:
+        return 0.0
+    
+    intersection_area = (x_right - x_left) * (y_bottom - y_top)
+    
+    # Calculate union area
+    box1_area = (x1_max - x1_min) * (y1_max - y1_min)
+    box2_area = (x2_max - x2_min) * (y2_max - y2_min)
+    union_area = box1_area + box2_area - intersection_area
+    
+    if union_area == 0:
+        return 0.0
+    
+    return intersection_area / union_area
+
+def apply_nms(predictions, iou_threshold, max_predictions):
+    """
+    Apply Non-Maximum Suppression to filter overlapping bounding boxes.
+    
+    Args:
+        predictions: List of prediction dictionaries
+        iou_threshold: IoU threshold for NMS (0.0 to 1.0)
+        max_predictions: Maximum number of predictions to return
+    
+    Returns:
+        List of filtered predictions
+    """
+    if not predictions:
+        return []
+    
+    print(f"🔍 Applying NMS with IoU threshold: {iou_threshold}, max predictions: {max_predictions}")
+    
+    # Sort predictions by confidence (highest first)
+    sorted_predictions = sorted(predictions, key=lambda x: x.get('confidence', 0.0), reverse=True)
+    
+    # Group predictions by class
+    class_groups = {}
+    for pred in sorted_predictions:
+        class_name = pred.get('displayName', 'Unknown')
+        if class_name not in class_groups:
+            class_groups[class_name] = []
+        class_groups[class_name].append(pred)
+    
+    # Apply NMS to each class separately
+    filtered_predictions = []
+    for class_name, class_predictions in class_groups.items():
+        print(f"  📦 Processing class '{class_name}' with {len(class_predictions)} detections")
+        
+        # Apply NMS within this class
+        selected_indices = []
+        for i, pred in enumerate(class_predictions):
+            should_keep = True
+            bbox1 = pred.get('bbox', [0, 0, 0, 0])
+            
+            # Check against already selected predictions
+            for j in selected_indices:
+                bbox2 = class_predictions[j].get('bbox', [0, 0, 0, 0])
+                iou = calculate_iou(bbox1, bbox2)
+                
+                if iou > iou_threshold:
+                    should_keep = False
+                    break
+            
+            if should_keep:
+                selected_indices.append(i)
+        
+        # Add selected predictions for this class
+        for idx in selected_indices:
+            filtered_predictions.append(class_predictions[idx])
+        
+        print(f"    ✅ Kept {len(selected_indices)} out of {len(class_predictions)} detections")
+    
+    # Sort all filtered predictions by confidence again
+    filtered_predictions = sorted(filtered_predictions, key=lambda x: x.get('confidence', 0.0), reverse=True)
+    
+    # Limit to max_predictions
+    if len(filtered_predictions) > max_predictions:
+        filtered_predictions = filtered_predictions[:max_predictions]
+    
+    print(f"🎯 NMS complete: {len(filtered_predictions)} final predictions")
+    return filtered_predictions
 
 def create_annotated_image(image_bytes, predictions):
     """
@@ -440,7 +542,7 @@ def parse_multipart_data(body, content_type):
         # Extract form data with new defaults
         image_file = form.getfirst('image')
         confidence_threshold = float(form.getfirst('confidenceThreshold', 0.1))  # Default: 0.1
-        iou_threshold = float(form.getfirst('iouThreshold', 0.0))  # Default: 0.0
+        iou_threshold = float(form.getfirst('iouThreshold', 0.5))  # Default: 0.5
         max_predictions = int(form.getfirst('maxPredictions', 200))
         
         return {
@@ -496,7 +598,7 @@ class handler(BaseHTTPRequestHandler):
             iou_threshold = form_data['iou_threshold']
             max_predictions = form_data['max_predictions']
             
-            print(f"🖼️ Processing image with parameters: conf={confidence_threshold}, IoU={iou_threshold}, max={max_predictions}")
+            print(f"🖼️ Processing image with parameters: conf={confidence_threshold}, NMS={iou_threshold}, max={max_predictions}")
             
             # Convert image file to bytes
             if hasattr(form_data['image'], 'file'):
