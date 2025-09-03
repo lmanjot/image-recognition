@@ -159,13 +159,13 @@ def calculate_follicular_metrics(predictions):
         if confidence < 0.1:  # Use same threshold as confidence filter
             continue
             
-        # Extract class number (e.g., "class1" -> 1, "class2" -> 2)
+        # Extract class number (e.g., "1" -> 1, "2" -> 2, "class1" -> 1, "class2" -> 2)
         try:
             if class_name.lower().startswith('class'):
                 class_number = int(class_name.lower().replace('class', ''))
             else:
-                # For non-class names, assume 1 hair per unit
-                class_number = 1
+                # Try to parse the class name directly as a number
+                class_number = int(class_name)
         except:
             class_number = 1
         
@@ -184,7 +184,8 @@ def calculate_follicular_metrics(predictions):
             if class_name.lower().startswith('class'):
                 class_number = int(class_name.lower().replace('class', ''))
             else:
-                class_number = 1
+                # Try to parse the class name directly as a number
+                class_number = int(class_name)
         except:
             class_number = 1
             
