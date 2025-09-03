@@ -597,6 +597,23 @@
                             
                             <!-- Combined Metrics -->
                             <div id="combinedMetrics" style="display: none;">
+                                                <!-- Overall Hair Score - Prominent Display -->
+                                                <div class="row mb-4">
+                                                    <div class="col-12">
+                                                        <div class="metric-card p-4 border rounded border-primary" id="ohsCard" data-bs-toggle="tooltip" data-bs-placement="top" title="Overall Hair Score (OHS) = √((HCI% / 100) × (EHD% / 100)) × 100. Geometric mean of Hair Thickness Score and Scalp Coverage. Bands: 80-100% = Excellent, 60-79% = Good, 40-59% = Moderate, 20-39% = Low, 0-19% = Very Low">
+                                                            <div class="d-flex align-items-center justify-content-center">
+                                                                <div class="metric-icon me-4">
+                                                                    <i class="fas fa-star text-primary fa-3x"></i>
+                                                                </div>
+                                                                <div class="text-center">
+                                                                    <div class="metric-label text-muted mb-2 h5">Overall Hair Score (OHS)</div>
+                                                                    <div class="metric-value h1 mb-2" id="overallHairScore">-%</div>
+                                                                    <div class="metric-interpretation h4 mb-0" id="ohsInterpretation">-</div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                                 <div class="row g-3 h-100">
                                                     <div class="col-lg-4 col-md-6 d-flex">
                                                         <div class="metric-card p-4 border rounded w-100 d-flex flex-column justify-content-center" data-bs-toggle="tooltip" data-bs-placement="top" title="Terminal-to-Vellus Ratio = (Weak Hairs / Strong Hairs) × 100% (lower is better)">
@@ -1089,6 +1106,22 @@
         function displayCombinedMetrics(combinedMetrics) {
             const combinedMetricsEl = document.getElementById('combinedMetrics');
             if (combinedMetricsEl && combinedMetrics) {
+                // Display Overall Hair Score
+                document.getElementById('overallHairScore').textContent = (combinedMetrics.overall_hair_score || '0.0') + '%';
+                document.getElementById('ohsInterpretation').textContent = combinedMetrics.ohs_interpretation || '-';
+                
+                // Apply color styling to OHS card based on interpretation
+                const ohsCard = document.getElementById('ohsCard');
+                const ohsScore = document.getElementById('overallHairScore');
+                const ohsInterpretation = document.getElementById('ohsInterpretation');
+                
+                if (combinedMetrics.ohs_color) {
+                    ohsCard.className = `metric-card p-4 border rounded border-${combinedMetrics.ohs_color}`;
+                    ohsScore.className = `metric-value h1 mb-2 text-${combinedMetrics.ohs_color}`;
+                    ohsInterpretation.className = `metric-interpretation h4 mb-0 text-${combinedMetrics.ohs_color}`;
+                }
+                
+                // Display other metrics
                 document.getElementById('terminalToVellusRatio').textContent = (combinedMetrics.terminal_to_vellus_ratio || '0.0') + '%';
                 document.getElementById('percentThickHairs').textContent = (combinedMetrics.percent_thick_hairs || '0.0') + '%';
                 document.getElementById('hairCaliberIndexPercentage').textContent = (combinedMetrics.hair_caliber_index_percentage || '0.0') + '%';

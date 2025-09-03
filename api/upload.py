@@ -325,6 +325,29 @@ def calculate_combined_metrics(density_predictions, thickness_predictions):
     # Normalizes effective hair density to a 0-100 percentage scale
     ehd_percentage = (effective_hair_density / ehd_max * 100) if ehd_max > 0 else 0.0
     
+    # Overall Hair Score (OHS) = sqrt((HCI_percent/100) * (EHD_percent/100)) * 100
+    # Geometric mean of HCI% and EHD% for overall hair quality assessment
+    hci_normalized = hair_caliber_index_percentage / 100.0
+    ehd_normalized = ehd_percentage / 100.0
+    overall_hair_score = (hci_normalized * ehd_normalized) ** 0.5 * 100 if hci_normalized > 0 and ehd_normalized > 0 else 0.0
+    
+    # Define interpretation bands for OHS
+    if overall_hair_score >= 80:
+        ohs_interpretation = "Excellent"
+        ohs_color = "success"
+    elif overall_hair_score >= 60:
+        ohs_interpretation = "Good"
+        ohs_color = "info"
+    elif overall_hair_score >= 40:
+        ohs_interpretation = "Moderate"
+        ohs_color = "warning"
+    elif overall_hair_score >= 20:
+        ohs_interpretation = "Low"
+        ohs_color = "danger"
+    else:
+        ohs_interpretation = "Very Low"
+        ohs_color = "danger"
+    
     print(f"📊 Combined Metrics (using density model hair count as ground truth):")
     print(f"  - Terminal-to-Vellus Ratio (weak/strong): {terminal_to_vellus_ratio:.1f}%")
     print(f"  - % Thick Hairs (strong/total): {percent_thick_hairs:.1f}%")
@@ -336,6 +359,7 @@ def calculate_combined_metrics(density_predictions, thickness_predictions):
     print(f"  - EHD = (hairs_per_cm² × avg_thickness_score) / 3: {effective_hair_density:.1f}")
     print(f"  - EHD_max: {ehd_max}")
     print(f"  - EHD% = (EHD / EHD_max) × 100: {ehd_percentage:.1f}%")
+    print(f"  - Overall Hair Score (OHS): {overall_hair_score:.1f}% ({ohs_interpretation})")
     print(f"  - Final thickness breakdown: {strong_hairs:.1f} strong, {medium_hairs:.1f} medium, {weak_hairs:.1f} weak")
     
     return {
@@ -347,7 +371,10 @@ def calculate_combined_metrics(density_predictions, thickness_predictions):
         'hairs_per_fu': round(hairs_per_fu, 2),  # Double digit, 2 decimals
         'hairs_per_cm2': round(hairs_per_cm2, 1),  # No comma, 1 decimal
         'effective_hair_density': round(effective_hair_density, 1),  # 1 decimal
-        'ehd_percentage': round(ehd_percentage, 1)  # EHD%, 1 decimal
+        'ehd_percentage': round(ehd_percentage, 1),  # EHD%, 1 decimal
+        'overall_hair_score': round(overall_hair_score, 1),  # OHS%, 1 decimal
+        'ohs_interpretation': ohs_interpretation,  # Interpretation text
+        'ohs_color': ohs_color  # Color class for styling
     }
 
 def get_mock_predictions():
