@@ -417,8 +417,8 @@
                                 
                                 <div class="mb-3">
                                     <label for="paddingFactor" class="form-label">Padding Factor: <span id="paddingValue">0.00</span></label>
-                                    <input type="range" class="form-range" id="paddingFactor" min="0.0" max="1.0" step="0.01" value="0.0">
-                                    <div class="form-text">Expands bounding boxes before NMS (0 = no padding, 1 = double size)</div>
+                                    <input type="range" class="form-range" id="paddingFactor" min="0.0" max="2.0" step="0.01" value="0.0">
+                                    <div class="form-text">Expands bounding boxes before NMS (0 = no padding, 2 = triple size)</div>
                                 </div>
                                 
                                 <div class="mb-3">
@@ -429,7 +429,7 @@
                                 
                                 <div class="mb-3">
                                     <label for="maxPredictions" class="form-label">Max Predictions: <span id="maxPredictionsValue">100</span></label>
-                                    <input type="range" class="form-range" id="maxPredictions" min="1" max="200" step="1" value="100">
+                                    <input type="range" class="form-range" id="maxPredictions" min="1" max="100" step="1" value="100">
                                 </div>
                                 
                                 <button type="submit" class="btn btn-primary w-100" id="runDetectionBtn">
@@ -501,6 +501,14 @@
                                                 <!-- Results will be populated here -->
                                             </tbody>
                                         </table>
+                                    </div>
+                                    
+                                    <!-- Parameter Information -->
+                                    <div class="mt-3">
+                                        <small class="text-muted">
+                                            <strong>Parameters used:</strong>
+                                            <span id="parameterDisplay">-</span>
+                                        </small>
                                     </div>
                                 </div>
                             </div>
@@ -776,6 +784,9 @@
             // Update detection results table
             updateDetectionResultsTable(data.predictions);
             
+            // Update parameter display
+            updateParameterDisplay();
+            
             // Update total count to show 0 if no real predictions
             const hasRealPredictions = data.predictions && data.predictions.length > 0 && 
                 data.predictions.some(pred => pred.confidence && pred.confidence > 0);
@@ -786,7 +797,17 @@
             }
         }
 
-
+        function updateParameterDisplay() {
+            const confidence = parseFloat(document.getElementById('confidenceThreshold').value).toFixed(2);
+            const padding = parseFloat(document.getElementById('paddingFactor').value).toFixed(2);
+            const nms = parseFloat(document.getElementById('iouThreshold').value).toFixed(2);
+            const maxPred = document.getElementById('maxPredictions').value;
+            
+            const parameterDisplay = document.getElementById('parameterDisplay');
+            if (parameterDisplay) {
+                parameterDisplay.textContent = `Confidence: ${confidence}, Padding: ${padding}, NMS: ${nms}, Max: ${maxPred}`;
+            }
+        }
 
         function updateDetectionResultsTable(predictions) {
             const tableBody = document.getElementById('detectionResultsTable');
