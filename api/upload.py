@@ -546,11 +546,26 @@ def call_thickness_vertex_ai_endpoint(image_bytes, confidence_threshold, iou_thr
             print(f"✅ Thickness Vertex AI API call successful")
             print(f"  - Full Response JSON: {json.dumps(result, indent=2)}")
             
-            # Parse predictions from response - EXACT SAME AS DENSITY MODEL
+            # Parse predictions from response - THICKNESS MODEL FORMAT
             predictions = []
             if 'predictions' in result and result['predictions']:
                 for pred in result['predictions']:
-                    if 'detections' in pred:
+                    # Thickness model returns arrays: displayNames, bboxes, confidences
+                    if 'displayNames' in pred and 'bboxes' in pred and 'confidences' in pred:
+                        display_names = pred['displayNames']
+                        bboxes = pred['bboxes']
+                        confidences = pred['confidences']
+                        
+                        # Combine the arrays into individual predictions
+                        for i in range(len(display_names)):
+                            if confidences[i] >= confidence_threshold:
+                                predictions.append({
+                                    'displayName': display_names[i],
+                                    'confidence': confidences[i],
+                                    'bbox': bboxes[i]
+                                })
+                    # Fallback to density model format if needed
+                    elif 'detections' in pred:
                         for detection in pred['detections']:
                             if detection.get('confidence', 0) >= confidence_threshold:
                                 predictions.append({
