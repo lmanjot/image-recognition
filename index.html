@@ -416,9 +416,15 @@
                                 </div>
                                 
                                 <div class="mb-3">
-                                    <label for="iouThreshold" class="form-label">NMS Threshold: <span id="iouValue">0.50</span></label>
-                                    <input type="range" class="form-range" id="iouThreshold" min="0.0" max="1.0" step="0.01" value="0.5">
-                                    <div class="form-text">Filters overlapping detections (higher = fewer boxes)</div>
+                                    <label for="iouThreshold" class="form-label">NMS Threshold: <span id="iouValue">0.00</span></label>
+                                    <input type="range" class="form-range" id="iouThreshold" min="0.0" max="1.0" step="0.01" value="0.0">
+                                    <div class="form-text">Filters overlapping detections (lower = fewer boxes)</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="paddingFactor" class="form-label">Padding Factor: <span id="paddingValue">0.00</span></label>
+                                    <input type="range" class="form-range" id="paddingFactor" min="0.0" max="1.0" step="0.01" value="0.0">
+                                    <div class="form-text">Expands bounding boxes before NMS (0 = no padding, 1 = double size)</div>
                                 </div>
                                 
                                 <div class="mb-3">
@@ -565,6 +571,7 @@
             
             const confidenceSlider = document.getElementById('confidenceThreshold');
             const iouSlider = document.getElementById('iouThreshold');
+            const paddingSlider = document.getElementById('paddingFactor');
             const maxPredictionsSlider = document.getElementById('maxPredictions');
             
             confidenceSlider.addEventListener('input', function() {
@@ -573,6 +580,10 @@
             
             iouSlider.addEventListener('input', function() {
                 document.getElementById('iouValue').textContent = parseFloat(this.value).toFixed(2);
+            });
+            
+            paddingSlider.addEventListener('input', function() {
+                document.getElementById('paddingValue').textContent = parseFloat(this.value).toFixed(2);
             });
             
             maxPredictionsSlider.addEventListener('input', function() {
@@ -617,6 +628,8 @@
                 parseFloat(document.getElementById('confidenceThreshold').value).toFixed(2);
             document.getElementById('iouValue').textContent = 
                 parseFloat(document.getElementById('iouThreshold').value).toFixed(2);
+            document.getElementById('paddingValue').textContent = 
+                parseFloat(document.getElementById('paddingFactor').value).toFixed(2);
             document.getElementById('maxPredictionsValue').textContent = 
                 document.getElementById('maxPredictions').value;
         }
@@ -660,6 +673,7 @@
             formData.append('image', file);
             formData.append('confidenceThreshold', document.getElementById('confidenceThreshold').value);
             formData.append('iouThreshold', document.getElementById('iouThreshold').value);
+            formData.append('paddingFactor', document.getElementById('paddingFactor').value);
             formData.append('maxPredictions', document.getElementById('maxPredictions').value);
             
             // Show loading state
@@ -829,6 +843,7 @@
                 id: Date.now(),
                 timestamp: new Date(),
                 imageData: currentImageData || getOriginalImageData(),
+                annotatedImageData: data.annotated_image, // Store the annotated image with boxes
                 totalPredictions: data.total_predictions,
                 predictions: data.predictions || [],
                 processingTime: processingTime
@@ -896,15 +911,16 @@
             const item = sessionHistory.find(h => h.id === itemId);
             if (!item) return;
             
-            // Load the image
-            displayImage(item.imageData);
-            currentImageData = item.imageData;
+            // Load the annotated image (with boxes) if available, otherwise original image
+            const imageToShow = item.annotatedImageData || item.imageData;
+            displayImage(imageToShow);
+            currentImageData = item.imageData; // Keep original for new processing
             
             // Load the results
             displayResults({
                 total_predictions: item.totalPredictions,
                 predictions: item.predictions,
-                annotated_image: item.imageData
+                annotated_image: imageToShow
             }, item.processingTime);
         }
 

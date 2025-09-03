@@ -244,12 +244,13 @@ def call_vertex_ai_endpoint(image_bytes, confidence_threshold, iou_threshold, ma
         traceback.print_exc()
         return None
 
-def predict_image_object_detection_rest(image_bytes, confidence_threshold, iou_threshold, max_predictions):
+def predict_image_object_detection_rest(image_bytes, confidence_threshold, iou_threshold, padding_factor, max_predictions):
     """Call Vertex AI endpoint using REST API (lightweight approach)"""
     print(f"\n🔍 Starting Vertex AI prediction process...")
     print(f"  - Image size: {len(image_bytes)} bytes")
     print(f"  - Confidence threshold: {confidence_threshold}")
     print(f"  - NMS threshold: {iou_threshold}")
+    print(f"  - Padding factor: {padding_factor}")
     print(f"  - Max predictions: {max_predictions}")
     
     # Check Vertex AI configuration at runtime (only once)
@@ -297,7 +298,7 @@ def predict_image_object_detection_rest(image_bytes, confidence_threshold, iou_t
                 print(f"    {i+1}. {pred.get('displayName', 'Unknown')} - {pred.get('confidence', 0.0):.3f}")
             
             # Apply our own NMS to filter overlapping detections
-            filtered_predictions = apply_nms(predictions, iou_threshold, max_predictions)
+            filtered_predictions = apply_nms(predictions, iou_threshold, padding_factor, max_predictions)
             print(f"  - Number of predictions after NMS: {len(filtered_predictions)}")
             return filtered_predictions
         else:
@@ -311,11 +312,11 @@ def predict_image_object_detection_rest(image_bytes, confidence_threshold, iou_t
         print("🔄 Falling back to mock data")
         return get_mock_predictions()
 
-def predict_image_object_detection(image_bytes, confidence_threshold, iou_threshold, max_predictions):
+def predict_image_object_detection(image_bytes, confidence_threshold, iou_threshold, padding_factor, max_predictions):
     """Main prediction function - optimized to reduce redundant calls"""
     # Single call to the REST function - no more redundant calls
     return predict_image_object_detection_rest(
-        image_bytes, confidence_threshold, iou_threshold, max_predictions
+        image_bytes, confidence_threshold, iou_threshold, padding_factor, max_predictions
     )
 
 def calculate_iou(box1, box2):
@@ -348,6 +349,40 @@ def calculate_iou(box1, box2):
     
     return intersection_area / union_area
 
+def apply_padding_to_bbox(bbox, padding_factor):
+    """
+    Apply padding to a bounding box.
+    
+    Args:
+        bbox: [xMin, xMax, yMin, yMax] in normalized coordinates
+        padding_factor: 0.0 = no padding, 1.0 = double size
+    
+    Returns:
+        Padded bounding box [xMin, xMax, yMin, yMax]
+    """
+    if padding_factor == 0.0:
+        return bbox
+    
+    x_min, x_max, y_min, y_max = bbox
+    
+    # Calculate center and dimensions
+    center_x = (x_min + x_max) / 2
+    center_y = (y_min + y_max) / 2
+    width = x_max - x_min
+    height = y_max - y_min
+    
+    # Apply padding
+    new_width = width * (1 + padding_factor)
+    new_height = height * (1 + padding_factor)
+    
+    # Calculate new coordinates
+    new_x_min = max(0.0, center_x - new_width / 2)
+    new_x_max = min(1.0, center_x + new_width / 2)
+    new_y_min = max(0.0, center_y - new_height / 2)
+    new_y_max = min(1.0, center_y + new_height / 2)
+    
+    return [new_x_min, new_x_max, new_y_min, new_y_max]
+
 def get_class_number(class_name):
     """Extract class number from class name (e.g., 'class1' -> 1, 'class2' -> 2)"""
     try:
@@ -359,13 +394,14 @@ def get_class_number(class_name):
     except:
         return 0
 
-def apply_nms(predictions, iou_threshold, max_predictions):
+def apply_nms(predictions, iou_threshold, padding_factor, max_predictions):
     """
     Apply Non-Maximum Suppression to filter overlapping bounding boxes.
     
     Args:
         predictions: List of prediction dictionaries
         iou_threshold: IoU threshold for NMS (0.0 to 1.0)
+        padding_factor: Padding factor to apply before NMS (0.0 to 1.0)
         max_predictions: Maximum number of predictions to return
     
     Returns:
@@ -374,7 +410,7 @@ def apply_nms(predictions, iou_threshold, max_predictions):
     if not predictions:
         return []
     
-    print(f"🔍 Applying NMS with IoU threshold: {iou_threshold}, max predictions: {max_predictions}")
+    print(f"🔍 Applying NMS with IoU threshold: {iou_threshold}, padding: {padding_factor}, max predictions: {max_predictions}")
     
     # Sort predictions by class priority (higher class numbers first), then by confidence
     def sort_key(pred):
@@ -407,8 +443,12 @@ def apply_nms(predictions, iou_threshold, max_predictions):
             bbox2 = selected_pred.get('bbox', [0, 0, 0, 0])
             class_name2 = selected_pred.get('displayName', 'Unknown')
             
-            # Calculate IoU
-            iou = calculate_iou(bbox1, bbox2)
+            # Apply padding to both boxes for IoU calculation
+            padded_bbox1 = apply_padding_to_bbox(bbox1, padding_factor)
+            padded_bbox2 = apply_padding_to_bbox(bbox2, padding_factor)
+            
+            # Calculate IoU using padded boxes
+            iou = calculate_iou(padded_bbox1, padded_bbox2)
             
             if iou > iou_threshold:
                 # If boxes overlap, check class priority
@@ -564,13 +604,15 @@ def parse_multipart_data(body, content_type):
         # Extract form data with new defaults
         image_file = form.getfirst('image')
         confidence_threshold = float(form.getfirst('confidenceThreshold', 0.1))  # Default: 0.1
-        iou_threshold = float(form.getfirst('iouThreshold', 0.5))  # Default: 0.5
+        iou_threshold = float(form.getfirst('iouThreshold', 0.0))  # Default: 0.0
+        padding_factor = float(form.getfirst('paddingFactor', 0.0))  # Default: 0.0
         max_predictions = int(form.getfirst('maxPredictions', 200))
         
         return {
             'image': image_file,
             'confidence_threshold': confidence_threshold,
             'iou_threshold': iou_threshold,
+            'padding_factor': padding_factor,
             'max_predictions': max_predictions
         }
     except Exception as e:
@@ -618,9 +660,10 @@ class handler(BaseHTTPRequestHandler):
             # Get parameters
             confidence_threshold = form_data['confidence_threshold']
             iou_threshold = form_data['iou_threshold']
+            padding_factor = form_data['padding_factor']
             max_predictions = form_data['max_predictions']
             
-            print(f"🖼️ Processing image with parameters: conf={confidence_threshold}, NMS={iou_threshold}, max={max_predictions}")
+            print(f"🖼️ Processing image with parameters: conf={confidence_threshold}, NMS={iou_threshold}, padding={padding_factor}, max={max_predictions}")
             
             # Convert image file to bytes
             if hasattr(form_data['image'], 'file'):
@@ -633,6 +676,7 @@ class handler(BaseHTTPRequestHandler):
                 image_bytes, 
                 confidence_threshold, 
                 iou_threshold,
+                padding_factor,
                 max_predictions
             )
             
