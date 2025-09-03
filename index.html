@@ -361,6 +361,35 @@
             letter-spacing: 0.5px;
         }
         
+        /* Analysis Panel Height Optimization */
+        .analysis-panel {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .analysis-panel .card {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .analysis-panel .card-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .analysis-panel #combinedMetrics {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .analysis-panel .row.h-100 {
+            flex: 1;
+        }
+        
         /* Responsive Design */
         @media (max-width: 1200px) {
             .main-content {
@@ -568,68 +597,68 @@
                             
                             <!-- Combined Metrics -->
                             <div id="combinedMetrics" style="display: none;">
-                                                <div class="row g-3">
-                                                    <div class="col-lg-4 col-md-6">
-                                                        <div class="metric-card p-3 border rounded" data-bs-toggle="tooltip" data-bs-placement="top" title="Terminal-to-Vellus Ratio = (Weak Hairs / Strong Hairs) × 100% (lower is better)">
-                                                            <div class="d-flex align-items-center">
+                                                <div class="row g-3 h-100">
+                                                    <div class="col-lg-4 col-md-6 d-flex">
+                                                        <div class="metric-card p-4 border rounded w-100 d-flex flex-column justify-content-center" data-bs-toggle="tooltip" data-bs-placement="top" title="Terminal-to-Vellus Ratio = (Weak Hairs / Strong Hairs) × 100% (lower is better)">
+                                                            <div class="d-flex align-items-center justify-content-center h-100">
                                                                 <div class="metric-icon me-3">
-                                                                    <i class="fas fa-balance-scale text-primary fa-lg"></i>
+                                                                    <i class="fas fa-balance-scale text-primary fa-2x"></i>
                                                                 </div>
-                                                                <div>
-                                                                    <div class="metric-label text-muted small">Terminal-to-Vellus Ratio</div>
-                                                                    <div class="metric-value h5 mb-0 text-primary" id="terminalToVellusRatio">-%</div>
+                                                                <div class="text-center">
+                                                                    <div class="metric-label text-muted mb-2">Terminal-to-Vellus Ratio</div>
+                                                                    <div class="metric-value h3 mb-0 text-primary" id="terminalToVellusRatio">-%</div>
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <div class="col-lg-4 col-md-6">
-                                                        <div class="metric-card p-3 border rounded" data-bs-toggle="tooltip" data-bs-placement="top" title="% Thick Hairs = (Strong Hairs / Total Thickness Detections) × 100">
-                                                            <div class="d-flex align-items-center">
+                                                    <div class="col-lg-4 col-md-6 d-flex">
+                                                        <div class="metric-card p-4 border rounded w-100 d-flex flex-column justify-content-center" data-bs-toggle="tooltip" data-bs-placement="top" title="Thick Hair % = (Strong Hairs / Total Thickness Detections) × 100">
+                                                            <div class="d-flex align-items-center justify-content-center h-100">
                                                                 <div class="metric-icon me-3">
-                                                                    <i class="fas fa-percentage text-success fa-lg"></i>
+                                                                    <i class="fas fa-percentage text-success fa-2x"></i>
                                                                 </div>
-                                                                <div>
-                                                                    <div class="metric-label text-muted small">% Thick Hairs</div>
-                                                                    <div class="metric-value h5 mb-0 text-success" id="percentThickHairs">-%</div>
+                                                                <div class="text-center">
+                                                                    <div class="metric-label text-muted mb-2">Thick Hair %</div>
+                                                                    <div class="metric-value h3 mb-0 text-success" id="percentThickHairs">-%</div>
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <div class="col-lg-4 col-md-6">
-                                                        <div class="metric-card p-3 border rounded" data-bs-toggle="tooltip" data-bs-placement="top" title="Hairs per cm² = Total Hairs / Picture Area (0.273 cm²)">
-                                                            <div class="d-flex align-items-center">
+                                                    <div class="col-lg-4 col-md-6 d-flex">
+                                                        <div class="metric-card p-4 border rounded w-100 d-flex flex-column justify-content-center" data-bs-toggle="tooltip" data-bs-placement="top" title="Hairs per cm² = Total Hairs / Picture Area (0.273 cm²)">
+                                                            <div class="d-flex align-items-center justify-content-center h-100">
                                                                 <div class="metric-icon me-3">
-                                                                    <i class="fas fa-ruler text-danger fa-lg"></i>
+                                                                    <i class="fas fa-ruler text-danger fa-2x"></i>
                                                                 </div>
-                                                                <div>
-                                                                    <div class="metric-label text-muted small">Hairs per cm²</div>
-                                                                    <div class="metric-value h5 mb-0 text-danger" id="hairsPerCm2">-</div>
+                                                                <div class="text-center">
+                                                                    <div class="metric-label text-muted mb-2">Hairs per cm²</div>
+                                                                    <div class="metric-value h3 mb-0 text-danger" id="hairsPerCm2">-</div>
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <div class="col-lg-6 col-md-6">
-                                                        <div class="metric-card p-3 border rounded" data-bs-toggle="tooltip" data-bs-placement="top" title="Hair Thickness Score (HCI %) = (HCI / (Total Hairs × 3)) × 100. Normalized 0-100 scale where 100% = all hairs are thick">
-                                                            <div class="d-flex align-items-center">
+                                                    <div class="col-lg-6 col-md-6 d-flex">
+                                                        <div class="metric-card p-4 border rounded w-100 d-flex flex-column justify-content-center" data-bs-toggle="tooltip" data-bs-placement="top" title="Hair Thickness Score (HCI %) = (HCI / (Total Hairs × 3)) × 100. Normalized 0-100 scale where 100% = all hairs are thick">
+                                                            <div class="d-flex align-items-center justify-content-center h-100">
                                                                 <div class="metric-icon me-3">
-                                                                    <i class="fas fa-percentage text-info fa-lg"></i>
+                                                                    <i class="fas fa-percentage text-info fa-2x"></i>
                                                                 </div>
-                                                                <div>
-                                                                    <div class="metric-label text-muted small">Hair Thickness Score (HCI %)</div>
-                                                                    <div class="metric-value h4 mb-0 text-info" id="hairCaliberIndexPercentage">-%</div>
+                                                                <div class="text-center">
+                                                                    <div class="metric-label text-muted mb-2">Hair Thickness Score (HCI %)</div>
+                                                                    <div class="metric-value h2 mb-0 text-info" id="hairCaliberIndexPercentage">-%</div>
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <div class="col-lg-6 col-md-6">
-                                                        <div class="metric-card p-3 border rounded border-success" data-bs-toggle="tooltip" data-bs-placement="top" title="Scalp coverage (EHD%) = (Effective Hair Density / 220) × 100. Normalized hair quality score on 0-100 scale">
-                                                            <div class="d-flex align-items-center">
+                                                    <div class="col-lg-6 col-md-6 d-flex">
+                                                        <div class="metric-card p-4 border rounded border-success w-100 d-flex flex-column justify-content-center" data-bs-toggle="tooltip" data-bs-placement="top" title="Scalp coverage (EHD%) = (Effective Hair Density / 220) × 100. Normalized hair quality score on 0-100 scale">
+                                                            <div class="d-flex align-items-center justify-content-center h-100">
                                                                 <div class="metric-icon me-3">
-                                                                    <i class="fas fa-trophy text-success fa-lg"></i>
+                                                                    <i class="fas fa-trophy text-success fa-2x"></i>
                                                                 </div>
-                                                                <div>
-                                                                    <div class="metric-label text-muted small">Scalp coverage (EHD%)</div>
-                                                                    <div class="metric-value h4 mb-0 text-success" id="ehdPercentage">-%</div>
+                                                                <div class="text-center">
+                                                                    <div class="metric-label text-muted mb-2">Scalp coverage (EHD%)</div>
+                                                                    <div class="metric-value h2 mb-0 text-success" id="ehdPercentage">-%</div>
                                                                 </div>
                                                             </div>
                                                         </div>
