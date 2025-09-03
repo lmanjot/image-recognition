@@ -189,7 +189,7 @@ def calculate_follicular_metrics(predictions):
         except:
             class_number = 1
             
-        print(f"  - Processing class: '{class_name}' -> class_number: {class_number}, count: {count}")
+
             
         if class_number == 1:
             fu_with_one_hair += count
@@ -218,7 +218,7 @@ def calculate_follicular_metrics(predictions):
     print(f"  - Avg Hairs/FU: {average_hair_per_unit:.2f}")
     print(f"  - FU with 1 Hair: {fu_with_one_hair}")
     print(f"  - FU with 2+ Hairs: {fu_with_multiple_hairs}")
-    print(f"  - Class counts: {class_counts}")
+
     
     return metrics
 
