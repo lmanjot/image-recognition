@@ -461,37 +461,28 @@
                                         <tr>
                                             <td class="fw-semibold">Confidence</td>
                                             <td>
-                                                <input type="number" class="form-control form-control-sm" id="densityConfidence" min="0.01" max="1.0" step="0.01" value="0.2">
+                                                <input type="number" class="form-control form-control-sm" id="densityConfidence" min="1" max="100" step="1" value="20" title="1-100 (1 = 0.01, 20 = 0.20)">
                                             </td>
                                             <td>
-                                                <input type="number" class="form-control form-control-sm" id="thicknessConfidence" min="0.01" max="1.0" step="0.01" value="0.2">
+                                                <input type="number" class="form-control form-control-sm" id="thicknessConfidence" min="1" max="100" step="1" value="20" title="1-100 (1 = 0.01, 20 = 0.20)">
                                             </td>
                                         </tr>
                                         <tr>
                                             <td class="fw-semibold">Padding</td>
                                             <td>
-                                                <input type="number" class="form-control form-control-sm" id="densityPadding" min="0.0" max="1.0" step="0.01" value="0.5">
+                                                <input type="number" class="form-control form-control-sm" id="densityPadding" min="0" max="100" step="1" value="50" title="0-100 (0 = 0.00, 50 = 0.50)">
                                             </td>
                                             <td>
-                                                <input type="number" class="form-control form-control-sm" id="thicknessPadding" min="0.0" max="1.0" step="0.01" value="0.5">
+                                                <input type="number" class="form-control form-control-sm" id="thicknessPadding" min="0" max="100" step="1" value="50" title="0-100 (0 = 0.00, 50 = 0.50)">
                                             </td>
                                         </tr>
                                         <tr>
                                             <td class="fw-semibold">NMS</td>
                                             <td>
-                                                <input type="number" class="form-control form-control-sm" id="densityNMS" min="0.0" max="1.0" step="0.01" value="0.0">
+                                                <input type="number" class="form-control form-control-sm" id="densityNMS" min="0" max="100" step="1" value="0" title="0-100 (0 = 0.00, 50 = 0.50)">
                                             </td>
                                             <td>
-                                                <input type="number" class="form-control form-control-sm" id="thicknessNMS" min="0.0" max="1.0" step="0.01" value="0.0">
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-semibold">Max Predictions</td>
-                                            <td>
-                                                <input type="number" class="form-control form-control-sm" id="densityMaxPred" min="1" max="100" step="1" value="100">
-                                            </td>
-                                            <td>
-                                                <input type="number" class="form-control form-control-sm" id="thicknessMaxPred" min="1" max="100" step="1" value="100">
+                                                <input type="number" class="form-control form-control-sm" id="thicknessNMS" min="0" max="100" step="1" value="0" title="0-100 (0 = 0.00, 50 = 0.50)">
                                             </td>
                                         </tr>
                                     </tbody>
@@ -555,7 +546,7 @@
                                             <div id="combinedMetrics" style="display: none;">
                                                 <div class="row g-3">
                                                     <div class="col-lg-4 col-md-6">
-                                                        <div class="metric-card p-3 border rounded">
+                                                        <div class="metric-card p-3 border rounded" data-bs-toggle="tooltip" data-bs-placement="top" title="Terminal-to-Vellus Ratio = Weak Hairs / Strong Hairs (Vellus/Terminal)">
                                                             <div class="d-flex align-items-center">
                                                                 <div class="metric-icon me-3">
                                                                     <i class="fas fa-balance-scale text-primary fa-lg"></i>
@@ -568,7 +559,7 @@
                                                         </div>
                                                     </div>
                                                     <div class="col-lg-4 col-md-6">
-                                                        <div class="metric-card p-3 border rounded">
+                                                        <div class="metric-card p-3 border rounded" data-bs-toggle="tooltip" data-bs-placement="top" title="% Thick Hairs = (Strong Hairs / Total Thickness Detections) × 100">
                                                             <div class="d-flex align-items-center">
                                                                 <div class="metric-icon me-3">
                                                                     <i class="fas fa-percentage text-success fa-lg"></i>
@@ -581,7 +572,7 @@
                                                         </div>
                                                     </div>
                                                     <div class="col-lg-4 col-md-6">
-                                                        <div class="metric-card p-3 border rounded">
+                                                        <div class="metric-card p-3 border rounded" data-bs-toggle="tooltip" data-bs-placement="top" title="Hair Caliber Index = (Strong × 3) + (Medium × 2) + (Weak × 1)">
                                                             <div class="d-flex align-items-center">
                                                                 <div class="metric-icon me-3">
                                                                     <i class="fas fa-chart-bar text-info fa-lg"></i>
@@ -594,7 +585,7 @@
                                                         </div>
                                                     </div>
                                                     <div class="col-lg-4 col-md-6">
-                                                        <div class="metric-card p-3 border rounded">
+                                                        <div class="metric-card p-3 border rounded" data-bs-toggle="tooltip" data-bs-placement="top" title="Average Thickness Score = Hair Caliber Index / Total Thickness Detections">
                                                             <div class="d-flex align-items-center">
                                                                 <div class="metric-icon me-3">
                                                                     <i class="fas fa-star text-warning fa-lg"></i>
@@ -607,7 +598,7 @@
                                                         </div>
                                                     </div>
                                                     <div class="col-lg-4 col-md-6">
-                                                        <div class="metric-card p-3 border rounded">
+                                                        <div class="metric-card p-3 border rounded" data-bs-toggle="tooltip" data-bs-placement="top" title="Hairs per FU = Total Hairs / Total Follicular Units">
                                                             <div class="d-flex align-items-center">
                                                                 <div class="metric-icon me-3">
                                                                     <i class="fas fa-hashtag text-secondary fa-lg"></i>
@@ -620,7 +611,7 @@
                                                         </div>
                                                     </div>
                                                     <div class="col-lg-4 col-md-6">
-                                                        <div class="metric-card p-3 border rounded">
+                                                        <div class="metric-card p-3 border rounded" data-bs-toggle="tooltip" data-bs-placement="top" title="Hairs per cm² = Total Hairs / Picture Area (0.273 cm²)">
                                                             <div class="d-flex align-items-center">
                                                                 <div class="metric-icon me-3">
                                                                     <i class="fas fa-ruler text-danger fa-lg"></i>
@@ -633,7 +624,7 @@
                                                         </div>
                                                     </div>
                                                     <div class="col-lg-6 col-md-12">
-                                                        <div class="metric-card p-3 border rounded border-success">
+                                                        <div class="metric-card p-3 border rounded border-success" data-bs-toggle="tooltip" data-bs-placement="top" title="Effective Hair Density = (Hairs per cm²) × (Average Thickness Score / 3)">
                                                             <div class="d-flex align-items-center">
                                                                 <div class="metric-icon me-3">
                                                                     <i class="fas fa-trophy text-success fa-lg"></i>
@@ -794,9 +785,16 @@
 
         function initializeApp() {
             setupEventListeners();
-
             setupDragAndDrop();
-
+            initializeTooltips();
+        }
+        
+        function initializeTooltips() {
+            // Initialize Bootstrap tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
         }
 
         function setupEventListeners() {
@@ -887,17 +885,17 @@
             formData.append('runDensityModel', document.getElementById('runDensityModel').checked);
             formData.append('runThicknessModel', document.getElementById('runThicknessModel').checked);
             
-            // Density model parameters
-            formData.append('densityConfidence', document.getElementById('densityConfidence').value);
-            formData.append('densityPadding', document.getElementById('densityPadding').value);
-            formData.append('densityNMS', document.getElementById('densityNMS').value);
-            formData.append('densityMaxPred', document.getElementById('densityMaxPred').value);
+            // Density model parameters (convert integers to decimals)
+            formData.append('densityConfidence', (document.getElementById('densityConfidence').value / 100).toFixed(2));
+            formData.append('densityPadding', (document.getElementById('densityPadding').value / 100).toFixed(2));
+            formData.append('densityNMS', (document.getElementById('densityNMS').value / 100).toFixed(2));
+            formData.append('densityMaxPred', '100'); // Default to 100
             
-            // Thickness model parameters
-            formData.append('thicknessConfidence', document.getElementById('thicknessConfidence').value);
-            formData.append('thicknessPadding', document.getElementById('thicknessPadding').value);
-            formData.append('thicknessNMS', document.getElementById('thicknessNMS').value);
-            formData.append('thicknessMaxPred', document.getElementById('thicknessMaxPred').value);
+            // Thickness model parameters (convert integers to decimals)
+            formData.append('thicknessConfidence', (document.getElementById('thicknessConfidence').value / 100).toFixed(2));
+            formData.append('thicknessPadding', (document.getElementById('thicknessPadding').value / 100).toFixed(2));
+            formData.append('thicknessNMS', (document.getElementById('thicknessNMS').value / 100).toFixed(2));
+            formData.append('thicknessMaxPred', '100'); // Default to 100
             
             // Show loading state
             showLoading(true);
@@ -1112,6 +1110,9 @@
                 document.getElementById('effectiveHairDensity').textContent = combinedMetrics.effective_hair_density || '0.0';
                 
                 combinedMetricsEl.style.display = 'block';
+                
+                // Reinitialize tooltips for the newly displayed content
+                initializeTooltips();
             }
         }
 
