@@ -487,6 +487,70 @@ def predict_image_object_detection(image_bytes, confidence_threshold, iou_thresh
         image_bytes, confidence_threshold, iou_threshold, padding_factor, max_predictions
     )
 
+def call_thickness_vertex_ai_endpoint(image_bytes, confidence_threshold, iou_threshold, max_predictions, access_token):
+    """Make actual API call to Thickness Vertex AI endpoint"""
+    try:
+        print("🚀 Making API call to Thickness Vertex AI endpoint...")
+        
+        # Construct the Thickness Vertex AI endpoint URL
+        endpoint_url = f"https://{thickness_location}-aiplatform.googleapis.com/v1/projects/{thickness_project_id}/locations/{thickness_location}/endpoints/{thickness_endpoint_id}:predict"
+        print(f"  - Thickness Endpoint URL: {endpoint_url}")
+        
+        # Prepare the request payload - using correct Vertex AI format
+        payload = {
+            "instances": [
+                {
+                    "content": base64.b64encode(image_bytes).decode('utf-8')
+                }
+            ],
+            "parameters": {
+                "confidenceThreshold": confidence_threshold,
+                "maxPredictions": max_predictions,
+                "iouThreshold": iou_threshold
+            }
+        }
+        
+        # Make the API request
+        headers = {
+            'Authorization': f'Bearer {access_token}',
+            'Content-Type': 'application/json'
+        }
+        
+        print(f"  - Making request with confidence: {confidence_threshold}, max: {max_predictions}, IoU: {iou_threshold}")
+        
+        response = requests.post(endpoint_url, json=payload, headers=headers, timeout=30)
+        
+        if response.status_code == 200:
+            result = response.json()
+            print(f"✅ Thickness Vertex AI API call successful")
+            
+            # Parse predictions from response
+            predictions = []
+            if 'predictions' in result and result['predictions']:
+                for pred in result['predictions']:
+                    if 'detections' in pred:
+                        for detection in pred['detections']:
+                            if detection.get('confidence', 0) >= confidence_threshold:
+                                predictions.append({
+                                    'displayName': detection.get('displayName', 'Unknown'),
+                                    'confidence': detection.get('confidence', 0),
+                                    'bbox': detection.get('bbox', [0, 0, 0, 0])
+                                })
+            
+            print(f"  - Raw thickness predictions: {len(predictions)}")
+            return predictions
+            
+        else:
+            print(f"❌ Thickness Vertex AI API error: {response.status_code}")
+            print(f"  - Response: {response.text}")
+            return []
+            
+    except Exception as e:
+        print(f"❌ Error calling thickness Vertex AI endpoint: {e}")
+        import traceback
+        traceback.print_exc()
+        return []
+
 def predict_thickness_model_rest(image_bytes, confidence_threshold, iou_threshold, padding_factor, max_predictions):
     """Call Thickness Vertex AI endpoint using REST API"""
     print(f"\n🔍 Starting Thickness Vertex AI prediction process...")
@@ -508,13 +572,21 @@ def predict_thickness_model_rest(image_bytes, confidence_threshold, iou_threshol
         return get_mock_thickness_predictions()
     
     try:
+        # Get access token for thickness model (same authentication)
+        access_token = get_access_token()
+        if not access_token:
+            print("❌ Failed to get access token for thickness model")
+            return get_mock_thickness_predictions()
+        
+        print("✅ Access token obtained for thickness model")
+        
         # Call Vertex AI endpoint for thickness model
-        predictions = call_vertex_ai_endpoint(
+        predictions = call_thickness_vertex_ai_endpoint(
             compressed_image_bytes, 
             confidence_threshold,
-            project_id=thickness_project_id,
-            endpoint_id=thickness_endpoint_id,
-            location=thickness_location
+            0.99,  # Very high IoU threshold to get all raw detections
+            200,   # High max predictions to get all detections
+            access_token
         )
         
         if not predictions:
