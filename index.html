@@ -613,14 +613,14 @@
                                                         </div>
                                                     </div>
                                                     <div class="col-lg-6 col-md-12">
-                                                        <div class="metric-card p-3 border rounded border-success" data-bs-toggle="tooltip" data-bs-placement="top" title="Effective Hair Density = (Hairs per cm²) × (Average Thickness Score / 3)">
+                                                        <div class="metric-card p-3 border rounded border-success" data-bs-toggle="tooltip" data-bs-placement="top" title="EHD% = (Effective Hair Density / 220) × 100. Normalized hair quality score on 0-100 scale">
                                                             <div class="d-flex align-items-center">
                                                                 <div class="metric-icon me-3">
                                                                     <i class="fas fa-trophy text-success fa-lg"></i>
                                                                 </div>
                                                                 <div>
-                                                                    <div class="metric-label text-muted small">Effective Hair Density</div>
-                                                                    <div class="metric-value h4 mb-0 text-success" id="effectiveHairDensity">-</div>
+                                                                    <div class="metric-label text-muted small">EHD%</div>
+                                                                    <div class="metric-value h4 mb-0 text-success" id="ehdPercentage">-%</div>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -1054,7 +1054,7 @@
                 document.getElementById('percentThickHairs').textContent = (combinedMetrics.percent_thick_hairs || '0.0') + '%';
                 document.getElementById('hairCaliberIndexPercentage').textContent = (combinedMetrics.hair_caliber_index_percentage || '0.0') + '%';
                 document.getElementById('hairsPerCm2').textContent = combinedMetrics.hairs_per_cm2 || '0.0';
-                document.getElementById('effectiveHairDensity').textContent = combinedMetrics.effective_hair_density || '0.0';
+                document.getElementById('ehdPercentage').textContent = (combinedMetrics.ehd_percentage || '0.0') + '%';
                 
                 combinedMetricsEl.style.display = 'block';
                 

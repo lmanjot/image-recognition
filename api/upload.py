@@ -318,6 +318,10 @@ def calculate_combined_metrics(density_predictions, thickness_predictions):
     # Effective Hair Density = (total_hairs / picture_area_cm2) * (Average Thickness Score / 3)
     effective_hair_density = hairs_per_cm2 * (average_thickness_score / 3.0)
     
+    # EHD% = (Effective Hair Density / 220) * 100
+    # Normalizes effective hair density to a 0-100 percentage scale
+    ehd_percentage = (effective_hair_density / 220.0 * 100) if effective_hair_density > 0 else 0.0
+    
     print(f"📊 Combined Metrics (using density model hair count as ground truth):")
     print(f"  - Terminal-to-Vellus Ratio (weak/strong): {terminal_to_vellus_ratio:.1f}%")
     print(f"  - % Thick Hairs (strong/total): {percent_thick_hairs:.1f}%")
@@ -327,6 +331,7 @@ def calculate_combined_metrics(density_predictions, thickness_predictions):
     print(f"  - Hairs per FU: {hairs_per_fu:.2f}")
     print(f"  - Hairs per cm²: {hairs_per_cm2:.1f}")
     print(f"  - Effective Hair Density: {effective_hair_density:.1f}")
+    print(f"  - EHD%: {ehd_percentage:.1f}%")
     print(f"  - Final thickness breakdown: {strong_hairs:.1f} strong, {medium_hairs:.1f} medium, {weak_hairs:.1f} weak")
     
     return {
@@ -337,7 +342,8 @@ def calculate_combined_metrics(density_predictions, thickness_predictions):
         'average_thickness_score': round(average_thickness_score, 2),  # Score, 2 decimals
         'hairs_per_fu': round(hairs_per_fu, 2),  # Double digit, 2 decimals
         'hairs_per_cm2': round(hairs_per_cm2, 1),  # No comma, 1 decimal
-        'effective_hair_density': round(effective_hair_density, 1)  # 1 decimal
+        'effective_hair_density': round(effective_hair_density, 1),  # 1 decimal
+        'ehd_percentage': round(ehd_percentage, 1)  # EHD%, 1 decimal
     }
 
 def get_mock_predictions():
