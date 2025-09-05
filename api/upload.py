@@ -299,8 +299,8 @@ def calculate_combined_metrics(density_predictions, thickness_predictions):
     # % Thick Hairs = (strong_hairs / total_thickness_detections) * 100
     percent_thick_hairs = (strong_hairs / total_thickness_detections * 100) if total_thickness_detections > 0 else 0.0
     
-    # Hair Caliber Index (HCI) = (strong_hairs * 3) + (medium_hairs * 2) + (weak_hairs * 1)
-    hair_caliber_index = int((strong_hairs * 3) + (medium_hairs * 2) + (weak_hairs * 1))
+    # Hair Caliber Index (HCI) = (strong_hairs * 3) + (medium_hairs * 1.5) + (weak_hairs * 1)
+    hair_caliber_index = int((strong_hairs * 3) + (medium_hairs * 1.5) + (weak_hairs * 1))
     
     # Hair Caliber Index % (HCI%) = (HCI / (total_hairs * 3)) * 100
     # Normalizes the score on a 0-100 scale, assuming ideal case is all hairs = thick (weight 3)
