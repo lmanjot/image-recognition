@@ -374,19 +374,22 @@
             letter-spacing: 0.5px;
         }
         
-        /* Analysis Panel Height Optimization */
+        /* Panel Height Optimization */
+        .image-panel,
         .analysis-panel {
             height: 100%;
             display: flex;
             flex-direction: column;
         }
         
+        .image-panel .card,
         .analysis-panel .card {
             height: 100%;
             display: flex;
             flex-direction: column;
         }
         
+        .image-panel .card-body,
         .analysis-panel .card-body {
             flex: 1;
             display: flex;
@@ -578,9 +581,9 @@
                                 </div>
                                 
                                 <!-- HCI% and EHD% Row -->
-                                <div class="row g-0 mb-3">
+                                <div class="row g-0">
                                     <div class="col-lg-6 col-md-6 d-flex">
-                                        <div class="metric-card p-4 border border-end-0 rounded-start w-100 d-flex flex-column justify-content-center analysis-helper" data-bs-toggle="tooltip" data-bs-placement="top" title="Hair Thickness Score (HCI %) = (HCI / (Total Hairs × 3)) × 100. Normalized 0-100 scale where 100% = all hairs are thick">
+                                        <div class="metric-card p-4 border border-end-0 rounded-start w-100 d-flex flex-column justify-content-center analysis-helper" style="border-color: #e0e0e0 !important;" data-bs-toggle="tooltip" data-bs-placement="top" title="Hair Thickness Score (HCI %) = (HCI / (Total Hairs × 3)) × 100. Normalized 0-100 scale where 100% = all hairs are thick">
                                             <div class="d-flex align-items-center justify-content-center h-100">
                                                 <div class="text-center">
                                                     <div class="metric-label text-muted mb-2">Hair Thickness Score (HCI %)</div>
@@ -590,7 +593,7 @@
                                         </div>
                                     </div>
                                     <div class="col-lg-6 col-md-6 d-flex">
-                                        <div class="metric-card p-4 border rounded-end w-100 d-flex flex-column justify-content-center analysis-helper" data-bs-toggle="tooltip" data-bs-placement="top" title="Scalp coverage (EHD%) = (EHD / EHD_max) × 100, where EHD = (hairs_per_cm² × avg_thickness_score) / 3 and EHD_max = 220">
+                                        <div class="metric-card p-4 border rounded-end w-100 d-flex flex-column justify-content-center analysis-helper" style="border-color: #e0e0e0 !important;" data-bs-toggle="tooltip" data-bs-placement="top" title="Scalp coverage (EHD%) = (EHD / EHD_max) × 100, where EHD = (hairs_per_cm² × avg_thickness_score) / 3 and EHD_max = 220">
                                             <div class="d-flex align-items-center justify-content-center h-100">
                                                 <div class="text-center">
                                                     <div class="metric-label text-muted mb-2">Scalp coverage (EHD%)</div>
@@ -604,7 +607,7 @@
                                 <!-- Other Ratios Row -->
                                 <div class="row g-0 h-100">
                                     <div class="col-lg-4 col-md-6 d-flex">
-                                        <div class="metric-card p-4 border border-end-0 rounded-start w-100 d-flex flex-column justify-content-center analysis-helper" data-bs-toggle="tooltip" data-bs-placement="top" title="Terminal-to-Vellus Ratio = (Weak Hairs / Strong Hairs) × 100% (lower is better)">
+                                        <div class="metric-card p-4 border border-end-0 rounded-start w-100 d-flex flex-column justify-content-center analysis-helper" style="border-color: #e0e0e0 !important;" data-bs-toggle="tooltip" data-bs-placement="top" title="Terminal-to-Vellus Ratio = (Weak Hairs / Strong Hairs) × 100% (lower is better)">
                                             <div class="d-flex align-items-center justify-content-center h-100">
                                                 <div class="text-center">
                                                     <div class="metric-label text-muted mb-2">Terminal-to-Vellus Ratio</div>
@@ -614,7 +617,7 @@
                                         </div>
                                     </div>
                                     <div class="col-lg-4 col-md-6 d-flex">
-                                        <div class="metric-card p-4 border border-end-0 w-100 d-flex flex-column justify-content-center analysis-helper" data-bs-toggle="tooltip" data-bs-placement="top" title="Thick Hair % = (Strong Hairs / Total Thickness Detections) × 100">
+                                        <div class="metric-card p-4 border border-end-0 w-100 d-flex flex-column justify-content-center analysis-helper" style="border-color: #e0e0e0 !important;" data-bs-toggle="tooltip" data-bs-placement="top" title="Thick Hair % = (Strong Hairs / Total Thickness Detections) × 100">
                                             <div class="d-flex align-items-center justify-content-center h-100">
                                                 <div class="text-center">
                                                     <div class="metric-label text-muted mb-2">Thick Hair %</div>
@@ -624,7 +627,7 @@
                                         </div>
                                     </div>
                                     <div class="col-lg-4 col-md-6 d-flex">
-                                        <div class="metric-card p-4 border rounded-end w-100 d-flex flex-column justify-content-center analysis-helper" data-bs-toggle="tooltip" data-bs-placement="top" title="Hairs per cm² = Total Hairs / Picture Area (0.273 cm²)">
+                                        <div class="metric-card p-4 border rounded-end w-100 d-flex flex-column justify-content-center analysis-helper" style="border-color: #e0e0e0 !important;" data-bs-toggle="tooltip" data-bs-placement="top" title="Hairs per cm² = Total Hairs / Picture Area (0.273 cm²)">
                                             <div class="d-flex align-items-center justify-content-center h-100">
                                                 <div class="text-center">
                                                     <div class="metric-label text-muted mb-2">Hairs per cm²</div>
@@ -706,6 +709,64 @@
                                                 </table>
                                             </div>
                                         </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Model Parameters -->
+                                <div class="card mt-3">
+                                    <div class="card-header" data-bs-toggle="collapse" data-bs-target="#parametersCollapse" aria-expanded="false" aria-controls="parametersCollapse" style="cursor: pointer;">
+                                        <h6 class="mb-0 d-flex justify-content-between align-items-center">
+                                            <span><i class="fas fa-cogs"></i> Model Parameters</span>
+                                            <i class="fas fa-chevron-down"></i>
+                                        </h6>
+                                    </div>
+                                    <div class="collapse" id="parametersCollapse">
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-sm table-borderless">
+                                                <thead>
+                                                    <tr>
+                                                        <th class="text-muted">Parameter</th>
+                                                        <th class="text-center">
+                                                            <i class="fas fa-hashtag text-primary"></i> Density Model
+                                                        </th>
+                                                        <th class="text-center">
+                                                            <i class="fas fa-weight text-success"></i> Thickness Model
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td class="fw-semibold">Confidence <i class="fas fa-info-circle text-muted parameter-helper" data-bs-toggle="tooltip" data-bs-placement="right" title="Confidence: Minimum detection confidence threshold. Higher values = fewer, more certain detections. Lower values = more detections but may include false positives."></i></td>
+                                                        <td>
+                                                            <input type="number" class="form-control form-control-sm text-center" id="densityConfidence" min="1" max="100" step="1" value="20">
+                                                        </td>
+                                                        <td>
+                                                            <input type="number" class="form-control form-control-sm text-center" id="thicknessConfidence" min="1" max="100" step="1" value="10">
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="fw-semibold">Padding <i class="fas fa-info-circle text-muted parameter-helper" data-bs-toggle="tooltip" data-bs-placement="right" title="Padding: Expands bounding boxes before NMS. Higher values = larger boxes, better overlap detection. Lower values = tighter boxes."></i></td>
+                                                        <td>
+                                                            <input type="number" class="form-control form-control-sm text-center" id="densityPadding" min="0" max="500" step="1" value="200">
+                                                        </td>
+                                                        <td>
+                                                            <input type="number" class="form-control form-control-sm text-center" id="thicknessPadding" min="0" max="500" step="1" value="0">
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="fw-semibold">NMS <i class="fas fa-info-circle text-muted parameter-helper" data-bs-toggle="tooltip" data-bs-placement="right" title="NMS (Non-Maximum Suppression): Removes overlapping boxes. Higher values = fewer overlapping boxes. Lower values = keeps more overlapping detections. Low number = less detection."></i></td>
+                                                        <td>
+                                                            <input type="number" class="form-control form-control-sm text-center" id="densityNMS" min="0" max="100" step="1" value="0">
+                                                        </td>
+                                                        <td>
+                                                            <input type="number" class="form-control form-control-sm text-center" id="thicknessNMS" min="0" max="100" step="1" value="100">
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
                                     </div>
                                 </div>
                             </div>
