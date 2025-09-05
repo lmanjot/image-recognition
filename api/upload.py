@@ -1283,6 +1283,12 @@ def parse_multipart_data(body, content_type):
         run_density_model = form.getfirst('runDensityModel', 'false').lower() == 'true'
         run_thickness_model = form.getfirst('runThicknessModel', 'false').lower() == 'true'
         
+        print(f"🔍 Model selection from form:")
+        print(f"  - runDensityModel raw: '{form.getfirst('runDensityModel', 'false')}'")
+        print(f"  - runThicknessModel raw: '{form.getfirst('runThicknessModel', 'false')}'")
+        print(f"  - run_density_model: {run_density_model}")
+        print(f"  - run_thickness_model: {run_thickness_model}")
+        
         # Density model parameters
         density_confidence = float(form.getfirst('densityConfidence', 0.2))
         density_iou_threshold = float(form.getfirst('densityNMS', 0.0))
