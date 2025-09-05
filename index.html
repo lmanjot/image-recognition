@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vertex AI Image Recognition</title>
+    <title>Māra Advanced Hair Diagnostics</title>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -447,11 +447,14 @@
         <!-- Title Container -->
         <div class="title-container">
             <div class="title-content">
+                <div class="d-flex align-items-center justify-content-center mb-3">
+                    <img src="https://cdn.prod.website-files.com/686ba99f7e881278bf8341e5/686bafa8ce0f0a4ccaf45537_mara-logo.svg" 
+                         alt="Māra Logo" 
+                         style="height: 60px; width: auto;">
+                </div>
                 <h1 class="title-text">
-                    <i class="fas fa-robot"></i>
-                    Vertex AI Image Recognition
+                    Māra Advanced Hair Diagnostics
                 </h1>
-
             </div>
         </div>
 
@@ -497,63 +500,6 @@
                         </div>
                     </div>
 
-                    <!-- Collapsible Parameters -->
-                    <div class="card">
-                        <div class="card-header" data-bs-toggle="collapse" data-bs-target="#parametersCollapse" aria-expanded="false" aria-controls="parametersCollapse" style="cursor: pointer;">
-                            <h6 class="mb-0 d-flex justify-content-between align-items-center">
-                                <span><i class="fas fa-cogs"></i> Model Parameters</span>
-                                <i class="fas fa-chevron-down"></i>
-                            </h6>
-                        </div>
-                        <div class="collapse" id="parametersCollapse">
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table class="table table-sm table-borderless">
-                                    <thead>
-                                        <tr>
-                                            <th class="text-muted">Parameter</th>
-                                            <th class="text-center">
-                                                <i class="fas fa-hashtag text-primary"></i> Density Model
-                                            </th>
-                                            <th class="text-center">
-                                                <i class="fas fa-weight text-success"></i> Thickness Model
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td class="fw-semibold">Confidence <i class="fas fa-info-circle text-muted parameter-helper" data-bs-toggle="tooltip" data-bs-placement="right" title="Confidence: Minimum detection confidence threshold. Higher values = fewer, more certain detections. Lower values = more detections but may include false positives."></i></td>
-                                            <td>
-                                                <input type="number" class="form-control form-control-sm text-center" id="densityConfidence" min="1" max="100" step="1" value="20">
-                                            </td>
-                                            <td>
-                                                <input type="number" class="form-control form-control-sm text-center" id="thicknessConfidence" min="1" max="100" step="1" value="10">
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-semibold">Padding <i class="fas fa-info-circle text-muted parameter-helper" data-bs-toggle="tooltip" data-bs-placement="right" title="Padding: Expands bounding boxes before NMS. Higher values = larger boxes, better overlap detection. Lower values = tighter boxes."></i></td>
-                                            <td>
-                                                <input type="number" class="form-control form-control-sm text-center" id="densityPadding" min="0" max="500" step="1" value="200">
-                                            </td>
-                                            <td>
-                                                <input type="number" class="form-control form-control-sm text-center" id="thicknessPadding" min="0" max="500" step="1" value="0">
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-semibold">NMS <i class="fas fa-info-circle text-muted parameter-helper" data-bs-toggle="tooltip" data-bs-placement="right" title="NMS (Non-Maximum Suppression): Removes overlapping boxes. Higher values = fewer overlapping boxes. Lower values = keeps more overlapping detections. Low number = less detection."></i></td>
-                                            <td>
-                                                <input type="number" class="form-control form-control-sm text-center" id="densityNMS" min="0" max="100" step="1" value="0">
-                                            </td>
-                                            <td>
-                                                <input type="number" class="form-control form-control-sm text-center" id="thicknessNMS" min="0" max="100" step="1" value="100">
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                        </div>
-                    </div>
 
 
                 </div>
