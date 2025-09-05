@@ -910,7 +910,50 @@
             popup.style.zIndex = '9999';
             popup.style.maxWidth = '350px';
             popup.style.fontSize = '0.875rem';
-            popup.innerHTML = title;
+            popup.style.position = 'relative';
+            
+            // Create close button
+            const closeButton = document.createElement('button');
+            closeButton.innerHTML = '×';
+            closeButton.className = 'btn-close btn-close-white position-absolute';
+            closeButton.style.top = '8px';
+            closeButton.style.right = '8px';
+            closeButton.style.fontSize = '1.2rem';
+            closeButton.style.border = 'none';
+            closeButton.style.background = 'none';
+            closeButton.style.color = 'white';
+            closeButton.style.cursor = 'pointer';
+            closeButton.style.padding = '0';
+            closeButton.style.width = '20px';
+            closeButton.style.height = '20px';
+            closeButton.style.display = 'flex';
+            closeButton.style.alignItems = 'center';
+            closeButton.style.justifyContent = 'center';
+            closeButton.style.borderRadius = '50%';
+            closeButton.style.transition = 'background-color 0.2s';
+            
+            // Add hover effect
+            closeButton.addEventListener('mouseenter', function() {
+                this.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
+            });
+            closeButton.addEventListener('mouseleave', function() {
+                this.style.backgroundColor = 'transparent';
+            });
+            
+            // Add close functionality
+            closeButton.addEventListener('click', function(e) {
+                e.stopPropagation();
+                closeAllAnalysisHelpers();
+            });
+            
+            // Create content wrapper
+            const content = document.createElement('div');
+            content.innerHTML = title;
+            content.style.paddingRight = '25px'; // Space for close button
+            
+            // Assemble popup
+            popup.appendChild(closeButton);
+            popup.appendChild(content);
             
             // Position the popup
             const rect = card.getBoundingClientRect();
