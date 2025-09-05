@@ -861,7 +861,7 @@ def get_mock_thickness_predictions():
         {'displayName': 'weak', 'confidence': 0.78, 'bbox': [0.6, 0.8, 0.2, 0.5]}
     ]
 
-def create_combined_annotated_image(image_bytes, density_predictions, thickness_predictions, padding_factor):
+def create_combined_annotated_image(image_bytes, density_predictions, thickness_predictions, density_padding_factor, thickness_padding_factor):
     """Create a single image with both density and thickness overlays"""
     try:
         print("🎨 Creating combined annotated image...")
@@ -903,12 +903,12 @@ def create_combined_annotated_image(image_bytes, density_predictions, thickness_
         
         # Draw density predictions with consistent colors
         if density_predictions:
-            print(f"  - Drawing {len(density_predictions)} density predictions")
+            print(f"  - Drawing {len(density_predictions)} density predictions with padding {density_padding_factor}")
             for pred in density_predictions:
                 bbox = pred.get('bbox', [])
                 if len(bbox) == 4:
-                    # Apply padding to bounding box
-                    padded_bbox = apply_padding_to_bbox(bbox, padding_factor)
+                    # Apply density-specific padding to bounding box
+                    padded_bbox = apply_padding_to_bbox(bbox, density_padding_factor)
                     
                     # Convert normalized coordinates to absolute pixels
                     x_min = int(padded_bbox[0] * img_width)
@@ -939,12 +939,12 @@ def create_combined_annotated_image(image_bytes, density_predictions, thickness_
         
         # Draw thickness predictions with consistent colors
         if thickness_predictions:
-            print(f"  - Drawing {len(thickness_predictions)} thickness predictions")
+            print(f"  - Drawing {len(thickness_predictions)} thickness predictions with padding {thickness_padding_factor}")
             for pred in thickness_predictions:
                 bbox = pred.get('bbox', [])
                 if len(bbox) == 4:
-                    # Apply padding to bounding box
-                    padded_bbox = apply_padding_to_bbox(bbox, padding_factor)
+                    # Apply thickness-specific padding to bounding box
+                    padded_bbox = apply_padding_to_bbox(bbox, thickness_padding_factor)
                     
                     # Convert normalized coordinates to absolute pixels
                     x_min = int(padded_bbox[0] * img_width)
@@ -1451,7 +1451,8 @@ class handler(BaseHTTPRequestHandler):
                     image_bytes, 
                     density_predictions, 
                     thickness_predictions, 
-                    max(form_data['density_padding_factor'], form_data['thickness_padding_factor'])
+                    form_data['density_padding_factor'],
+                    form_data['thickness_padding_factor']
                 )
                 if combined_image:
                     response_data['combined_annotated_image'] = combined_image
