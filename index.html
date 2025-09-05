@@ -628,16 +628,6 @@
                                     <!-- Other Ratios Row -->
                                     <div class="row g-0">
                                         <div class="col-lg-4 col-md-6 d-flex">
-                                            <div class="metric-tile p-4 w-100 d-flex flex-column justify-content-center analysis-helper" style="border-right: 1px solid #e0e0e0;" title="Terminal-to-Vellus Ratio (T:V): Compares strong hairs (terminal) to thin, miniaturized hairs (vellus). A higher ratio means healthier growth. Ranges: Good ≥7, Borderline 4-6, Weak <4">
-                                                <div class="d-flex align-items-center justify-content-center h-100">
-                                                    <div class="text-center">
-                                                        <div class="metric-label text-muted mb-2">Terminal-to-Vellus Ratio</div>
-                                                        <div class="metric-value h3 mb-0" id="terminalToVellusRatio">-%</div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-lg-4 col-md-6 d-flex">
                                             <div class="metric-tile p-4 w-100 d-flex flex-column justify-content-center analysis-helper" style="border-right: 1px solid #e0e0e0;" title="Thick Hair %: The percentage of your hairs that are strong, terminal hairs instead of thin, weak hairs. Ranges: Good ≥90%, Borderline 75-89%, Weak <75%">
                                                 <div class="d-flex align-items-center justify-content-center h-100">
                                                     <div class="text-center">
@@ -928,11 +918,13 @@
             
             // Create popup element
             const popup = document.createElement('div');
-            popup.className = 'analysis-helper-popup position-absolute bg-dark text-white p-3 rounded shadow-lg';
+            popup.className = 'analysis-helper-popup position-absolute bg-dark text-white p-4 rounded shadow-lg';
             popup.style.zIndex = '9999';
-            popup.style.maxWidth = '350px';
-            popup.style.fontSize = '0.875rem';
+            popup.style.maxWidth = '500px';
+            popup.style.minWidth = '400px';
+            popup.style.fontSize = '1rem';
             popup.style.position = 'relative';
+            popup.style.lineHeight = '1.6';
             
             // Create close button
             const closeButton = document.createElement('button');
@@ -968,19 +960,40 @@
                 closeAllAnalysisHelpers();
             });
             
-            // Create content wrapper
+            // Create content wrapper with better formatting
             const content = document.createElement('div');
-            content.innerHTML = title;
             content.style.paddingRight = '25px'; // Space for close button
+            
+            // Process the title to add better formatting
+            let formattedTitle = title;
+            
+            // Add line breaks for better readability
+            formattedTitle = formattedTitle.replace(/\. /g, '.<br><br>');
+            formattedTitle = formattedTitle.replace(/Ranges:/g, '<br><strong>Ranges:</strong>');
+            formattedTitle = formattedTitle.replace(/(Good|Borderline|Weak)/g, '<br>• <strong>$1</strong>');
+            
+            // Add some styling to make it clearer
+            formattedTitle = `<div style="font-weight: 500; margin-bottom: 0.5rem;">${formattedTitle}</div>`;
+            
+            content.innerHTML = formattedTitle;
             
             // Assemble popup
             popup.appendChild(closeButton);
             popup.appendChild(content);
             
-            // Position the popup
+            // Position the popup with better positioning for larger popup
             const rect = card.getBoundingClientRect();
-            popup.style.left = (rect.left + window.scrollX) + 'px';
-            popup.style.top = (rect.bottom + window.scrollY + 5) + 'px';
+            const viewportWidth = window.innerWidth;
+            const popupWidth = 500; // maxWidth from above
+            
+            // Center horizontally if possible, otherwise align to left edge
+            let leftPosition = rect.left + window.scrollX;
+            if (leftPosition + popupWidth > viewportWidth) {
+                leftPosition = Math.max(10, viewportWidth - popupWidth - 10);
+            }
+            
+            popup.style.left = leftPosition + 'px';
+            popup.style.top = (rect.bottom + window.scrollY + 10) + 'px';
             
             // Add to document
             document.body.appendChild(popup);
@@ -1335,23 +1348,11 @@
                 
                 
                 // Display other metrics
-                document.getElementById('terminalToVellusRatio').textContent = (combinedMetrics.terminal_to_vellus_ratio || '0.0') + '%';
                 document.getElementById('percentThickHairs').textContent = (combinedMetrics.percent_thick_hairs || '0.0') + '%';
                 document.getElementById('hairCaliberIndexPercentage').textContent = (combinedMetrics.hair_caliber_index_percentage || '0.0') + '%';
                 document.getElementById('hairsPerCm2').textContent = combinedMetrics.hairs_per_cm2 || '0.0';
                 document.getElementById('ehdPercentage').textContent = (combinedMetrics.ehd_percentage || '0.0') + '%';
                 
-                // Apply color coding to Terminal-to-Vellus Ratio
-                const terminalToVellusValue = document.getElementById('terminalToVellusRatio');
-                if (terminalToVellusValue && combinedMetrics.terminal_to_vellus_color) {
-                    const terminalToVellusCard = terminalToVellusValue.closest('.metric-tile');
-                    if (terminalToVellusCard) {
-                        const bgClass = getBackgroundColorClass(combinedMetrics.terminal_to_vellus_color);
-                        const textClass = getDarkerTextColorClass(combinedMetrics.terminal_to_vellus_color);
-                        terminalToVellusCard.className = `metric-tile p-4 w-100 d-flex flex-column justify-content-center analysis-helper ${bgClass}`;
-                        terminalToVellusValue.className = `metric-value h3 mb-0 ${textClass}`;
-                    }
-                }
                 
                 // Apply color coding to Thick Hair %
                 const thickHairValue = document.getElementById('percentThickHairs');
