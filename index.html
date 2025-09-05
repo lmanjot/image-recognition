@@ -51,6 +51,25 @@
         p { font-size: 0.9rem; font-weight: 300; }
         .small { font-size: 0.8rem; font-weight: 300; }
         
+        /* Unified Metrics Card Styling */
+        .unified-metrics-card {
+            background: white;
+            transition: box-shadow 0.3s ease;
+        }
+        
+        .unified-metrics-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .metric-tile {
+            transition: background-color 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .metric-tile:hover {
+            background-color: #f8f9fa;
+        }
+        
         /* Main Container */
         .main-container {
             min-height: 100vh;
@@ -580,58 +599,61 @@
                                     </div>
                                 </div>
                                 
-                                <!-- HCI% and EHD% Row -->
-                                <div class="row g-0">
-                                    <div class="col-lg-6 col-md-6 d-flex">
-                                        <div class="metric-card p-4 border border-end-0 w-100 d-flex flex-column justify-content-center analysis-helper" style="border-color: #e0e0e0 !important; border-top-left-radius: 12px; border-bottom-left-radius: 12px;" title="Hair Thickness Score (HCI%): Shows how thick your hairs are on average. High values mean your remaining hairs are still strong. Ranges: Good ≥80%, Borderline 50-79%, Weak <50%">
-                                            <div class="d-flex align-items-center justify-content-center h-100">
-                                                <div class="text-center">
-                                                    <div class="metric-label text-muted mb-2">Hair Thickness Score (HCI %)</div>
-                                                    <div class="metric-value h2 mb-0" id="hairCaliberIndexPercentage">-%</div>
+                                <!-- Unified Analysis Metrics Card -->
+                                <div class="unified-metrics-card" style="border: 1px solid #e0e0e0; border-radius: 12px; overflow: hidden;">
+                                    <!-- HCI% and EHD% Row -->
+                                    <div class="row g-0">
+                                        <div class="col-lg-6 col-md-6 d-flex">
+                                            <div class="metric-tile p-4 w-100 d-flex flex-column justify-content-center analysis-helper" style="border-right: 1px solid #e0e0e0; border-bottom: 1px solid #e0e0e0;" title="Hair Thickness Score (HCI%): Shows how thick your hairs are on average. High values mean your remaining hairs are still strong. Ranges: Good ≥80%, Borderline 50-79%, Weak <50%">
+                                                <div class="d-flex align-items-center justify-content-center h-100">
+                                                    <div class="text-center">
+                                                        <div class="metric-label text-muted mb-2">Hair Thickness Score (HCI %)</div>
+                                                        <div class="metric-value h2 mb-0" id="hairCaliberIndexPercentage">-%</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 col-md-6 d-flex">
+                                            <div class="metric-tile p-4 w-100 d-flex flex-column justify-content-center analysis-helper" style="border-bottom: 1px solid #e0e0e0;" title="Scalp Coverage (EHD%): Estimates how well your scalp is covered, combining hair density and thickness. Ranges: Good ≥80%, Borderline 50-79%, Weak <50%">
+                                                <div class="d-flex align-items-center justify-content-center h-100">
+                                                    <div class="text-center">
+                                                        <div class="metric-label text-muted mb-2">Scalp coverage (EHD%)</div>
+                                                        <div class="metric-value h2 mb-0" id="ehdPercentage">-%</div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-lg-6 col-md-6 d-flex">
-                                        <div class="metric-card p-4 border w-100 d-flex flex-column justify-content-center analysis-helper" style="border-color: #e0e0e0 !important; border-top-right-radius: 12px; border-bottom-right-radius: 12px;" title="Scalp Coverage (EHD%): Estimates how well your scalp is covered, combining hair density and thickness. Ranges: Good ≥80%, Borderline 50-79%, Weak <50%">
-                                            <div class="d-flex align-items-center justify-content-center h-100">
-                                                <div class="text-center">
-                                                    <div class="metric-label text-muted mb-2">Scalp coverage (EHD%)</div>
-                                                    <div class="metric-value h2 mb-0" id="ehdPercentage">-%</div>
+                                    
+                                    <!-- Other Ratios Row -->
+                                    <div class="row g-0">
+                                        <div class="col-lg-4 col-md-6 d-flex">
+                                            <div class="metric-tile p-4 w-100 d-flex flex-column justify-content-center analysis-helper" style="border-right: 1px solid #e0e0e0;" title="Terminal-to-Vellus Ratio (T:V): Compares strong hairs (terminal) to thin, miniaturized hairs (vellus). A higher ratio means healthier growth. Ranges: Good ≥7, Borderline 4-6, Weak <4">
+                                                <div class="d-flex align-items-center justify-content-center h-100">
+                                                    <div class="text-center">
+                                                        <div class="metric-label text-muted mb-2">Terminal-to-Vellus Ratio</div>
+                                                        <div class="metric-value h3 mb-0" id="terminalToVellusRatio">-%</div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </div>
-                                
-                                <!-- Other Ratios Row -->
-                                <div class="row g-0 h-100">
-                                    <div class="col-lg-4 col-md-6 d-flex">
-                                        <div class="metric-card p-4 border border-end-0 w-100 d-flex flex-column justify-content-center analysis-helper" style="border-color: #e0e0e0 !important; border-top-left-radius: 12px; border-bottom-left-radius: 12px;" title="Terminal-to-Vellus Ratio (T:V): Compares strong hairs (terminal) to thin, miniaturized hairs (vellus). A higher ratio means healthier growth. Ranges: Good ≥7, Borderline 4-6, Weak <4">
-                                            <div class="d-flex align-items-center justify-content-center h-100">
-                                                <div class="text-center">
-                                                    <div class="metric-label text-muted mb-2">Terminal-to-Vellus Ratio</div>
-                                                    <div class="metric-value h3 mb-0" id="terminalToVellusRatio">-%</div>
+                                        <div class="col-lg-4 col-md-6 d-flex">
+                                            <div class="metric-tile p-4 w-100 d-flex flex-column justify-content-center analysis-helper" style="border-right: 1px solid #e0e0e0;" title="Thick Hair %: The percentage of your hairs that are strong, terminal hairs instead of thin, weak hairs. Ranges: Good ≥90%, Borderline 75-89%, Weak <75%">
+                                                <div class="d-flex align-items-center justify-content-center h-100">
+                                                    <div class="text-center">
+                                                        <div class="metric-label text-muted mb-2">Thick Hair %</div>
+                                                        <div class="metric-value h3 mb-0" id="percentThickHairs">-%</div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div class="col-lg-4 col-md-6 d-flex">
-                                        <div class="metric-card p-4 border border-end-0 w-100 d-flex flex-column justify-content-center analysis-helper" style="border-color: #e0e0e0 !important;" title="Thick Hair %: The percentage of your hairs that are strong, terminal hairs instead of thin, weak hairs. Ranges: Good ≥90%, Borderline 75-89%, Weak <75%">
-                                            <div class="d-flex align-items-center justify-content-center h-100">
-                                                <div class="text-center">
-                                                    <div class="metric-label text-muted mb-2">Thick Hair %</div>
-                                                    <div class="metric-value h3 mb-0" id="percentThickHairs">-%</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-4 col-md-6 d-flex">
-                                        <div class="metric-card p-4 border w-100 d-flex flex-column justify-content-center analysis-helper" style="border-color: #e0e0e0 !important; border-top-right-radius: 12px; border-bottom-right-radius: 12px;" title="Hairs per cm² (Density): How many hairs grow in each square centimeter of scalp. More hairs = fuller coverage. Ranges: Good ≥150, Borderline 110-149, Weak <110">
-                                            <div class="d-flex align-items-center justify-content-center h-100">
-                                                <div class="text-center">
-                                                    <div class="metric-label text-muted mb-2">Hairs per cm²</div>
-                                                    <div class="metric-value h3 mb-0" id="hairsPerCm2">-</div>
+                                        <div class="col-lg-4 col-md-6 d-flex">
+                                            <div class="metric-tile p-4 w-100 d-flex flex-column justify-content-center analysis-helper" title="Hairs per cm² (Density): How many hairs grow in each square centimeter of scalp. More hairs = fuller coverage. Ranges: Good ≥150, Borderline 110-149, Weak <110">
+                                                <div class="d-flex align-items-center justify-content-center h-100">
+                                                    <div class="text-center">
+                                                        <div class="metric-label text-muted mb-2">Hairs per cm²</div>
+                                                        <div class="metric-value h3 mb-0" id="hairsPerCm2">-</div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -1322,11 +1344,11 @@
                 // Apply color coding to Terminal-to-Vellus Ratio
                 const terminalToVellusValue = document.getElementById('terminalToVellusRatio');
                 if (terminalToVellusValue && combinedMetrics.terminal_to_vellus_color) {
-                    const terminalToVellusCard = terminalToVellusValue.closest('.metric-card');
+                    const terminalToVellusCard = terminalToVellusValue.closest('.metric-tile');
                     if (terminalToVellusCard) {
                         const bgClass = getBackgroundColorClass(combinedMetrics.terminal_to_vellus_color);
                         const textClass = getDarkerTextColorClass(combinedMetrics.terminal_to_vellus_color);
-                        terminalToVellusCard.className = `metric-card p-4 border rounded w-100 d-flex flex-column justify-content-center ${bgClass}`;
+                        terminalToVellusCard.className = `metric-tile p-4 w-100 d-flex flex-column justify-content-center analysis-helper ${bgClass}`;
                         terminalToVellusValue.className = `metric-value h3 mb-0 ${textClass}`;
                     }
                 }
@@ -1334,11 +1356,11 @@
                 // Apply color coding to Thick Hair %
                 const thickHairValue = document.getElementById('percentThickHairs');
                 if (thickHairValue && combinedMetrics.thick_hair_color) {
-                    const thickHairCard = thickHairValue.closest('.metric-card');
+                    const thickHairCard = thickHairValue.closest('.metric-tile');
                     if (thickHairCard) {
                         const bgClass = getBackgroundColorClass(combinedMetrics.thick_hair_color);
                         const textClass = getDarkerTextColorClass(combinedMetrics.thick_hair_color);
-                        thickHairCard.className = `metric-card p-4 border rounded w-100 d-flex flex-column justify-content-center ${bgClass}`;
+                        thickHairCard.className = `metric-tile p-4 w-100 d-flex flex-column justify-content-center analysis-helper ${bgClass}`;
                         thickHairValue.className = `metric-value h3 mb-0 ${textClass}`;
                     }
                 }
@@ -1346,11 +1368,11 @@
                 // Apply color coding to Hairs per cm²
                 const hairsPerCm2Value = document.getElementById('hairsPerCm2');
                 if (hairsPerCm2Value && combinedMetrics.hairs_per_cm2_color) {
-                    const hairsPerCm2Card = hairsPerCm2Value.closest('.metric-card');
+                    const hairsPerCm2Card = hairsPerCm2Value.closest('.metric-tile');
                     if (hairsPerCm2Card) {
                         const bgClass = getBackgroundColorClass(combinedMetrics.hairs_per_cm2_color);
                         const textClass = getDarkerTextColorClass(combinedMetrics.hairs_per_cm2_color);
-                        hairsPerCm2Card.className = `metric-card p-4 border rounded w-100 d-flex flex-column justify-content-center ${bgClass}`;
+                        hairsPerCm2Card.className = `metric-tile p-4 w-100 d-flex flex-column justify-content-center analysis-helper ${bgClass}`;
                         hairsPerCm2Value.className = `metric-value h3 mb-0 ${textClass}`;
                     }
                 }
@@ -1358,11 +1380,11 @@
                 // Apply color coding to HCI%
                 const hciValue = document.getElementById('hairCaliberIndexPercentage');
                 if (hciValue && combinedMetrics.hci_color) {
-                    const hciCard = hciValue.closest('.metric-card');
+                    const hciCard = hciValue.closest('.metric-tile');
                     if (hciCard) {
                         const bgClass = getBackgroundColorClass(combinedMetrics.hci_color);
                         const textClass = getDarkerTextColorClass(combinedMetrics.hci_color);
-                        hciCard.className = `metric-card p-4 border rounded w-100 d-flex flex-column justify-content-center ${bgClass}`;
+                        hciCard.className = `metric-tile p-4 w-100 d-flex flex-column justify-content-center analysis-helper ${bgClass}`;
                         hciValue.className = `metric-value h2 mb-0 ${textClass}`;
                     }
                 }
@@ -1370,11 +1392,11 @@
                 // Apply color coding to EHD%
                 const ehdValue = document.getElementById('ehdPercentage');
                 if (ehdValue && combinedMetrics.ehd_color) {
-                    const ehdCard = ehdValue.closest('.metric-card');
+                    const ehdCard = ehdValue.closest('.metric-tile');
                     if (ehdCard) {
                         const bgClass = getBackgroundColorClass(combinedMetrics.ehd_color);
                         const textClass = getDarkerTextColorClass(combinedMetrics.ehd_color);
-                        ehdCard.className = `metric-card p-4 border rounded w-100 d-flex flex-column justify-content-center ${bgClass}`;
+                        ehdCard.className = `metric-tile p-4 w-100 d-flex flex-column justify-content-center analysis-helper ${bgClass}`;
                         ehdValue.className = `metric-value h2 mb-0 ${textClass}`;
                     }
                 }
