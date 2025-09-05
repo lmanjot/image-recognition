@@ -522,30 +522,30 @@
                                     </thead>
                                     <tbody>
                                         <tr>
-                                            <td class="fw-semibold" data-bs-toggle="tooltip" data-bs-placement="right" title="Confidence: Minimum detection confidence threshold. Higher values = fewer, more certain detections. Lower values = more detections but may include false positives.">Confidence <i class="fas fa-info-circle text-muted"></i></td>
+                                            <td class="fw-semibold">Confidence <i class="fas fa-info-circle text-muted parameter-helper" data-bs-toggle="tooltip" data-bs-placement="right" title="Confidence: Minimum detection confidence threshold. Higher values = fewer, more certain detections. Lower values = more detections but may include false positives."></i></td>
                                             <td>
-                                                <input type="number" class="form-control form-control-sm text-center" id="densityConfidence" min="1" max="100" step="1" value="20" data-bs-toggle="tooltip" data-bs-placement="top" title="Density Model: 1-100 (1 = 0.01, 20 = 0.20). Higher = fewer boxes, more accurate">
+                                                <input type="number" class="form-control form-control-sm text-center" id="densityConfidence" min="1" max="100" step="1" value="20">
                                             </td>
                                             <td>
-                                                <input type="number" class="form-control form-control-sm text-center" id="thicknessConfidence" min="1" max="100" step="1" value="10" data-bs-toggle="tooltip" data-bs-placement="top" title="Thickness Model: 1-100 (1 = 0.01, 10 = 0.10). Higher = fewer boxes, more accurate">
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-semibold" data-bs-toggle="tooltip" data-bs-placement="right" title="Padding: Expands bounding boxes before NMS. Higher values = larger boxes, better overlap detection. Lower values = tighter boxes.">Padding <i class="fas fa-info-circle text-muted"></i></td>
-                                            <td>
-                                                <input type="number" class="form-control form-control-sm text-center" id="densityPadding" min="0" max="500" step="1" value="50" data-bs-toggle="tooltip" data-bs-placement="top" title="Density Model: 0-500 (0 = 0.00, 50 = 0.50, 500 = 5.00). Higher = larger boxes for better overlap detection">
-                                            </td>
-                                            <td>
-                                                <input type="number" class="form-control form-control-sm text-center" id="thicknessPadding" min="0" max="500" step="1" value="50" data-bs-toggle="tooltip" data-bs-placement="top" title="Thickness Model: 0-500 (0 = 0.00, 50 = 0.50, 500 = 5.00). Higher = larger boxes for better overlap detection">
+                                                <input type="number" class="form-control form-control-sm text-center" id="thicknessConfidence" min="1" max="100" step="1" value="10">
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td class="fw-semibold" data-bs-toggle="tooltip" data-bs-placement="right" title="NMS (Non-Maximum Suppression): Removes overlapping boxes. Higher values = fewer overlapping boxes. Lower values = keeps more overlapping detections.">NMS <i class="fas fa-info-circle text-muted"></i></td>
+                                            <td class="fw-semibold">Padding <i class="fas fa-info-circle text-muted parameter-helper" data-bs-toggle="tooltip" data-bs-placement="right" title="Padding: Expands bounding boxes before NMS. Higher values = larger boxes, better overlap detection. Lower values = tighter boxes."></i></td>
                                             <td>
-                                                <input type="number" class="form-control form-control-sm text-center" id="densityNMS" min="0" max="100" step="1" value="0" data-bs-toggle="tooltip" data-bs-placement="top" title="Density Model: 0-100 (0 = 0.00, 50 = 0.50). Higher = removes more overlapping boxes">
+                                                <input type="number" class="form-control form-control-sm text-center" id="densityPadding" min="0" max="500" step="1" value="200">
                                             </td>
                                             <td>
-                                                <input type="number" class="form-control form-control-sm text-center" id="thicknessNMS" min="0" max="100" step="1" value="0" data-bs-toggle="tooltip" data-bs-placement="top" title="Thickness Model: 0-100 (0 = 0.00, 50 = 0.50). Higher = removes more overlapping boxes">
+                                                <input type="number" class="form-control form-control-sm text-center" id="thicknessPadding" min="0" max="500" step="1" value="0">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-semibold">NMS <i class="fas fa-info-circle text-muted parameter-helper" data-bs-toggle="tooltip" data-bs-placement="right" title="NMS (Non-Maximum Suppression): Removes overlapping boxes. Higher values = fewer overlapping boxes. Lower values = keeps more overlapping detections. Low number = less detection."></i></td>
+                                            <td>
+                                                <input type="number" class="form-control form-control-sm text-center" id="densityNMS" min="0" max="100" step="1" value="0">
+                                            </td>
+                                            <td>
+                                                <input type="number" class="form-control form-control-sm text-center" id="thicknessNMS" min="0" max="100" step="1" value="100">
                                             </td>
                                         </tr>
                                     </tbody>
@@ -801,11 +801,66 @@
         }
         
         function initializeTooltips() {
-            // Initialize Bootstrap tooltips
-            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            // Initialize Bootstrap tooltips for analysis metrics only
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]:not(.parameter-helper)'));
             var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
                 return new bootstrap.Tooltip(tooltipTriggerEl);
             });
+            
+            // Initialize parameter helpers with click events
+            initializeParameterHelpers();
+        }
+        
+        function initializeParameterHelpers() {
+            // Add click event listeners to parameter helper icons
+            const helperIcons = document.querySelectorAll('.parameter-helper');
+            helperIcons.forEach(icon => {
+                icon.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    toggleParameterHelper(this);
+                });
+            });
+            
+            // Close helpers when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.parameter-helper') && !e.target.closest('.parameter-helper-popup')) {
+                    closeAllParameterHelpers();
+                }
+            });
+        }
+        
+        function toggleParameterHelper(icon) {
+            // Close all other helpers first
+            closeAllParameterHelpers();
+            
+            // Get the tooltip content
+            const title = icon.getAttribute('data-bs-original-title') || icon.getAttribute('title');
+            if (!title) return;
+            
+            // Create popup element
+            const popup = document.createElement('div');
+            popup.className = 'parameter-helper-popup position-absolute bg-dark text-white p-3 rounded shadow-lg';
+            popup.style.zIndex = '9999';
+            popup.style.maxWidth = '300px';
+            popup.style.fontSize = '0.875rem';
+            popup.innerHTML = title;
+            
+            // Position the popup
+            const rect = icon.getBoundingClientRect();
+            popup.style.left = (rect.left + window.scrollX) + 'px';
+            popup.style.top = (rect.bottom + window.scrollY + 5) + 'px';
+            
+            // Add to document
+            document.body.appendChild(popup);
+            
+            // Store reference for cleanup
+            icon._helperPopup = popup;
+        }
+        
+        function closeAllParameterHelpers() {
+            const popups = document.querySelectorAll('.parameter-helper-popup');
+            popups.forEach(popup => popup.remove());
         }
 
         function setupEventListeners() {
@@ -994,11 +1049,11 @@
                 imageToShow = accumulatedResults.combined_annotated_image;
             }
             // If only density is selected, show density image
-            else if (showDensity && accumulatedResults.density_results && accumulatedResults.density_results.annotated_image) {
+            else if (showDensity && !showThickness && accumulatedResults.density_results && accumulatedResults.density_results.annotated_image) {
                 imageToShow = accumulatedResults.density_results.annotated_image;
             }
             // If only thickness is selected, show thickness image
-            else if (showThickness && accumulatedResults.thickness_results && accumulatedResults.thickness_results.annotated_image) {
+            else if (!showDensity && showThickness && accumulatedResults.thickness_results && accumulatedResults.thickness_results.annotated_image) {
                 imageToShow = accumulatedResults.thickness_results.annotated_image;
             }
             // If neither is selected, show original image (if available)
@@ -1008,6 +1063,12 @@
                 if (originalImage) {
                     imageToShow = originalImage;
                 }
+            }
+            // If we have both models but only one is selected, we need to create a filtered image
+            else if (accumulatedResults.combined_annotated_image) {
+                // For now, fall back to showing the combined image
+                // In a more advanced implementation, we could create filtered images
+                imageToShow = accumulatedResults.combined_annotated_image;
             }
             
             const mainImagePreview = document.getElementById('mainImagePreview');
