@@ -700,6 +700,68 @@
                     </div>
                 </div>
                 </div>
+                
+                <!-- Model Parameters - Moved to Bottom -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header" data-bs-toggle="collapse" data-bs-target="#parametersCollapse" aria-expanded="false" aria-controls="parametersCollapse" style="cursor: pointer;">
+                                <h6 class="mb-0 d-flex justify-content-between align-items-center">
+                                    <span><i class="fas fa-cogs"></i> Model Parameters</span>
+                                    <i class="fas fa-chevron-down"></i>
+                                </h6>
+                            </div>
+                            <div class="collapse" id="parametersCollapse">
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-borderless">
+                                        <thead>
+                                            <tr>
+                                                <th class="text-muted">Parameter</th>
+                                                <th class="text-center">
+                                                    <i class="fas fa-hashtag text-primary"></i> Density Model
+                                                </th>
+                                                <th class="text-center">
+                                                    <i class="fas fa-weight text-success"></i> Thickness Model
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td class="fw-semibold">Confidence <i class="fas fa-info-circle text-muted parameter-helper" data-bs-toggle="tooltip" data-bs-placement="right" title="Confidence: Minimum detection confidence threshold. Higher values = fewer, more certain detections. Lower values = more detections but may include false positives."></i></td>
+                                                <td>
+                                                    <input type="number" class="form-control form-control-sm text-center" id="densityConfidence" min="1" max="100" step="1" value="20">
+                                                </td>
+                                                <td>
+                                                    <input type="number" class="form-control form-control-sm text-center" id="thicknessConfidence" min="1" max="100" step="1" value="10">
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-semibold">Padding <i class="fas fa-info-circle text-muted parameter-helper" data-bs-toggle="tooltip" data-bs-placement="right" title="Padding: Expands bounding boxes before NMS. Higher values = larger boxes, better overlap detection. Lower values = tighter boxes."></i></td>
+                                                <td>
+                                                    <input type="number" class="form-control form-control-sm text-center" id="densityPadding" min="0" max="500" step="1" value="200">
+                                                </td>
+                                                <td>
+                                                    <input type="number" class="form-control form-control-sm text-center" id="thicknessPadding" min="0" max="500" step="1" value="0">
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-semibold">NMS <i class="fas fa-info-circle text-muted parameter-helper" data-bs-toggle="tooltip" data-bs-placement="right" title="NMS (Non-Maximum Suppression): Removes overlapping boxes. Higher values = fewer overlapping boxes. Lower values = keeps more overlapping detections. Low number = less detection."></i></td>
+                                                <td>
+                                                    <input type="number" class="form-control form-control-sm text-center" id="densityNMS" min="0" max="100" step="1" value="0">
+                                                </td>
+                                                <td>
+                                                    <input type="number" class="form-control form-control-sm text-center" id="thicknessNMS" min="0" max="100" step="1" value="100">
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -1194,16 +1256,6 @@
                 document.getElementById('overallHairScore').textContent = (combinedMetrics.overall_hair_score || '0.0') + '%';
                 document.getElementById('ohsInterpretation').textContent = combinedMetrics.ohs_interpretation || '-';
                 
-                // Apply color styling to OHS card based on interpretation
-                const ohsCard = document.getElementById('ohsCard');
-                const ohsScore = document.getElementById('overallHairScore');
-                const ohsInterpretation = document.getElementById('ohsInterpretation');
-                
-                if (combinedMetrics.ohs_color) {
-                    ohsCard.className = `metric-card p-4 border rounded border-${combinedMetrics.ohs_color}`;
-                    ohsScore.className = `metric-value h1 mb-2 text-${combinedMetrics.ohs_color}`;
-                    ohsInterpretation.className = `metric-interpretation h4 mb-0 text-${combinedMetrics.ohs_color}`;
-                }
                 
                 // Display other metrics
                 document.getElementById('terminalToVellusRatio').textContent = (combinedMetrics.terminal_to_vellus_ratio || '0.0') + '%';
