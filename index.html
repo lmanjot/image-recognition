@@ -1132,19 +1132,23 @@
                 document.getElementById('ehdPercentage').textContent = (combinedMetrics.ehd_percentage || '0.0') + '%';
                 
                 // Apply color coding to HCI%
-                const hciCard = document.querySelector('[data-bs-toggle="tooltip"][title*="Hair Thickness Score"]').closest('.metric-card');
                 const hciValue = document.getElementById('hairCaliberIndexPercentage');
-                if (combinedMetrics.hci_color) {
-                    hciCard.className = `metric-card p-4 border rounded border-${combinedMetrics.hci_color} w-100 d-flex flex-column justify-content-center`;
-                    hciValue.className = `metric-value h2 mb-0 text-${combinedMetrics.hci_color}`;
+                if (hciValue && combinedMetrics.hci_color) {
+                    const hciCard = hciValue.closest('.metric-card');
+                    if (hciCard) {
+                        hciCard.className = `metric-card p-4 border rounded border-${combinedMetrics.hci_color} w-100 d-flex flex-column justify-content-center`;
+                        hciValue.className = `metric-value h2 mb-0 text-${combinedMetrics.hci_color}`;
+                    }
                 }
                 
                 // Apply color coding to EHD%
-                const ehdCard = document.querySelector('[data-bs-toggle="tooltip"][title*="Scalp coverage"]').closest('.metric-card');
                 const ehdValue = document.getElementById('ehdPercentage');
-                if (combinedMetrics.ehd_color) {
-                    ehdCard.className = `metric-card p-4 border rounded border-${combinedMetrics.ehd_color} w-100 d-flex flex-column justify-content-center`;
-                    ehdValue.className = `metric-value h2 mb-0 text-${combinedMetrics.ehd_color}`;
+                if (ehdValue && combinedMetrics.ehd_color) {
+                    const ehdCard = ehdValue.closest('.metric-card');
+                    if (ehdCard) {
+                        ehdCard.className = `metric-card p-4 border rounded border-${combinedMetrics.ehd_color} w-100 d-flex flex-column justify-content-center`;
+                        ehdValue.className = `metric-value h2 mb-0 text-${combinedMetrics.ehd_color}`;
+                    }
                 }
                 
                 combinedMetricsEl.style.display = 'block';
