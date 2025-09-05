@@ -619,9 +619,9 @@
                                 </div>
                                 
                                 <!-- HCI% and EHD% Row -->
-                                <div class="row g-3 mb-3">
+                                <div class="row g-0 mb-3">
                                     <div class="col-lg-6 col-md-6 d-flex">
-                                        <div class="metric-card p-4 border rounded w-100 d-flex flex-column justify-content-center analysis-helper" data-bs-toggle="tooltip" data-bs-placement="top" title="Hair Thickness Score (HCI %) = (HCI / (Total Hairs × 3)) × 100. Normalized 0-100 scale where 100% = all hairs are thick">
+                                        <div class="metric-card p-4 border border-end-0 rounded-start w-100 d-flex flex-column justify-content-center analysis-helper" data-bs-toggle="tooltip" data-bs-placement="top" title="Hair Thickness Score (HCI %) = (HCI / (Total Hairs × 3)) × 100. Normalized 0-100 scale where 100% = all hairs are thick">
                                             <div class="d-flex align-items-center justify-content-center h-100">
                                                 <div class="text-center">
                                                     <div class="metric-label text-muted mb-2">Hair Thickness Score (HCI %)</div>
@@ -631,7 +631,7 @@
                                         </div>
                                     </div>
                                     <div class="col-lg-6 col-md-6 d-flex">
-                                        <div class="metric-card p-4 border rounded w-100 d-flex flex-column justify-content-center analysis-helper" data-bs-toggle="tooltip" data-bs-placement="top" title="Scalp coverage (EHD%) = (EHD / EHD_max) × 100, where EHD = (hairs_per_cm² × avg_thickness_score) / 3 and EHD_max = 220">
+                                        <div class="metric-card p-4 border rounded-end w-100 d-flex flex-column justify-content-center analysis-helper" data-bs-toggle="tooltip" data-bs-placement="top" title="Scalp coverage (EHD%) = (EHD / EHD_max) × 100, where EHD = (hairs_per_cm² × avg_thickness_score) / 3 and EHD_max = 220">
                                             <div class="d-flex align-items-center justify-content-center h-100">
                                                 <div class="text-center">
                                                     <div class="metric-label text-muted mb-2">Scalp coverage (EHD%)</div>
@@ -643,9 +643,9 @@
                                 </div>
                                 
                                 <!-- Other Ratios Row -->
-                                <div class="row g-3 h-100">
+                                <div class="row g-0 h-100">
                                     <div class="col-lg-4 col-md-6 d-flex">
-                                        <div class="metric-card p-4 border rounded w-100 d-flex flex-column justify-content-center analysis-helper" data-bs-toggle="tooltip" data-bs-placement="top" title="Terminal-to-Vellus Ratio = (Weak Hairs / Strong Hairs) × 100% (lower is better)">
+                                        <div class="metric-card p-4 border border-end-0 rounded-start w-100 d-flex flex-column justify-content-center analysis-helper" data-bs-toggle="tooltip" data-bs-placement="top" title="Terminal-to-Vellus Ratio = (Weak Hairs / Strong Hairs) × 100% (lower is better)">
                                             <div class="d-flex align-items-center justify-content-center h-100">
                                                 <div class="text-center">
                                                     <div class="metric-label text-muted mb-2">Terminal-to-Vellus Ratio</div>
@@ -655,7 +655,7 @@
                                         </div>
                                     </div>
                                     <div class="col-lg-4 col-md-6 d-flex">
-                                        <div class="metric-card p-4 border rounded w-100 d-flex flex-column justify-content-center analysis-helper" data-bs-toggle="tooltip" data-bs-placement="top" title="Thick Hair % = (Strong Hairs / Total Thickness Detections) × 100">
+                                        <div class="metric-card p-4 border border-end-0 w-100 d-flex flex-column justify-content-center analysis-helper" data-bs-toggle="tooltip" data-bs-placement="top" title="Thick Hair % = (Strong Hairs / Total Thickness Detections) × 100">
                                             <div class="d-flex align-items-center justify-content-center h-100">
                                                 <div class="text-center">
                                                     <div class="metric-label text-muted mb-2">Thick Hair %</div>
@@ -665,7 +665,7 @@
                                         </div>
                                     </div>
                                     <div class="col-lg-4 col-md-6 d-flex">
-                                        <div class="metric-card p-4 border rounded w-100 d-flex flex-column justify-content-center analysis-helper" data-bs-toggle="tooltip" data-bs-placement="top" title="Hairs per cm² = Total Hairs / Picture Area (0.273 cm²)">
+                                        <div class="metric-card p-4 border rounded-end w-100 d-flex flex-column justify-content-center analysis-helper" data-bs-toggle="tooltip" data-bs-placement="top" title="Hairs per cm² = Total Hairs / Picture Area (0.273 cm²)">
                                             <div class="d-flex align-items-center justify-content-center h-100">
                                                 <div class="text-center">
                                                     <div class="metric-label text-muted mb-2">Hairs per cm²</div>
@@ -918,6 +918,20 @@
                     return 'bg-warning bg-opacity-10'; // Light orange background
                 case 'success':
                     return 'bg-success bg-opacity-10'; // Light green background
+                default:
+                    return '';
+            }
+        }
+        
+        function getDarkerTextColorClass(colorClass) {
+            // Convert Bootstrap color classes to darker text classes
+            switch(colorClass) {
+                case 'danger':
+                    return 'text-danger'; // Dark red text
+                case 'warning':
+                    return 'text-warning'; // Dark orange text
+                case 'success':
+                    return 'text-success'; // Dark green text
                 default:
                     return '';
             }
@@ -1252,53 +1266,79 @@
                 document.getElementById('hairsPerCm2').textContent = combinedMetrics.hairs_per_cm2 || '0.0';
                 document.getElementById('ehdPercentage').textContent = (combinedMetrics.ehd_percentage || '0.0') + '%';
                 
-                // Apply background color coding to Terminal-to-Vellus Ratio
+                // Apply color coding to Terminal-to-Vellus Ratio
                 const terminalToVellusValue = document.getElementById('terminalToVellusRatio');
                 if (terminalToVellusValue && combinedMetrics.terminal_to_vellus_color) {
                     const terminalToVellusCard = terminalToVellusValue.closest('.metric-card');
                     if (terminalToVellusCard) {
                         const bgClass = getBackgroundColorClass(combinedMetrics.terminal_to_vellus_color);
+                        const textClass = getDarkerTextColorClass(combinedMetrics.terminal_to_vellus_color);
                         terminalToVellusCard.className = `metric-card p-4 border rounded w-100 d-flex flex-column justify-content-center ${bgClass}`;
+                        terminalToVellusValue.className = `metric-value h3 mb-0 ${textClass}`;
                     }
                 }
                 
-                // Apply background color coding to Thick Hair %
+                // Apply color coding to Thick Hair %
                 const thickHairValue = document.getElementById('percentThickHairs');
                 if (thickHairValue && combinedMetrics.thick_hair_color) {
                     const thickHairCard = thickHairValue.closest('.metric-card');
                     if (thickHairCard) {
                         const bgClass = getBackgroundColorClass(combinedMetrics.thick_hair_color);
+                        const textClass = getDarkerTextColorClass(combinedMetrics.thick_hair_color);
                         thickHairCard.className = `metric-card p-4 border rounded w-100 d-flex flex-column justify-content-center ${bgClass}`;
+                        thickHairValue.className = `metric-value h3 mb-0 ${textClass}`;
                     }
                 }
                 
-                // Apply background color coding to Hairs per cm²
+                // Apply color coding to Hairs per cm²
                 const hairsPerCm2Value = document.getElementById('hairsPerCm2');
                 if (hairsPerCm2Value && combinedMetrics.hairs_per_cm2_color) {
                     const hairsPerCm2Card = hairsPerCm2Value.closest('.metric-card');
                     if (hairsPerCm2Card) {
                         const bgClass = getBackgroundColorClass(combinedMetrics.hairs_per_cm2_color);
+                        const textClass = getDarkerTextColorClass(combinedMetrics.hairs_per_cm2_color);
                         hairsPerCm2Card.className = `metric-card p-4 border rounded w-100 d-flex flex-column justify-content-center ${bgClass}`;
+                        hairsPerCm2Value.className = `metric-value h3 mb-0 ${textClass}`;
                     }
                 }
                 
-                // Apply background color coding to HCI%
+                // Apply color coding to HCI%
                 const hciValue = document.getElementById('hairCaliberIndexPercentage');
                 if (hciValue && combinedMetrics.hci_color) {
                     const hciCard = hciValue.closest('.metric-card');
                     if (hciCard) {
                         const bgClass = getBackgroundColorClass(combinedMetrics.hci_color);
+                        const textClass = getDarkerTextColorClass(combinedMetrics.hci_color);
                         hciCard.className = `metric-card p-4 border rounded w-100 d-flex flex-column justify-content-center ${bgClass}`;
+                        hciValue.className = `metric-value h2 mb-0 ${textClass}`;
                     }
                 }
                 
-                // Apply background color coding to EHD%
+                // Apply color coding to EHD%
                 const ehdValue = document.getElementById('ehdPercentage');
                 if (ehdValue && combinedMetrics.ehd_color) {
                     const ehdCard = ehdValue.closest('.metric-card');
                     if (ehdCard) {
                         const bgClass = getBackgroundColorClass(combinedMetrics.ehd_color);
+                        const textClass = getDarkerTextColorClass(combinedMetrics.ehd_color);
                         ehdCard.className = `metric-card p-4 border rounded w-100 d-flex flex-column justify-content-center ${bgClass}`;
+                        ehdValue.className = `metric-value h2 mb-0 ${textClass}`;
+                    }
+                }
+                
+                // Apply color coding to OHS
+                const ohsValue = document.getElementById('overallHairScore');
+                const ohsInterpretation = document.getElementById('ohsInterpretation');
+                if (ohsValue && combinedMetrics.ohs_color) {
+                    const ohsCard = ohsValue.closest('.metric-card');
+                    if (ohsCard) {
+                        const bgClass = getBackgroundColorClass(combinedMetrics.ohs_color);
+                        const textClass = getDarkerTextColorClass(combinedMetrics.ohs_color);
+                        ohsCard.className = `metric-card p-4 border rounded ${bgClass}`;
+                        ohsValue.className = `metric-value h1 mb-2 ${textClass}`;
+                        if (ohsInterpretation) {
+                            ohsInterpretation.className = `metric-interpretation h4 mb-0 ${textClass}`;
+                        }
                     }
                 }
                 
