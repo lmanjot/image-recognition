@@ -918,13 +918,12 @@
             
             // Create popup element
             const popup = document.createElement('div');
-            popup.className = 'analysis-helper-popup position-absolute bg-dark text-white p-4 rounded shadow-lg';
+            popup.className = 'analysis-helper-popup position-absolute bg-dark text-white p-3 rounded shadow-lg';
             popup.style.zIndex = '9999';
-            popup.style.maxWidth = '500px';
-            popup.style.minWidth = '400px';
-            popup.style.fontSize = '1rem';
+            popup.style.maxWidth = '400px';
+            popup.style.fontSize = '0.9rem';
             popup.style.position = 'relative';
-            popup.style.lineHeight = '1.6';
+            popup.style.lineHeight = '1.5';
             
             // Create close button
             const closeButton = document.createElement('button');
@@ -967,13 +966,12 @@
             // Process the title to add better formatting
             let formattedTitle = title;
             
-            // Add line breaks for better readability
-            formattedTitle = formattedTitle.replace(/\. /g, '.<br><br>');
+            // Add single line break between definition and ranges
             formattedTitle = formattedTitle.replace(/Ranges:/g, '<br><strong>Ranges:</strong>');
             formattedTitle = formattedTitle.replace(/(Good|Borderline|Weak)/g, '<br>• <strong>$1</strong>');
             
             // Add some styling to make it clearer
-            formattedTitle = `<div style="font-weight: 500; margin-bottom: 0.5rem;">${formattedTitle}</div>`;
+            formattedTitle = `<div style="font-weight: 500;">${formattedTitle}</div>`;
             
             content.innerHTML = formattedTitle;
             
@@ -981,10 +979,17 @@
             popup.appendChild(closeButton);
             popup.appendChild(content);
             
-            // Position the popup with better positioning for larger popup
+            // Smart positioning - show above if card is near bottom of viewport
             const rect = card.getBoundingClientRect();
             const viewportWidth = window.innerWidth;
-            const popupWidth = 500; // maxWidth from above
+            const viewportHeight = window.innerHeight;
+            const popupWidth = 400; // maxWidth from above
+            const popupHeight = 200; // estimated height
+            
+            // Determine if we should show above or below
+            const spaceBelow = viewportHeight - rect.bottom;
+            const spaceAbove = rect.top;
+            const showAbove = spaceBelow < popupHeight && spaceAbove > popupHeight;
             
             // Center horizontally if possible, otherwise align to left edge
             let leftPosition = rect.left + window.scrollX;
@@ -992,8 +997,16 @@
                 leftPosition = Math.max(10, viewportWidth - popupWidth - 10);
             }
             
+            // Position vertically
+            let topPosition;
+            if (showAbove) {
+                topPosition = rect.top + window.scrollY - popupHeight - 10;
+            } else {
+                topPosition = rect.bottom + window.scrollY + 10;
+            }
+            
             popup.style.left = leftPosition + 'px';
-            popup.style.top = (rect.bottom + window.scrollY + 10) + 'px';
+            popup.style.top = topPosition + 'px';
             
             // Add to document
             document.body.appendChild(popup);
