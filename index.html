@@ -621,12 +621,9 @@
                                                     <div class="col-lg-4 col-md-6 d-flex">
                                                         <div class="metric-card p-4 border rounded w-100 d-flex flex-column justify-content-center" data-bs-toggle="tooltip" data-bs-placement="top" title="Terminal-to-Vellus Ratio = (Weak Hairs / Strong Hairs) × 100% (lower is better)">
                                                             <div class="d-flex align-items-center justify-content-center h-100">
-                                                                <div class="metric-icon me-3">
-                                                                    <i class="fas fa-balance-scale text-primary fa-2x"></i>
-                                                                </div>
                                                                 <div class="text-center">
                                                                     <div class="metric-label text-muted mb-2">Terminal-to-Vellus Ratio</div>
-                                                                    <div class="metric-value h3 mb-0 text-primary" id="terminalToVellusRatio">-%</div>
+                                                                    <div class="metric-value h3 mb-0" id="terminalToVellusRatio">-%</div>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -634,12 +631,9 @@
                                                     <div class="col-lg-4 col-md-6 d-flex">
                                                         <div class="metric-card p-4 border rounded w-100 d-flex flex-column justify-content-center" data-bs-toggle="tooltip" data-bs-placement="top" title="Thick Hair % = (Strong Hairs / Total Thickness Detections) × 100">
                                                             <div class="d-flex align-items-center justify-content-center h-100">
-                                                                <div class="metric-icon me-3">
-                                                                    <i class="fas fa-percentage text-success fa-2x"></i>
-                                                                </div>
                                                                 <div class="text-center">
                                                                     <div class="metric-label text-muted mb-2">Thick Hair %</div>
-                                                                    <div class="metric-value h3 mb-0 text-success" id="percentThickHairs">-%</div>
+                                                                    <div class="metric-value h3 mb-0" id="percentThickHairs">-%</div>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -647,12 +641,9 @@
                                                     <div class="col-lg-4 col-md-6 d-flex">
                                                         <div class="metric-card p-4 border rounded w-100 d-flex flex-column justify-content-center" data-bs-toggle="tooltip" data-bs-placement="top" title="Hairs per cm² = Total Hairs / Picture Area (0.273 cm²)">
                                                             <div class="d-flex align-items-center justify-content-center h-100">
-                                                                <div class="metric-icon me-3">
-                                                                    <i class="fas fa-ruler text-danger fa-2x"></i>
-                                                                </div>
                                                                 <div class="text-center">
                                                                     <div class="metric-label text-muted mb-2">Hairs per cm²</div>
-                                                                    <div class="metric-value h3 mb-0 text-danger" id="hairsPerCm2">-</div>
+                                                                    <div class="metric-value h3 mb-0" id="hairsPerCm2">-</div>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -660,12 +651,9 @@
                                                     <div class="col-lg-6 col-md-6 d-flex">
                                                         <div class="metric-card p-4 border rounded w-100 d-flex flex-column justify-content-center" data-bs-toggle="tooltip" data-bs-placement="top" title="Hair Thickness Score (HCI %) = (HCI / (Total Hairs × 3)) × 100. Normalized 0-100 scale where 100% = all hairs are thick">
                                                             <div class="d-flex align-items-center justify-content-center h-100">
-                                                                <div class="metric-icon me-3">
-                                                                    <i class="fas fa-percentage text-info fa-2x"></i>
-                                                                </div>
                                                                 <div class="text-center">
                                                                     <div class="metric-label text-muted mb-2">Hair Thickness Score (HCI %)</div>
-                                                                    <div class="metric-value h2 mb-0 text-info" id="hairCaliberIndexPercentage">-%</div>
+                                                                    <div class="metric-value h2 mb-0" id="hairCaliberIndexPercentage">-%</div>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -673,12 +661,9 @@
                                                     <div class="col-lg-6 col-md-6 d-flex">
                                                         <div class="metric-card p-4 border rounded border-success w-100 d-flex flex-column justify-content-center" data-bs-toggle="tooltip" data-bs-placement="top" title="Scalp coverage (EHD%) = (EHD / EHD_max) × 100, where EHD = (hairs_per_cm² × avg_thickness_score) / 3 and EHD_max = 220">
                                                             <div class="d-flex align-items-center justify-content-center h-100">
-                                                                <div class="metric-icon me-3">
-                                                                    <i class="fas fa-trophy text-success fa-2x"></i>
-                                                                </div>
                                                                 <div class="text-center">
                                                                     <div class="metric-label text-muted mb-2">Scalp coverage (EHD%)</div>
-                                                                    <div class="metric-value h2 mb-0 text-success" id="ehdPercentage">-%</div>
+                                                                    <div class="metric-value h2 mb-0" id="ehdPercentage">-%</div>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -1191,6 +1176,36 @@
                 document.getElementById('hairCaliberIndexPercentage').textContent = (combinedMetrics.hair_caliber_index_percentage || '0.0') + '%';
                 document.getElementById('hairsPerCm2').textContent = combinedMetrics.hairs_per_cm2 || '0.0';
                 document.getElementById('ehdPercentage').textContent = (combinedMetrics.ehd_percentage || '0.0') + '%';
+                
+                // Apply color coding to Terminal-to-Vellus Ratio
+                const terminalToVellusValue = document.getElementById('terminalToVellusRatio');
+                if (terminalToVellusValue && combinedMetrics.terminal_to_vellus_color) {
+                    const terminalToVellusCard = terminalToVellusValue.closest('.metric-card');
+                    if (terminalToVellusCard) {
+                        terminalToVellusCard.className = `metric-card p-4 border rounded border-${combinedMetrics.terminal_to_vellus_color} w-100 d-flex flex-column justify-content-center`;
+                        terminalToVellusValue.className = `metric-value h3 mb-0 text-${combinedMetrics.terminal_to_vellus_color}`;
+                    }
+                }
+                
+                // Apply color coding to Thick Hair %
+                const thickHairValue = document.getElementById('percentThickHairs');
+                if (thickHairValue && combinedMetrics.thick_hair_color) {
+                    const thickHairCard = thickHairValue.closest('.metric-card');
+                    if (thickHairCard) {
+                        thickHairCard.className = `metric-card p-4 border rounded border-${combinedMetrics.thick_hair_color} w-100 d-flex flex-column justify-content-center`;
+                        thickHairValue.className = `metric-value h3 mb-0 text-${combinedMetrics.thick_hair_color}`;
+                    }
+                }
+                
+                // Apply color coding to Hairs per cm²
+                const hairsPerCm2Value = document.getElementById('hairsPerCm2');
+                if (hairsPerCm2Value && combinedMetrics.hairs_per_cm2_color) {
+                    const hairsPerCm2Card = hairsPerCm2Value.closest('.metric-card');
+                    if (hairsPerCm2Card) {
+                        hairsPerCm2Card.className = `metric-card p-4 border rounded border-${combinedMetrics.hairs_per_cm2_color} w-100 d-flex flex-column justify-content-center`;
+                        hairsPerCm2Value.className = `metric-value h3 mb-0 text-${combinedMetrics.hairs_per_cm2_color}`;
+                    }
+                }
                 
                 // Apply color coding to HCI%
                 const hciValue = document.getElementById('hairCaliberIndexPercentage');

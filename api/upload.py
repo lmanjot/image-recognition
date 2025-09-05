@@ -336,46 +336,56 @@ def calculate_combined_metrics(density_predictions, thickness_predictions):
     else:
         overall_hair_score = 0.0
     
-    # Define interpretation bands for OHS
+    # Define interpretation bands for OHS (Red: <50, Orange: 50-80, Green: ≥80)
     if overall_hair_score >= 80:
-        ohs_interpretation = "Excellent"
-        ohs_color = "success"
-    elif overall_hair_score >= 60:
         ohs_interpretation = "Good"
-        ohs_color = "info"
-    elif overall_hair_score >= 40:
-        ohs_interpretation = "Moderate"
+        ohs_color = "success"
+    elif overall_hair_score >= 50:
+        ohs_interpretation = "Borderline"
         ohs_color = "warning"
-    elif overall_hair_score >= 20:
-        ohs_interpretation = "Low"
-        ohs_color = "danger"
     else:
-        ohs_interpretation = "Very Low"
+        ohs_interpretation = "Poor Coverage/Density"
         ohs_color = "danger"
     
-    # Define interpretation bands for HCI%
+    # Define interpretation bands for HCI% (Red: <50, Orange: 50-80, Green: ≥80)
     if hair_caliber_index_percentage >= 80:
         hci_color = "success"
-    elif hair_caliber_index_percentage >= 60:
-        hci_color = "info"
-    elif hair_caliber_index_percentage >= 40:
+    elif hair_caliber_index_percentage >= 50:
         hci_color = "warning"
-    elif hair_caliber_index_percentage >= 20:
-        hci_color = "danger"
     else:
         hci_color = "danger"
     
-    # Define interpretation bands for EHD%
+    # Define interpretation bands for EHD% (Red: <50, Orange: 50-80, Green: ≥80)
     if ehd_percentage >= 80:
         ehd_color = "success"
-    elif ehd_percentage >= 60:
-        ehd_color = "info"
-    elif ehd_percentage >= 40:
+    elif ehd_percentage >= 50:
         ehd_color = "warning"
-    elif ehd_percentage >= 20:
-        ehd_color = "danger"
     else:
         ehd_color = "danger"
+    
+    # Define interpretation bands for Hairs per cm² (Red: <110, Orange: 110-150, Green: ≥150)
+    if hairs_per_cm2 >= 150:
+        hairs_per_cm2_color = "success"
+    elif hairs_per_cm2 >= 110:
+        hairs_per_cm2_color = "warning"
+    else:
+        hairs_per_cm2_color = "danger"
+    
+    # Define interpretation bands for Terminal-to-Vellus Ratio (Red: <4, Orange: 4-7, Green: ≥7)
+    if terminal_to_vellus_ratio >= 7:
+        terminal_to_vellus_color = "success"
+    elif terminal_to_vellus_ratio >= 4:
+        terminal_to_vellus_color = "warning"
+    else:
+        terminal_to_vellus_color = "danger"
+    
+    # Define interpretation bands for Thick Hair % (Red: <75%, Orange: 75-90%, Green: ≥90%)
+    if percent_thick_hairs >= 90:
+        thick_hair_color = "success"
+    elif percent_thick_hairs >= 75:
+        thick_hair_color = "warning"
+    else:
+        thick_hair_color = "danger"
     
     print(f"📊 Combined Metrics (using density model hair count as ground truth):")
     print(f"  - Terminal-to-Vellus Ratio (weak/strong): {terminal_to_vellus_ratio:.1f}%")
@@ -393,13 +403,16 @@ def calculate_combined_metrics(density_predictions, thickness_predictions):
     
     return {
         'terminal_to_vellus_ratio': round(terminal_to_vellus_ratio, 1),  # Percentage, 1 decimal
+        'terminal_to_vellus_color': terminal_to_vellus_color,  # Terminal-to-Vellus color class
         'percent_thick_hairs': round(percent_thick_hairs, 1),  # Percentage, 1 decimal
+        'thick_hair_color': thick_hair_color,  # Thick Hair % color class
         'hair_caliber_index': hair_caliber_index,  # Integer
         'hair_caliber_index_percentage': round(hair_caliber_index_percentage, 1),  # Percentage, 1 decimal
         'hci_color': hci_color,  # HCI% color class for styling
         'average_thickness_score': round(average_thickness_score, 2),  # Score, 2 decimals
         'hairs_per_fu': round(hairs_per_fu, 2),  # Double digit, 2 decimals
         'hairs_per_cm2': round(hairs_per_cm2, 1),  # No comma, 1 decimal
+        'hairs_per_cm2_color': hairs_per_cm2_color,  # Hairs per cm² color class
         'effective_hair_density': round(effective_hair_density, 1),  # 1 decimal
         'ehd_percentage': round(ehd_percentage, 1),  # EHD%, 1 decimal
         'ehd_color': ehd_color,  # EHD% color class for styling
