@@ -291,14 +291,6 @@
             background: #c82333;
         }
         
-        .settings-btn {
-            background: #6c757d;
-            color: white;
-        }
-        
-        .settings-btn:hover {
-            background: #5a6268;
-        }
         
         .status-indicator {
             position: absolute;
@@ -455,9 +447,6 @@
                                             <i class="fas fa-circle"></i> Camera Off
                                         </div>
                                         <div class="camera-controls">
-                                            <button class="camera-btn settings-btn" id="settingsBtn" title="Camera Settings">
-                                                <i class="fas fa-cog"></i>
-                                            </button>
                                             <button class="camera-btn capture-btn" id="captureBtn" title="Take Snapshot">
                                                 <i class="fas fa-camera"></i>
                                             </button>
@@ -507,13 +496,6 @@
                                     </select>
                                 </div>
                                 
-                                <div class="mb-3">
-                                    <label for="qualitySlider" class="form-label">
-                                        Image Quality: <span id="qualityValue">0.8</span>
-                                    </label>
-                                    <input type="range" class="form-range" id="qualitySlider" 
-                                           min="0.1" max="1" step="0.1" value="0.8">
-                                </div>
                                 
                                 <button class="btn btn-primary w-100" id="applySettingsBtn">
                                     <i class="fas fa-check"></i> Apply Settings
@@ -591,7 +573,7 @@
                 this.cameraSettings = {
                     deviceId: null,
                     resolution: '1280x720',
-                    quality: 0.8
+                    quality: 1.0  // Always max quality
                 };
                 
                 this.initializeCamera();
@@ -733,11 +715,6 @@
                     this.cameraSettings.resolution = e.target.value;
                 });
 
-                // Quality slider
-                document.getElementById('qualitySlider').addEventListener('input', (e) => {
-                    document.getElementById('qualityValue').textContent = e.target.value;
-                    this.cameraSettings.quality = parseFloat(e.target.value);
-                });
 
                 // Save snapshot button
                 document.getElementById('saveSnapshotBtn').addEventListener('click', () => {
@@ -811,18 +788,36 @@
                 try {
                     const context = this.canvas.getContext('2d');
                     
-                    // Draw current video frame to canvas
-                    context.drawImage(this.videoElement, 0, 0, this.canvas.width, this.canvas.height);
+                    // Ensure canvas size matches video size
+                    const videoWidth = this.videoElement.videoWidth;
+                    const videoHeight = this.videoElement.videoHeight;
                     
-                    // Convert to blob with quality setting
+                    if (videoWidth === 0 || videoHeight === 0) {
+                        this.showError('Video not ready. Please wait a moment and try again.');
+                        return;
+                    }
+                    
+                    // Set canvas size to match video
+                    this.canvas.width = videoWidth;
+                    this.canvas.height = videoHeight;
+                    
+                    // Draw current video frame to canvas
+                    context.drawImage(this.videoElement, 0, 0, videoWidth, videoHeight);
+                    
+                    // Convert to blob with max quality
                     this.canvas.toBlob((blob) => {
-                        this.currentSnapshot = blob;
-                        this.showSnapshotPreview(blob);
-                    }, 'image/jpeg', this.cameraSettings.quality);
+                        if (blob) {
+                            this.currentSnapshot = blob;
+                            this.showSnapshotPreview(blob);
+                            this.showSuccess('Snapshot captured successfully!');
+                        } else {
+                            this.showError('Failed to create snapshot');
+                        }
+                    }, 'image/jpeg', 1.0); // Always max quality
                     
                 } catch (error) {
                     console.error('Error capturing snapshot:', error);
-                    this.showError('Failed to capture snapshot');
+                    this.showError('Failed to capture snapshot: ' + error.message);
                 }
             }
 
