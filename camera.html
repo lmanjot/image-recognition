@@ -613,8 +613,9 @@
                     // Use selected camera or default to first available
                     const constraints = {
                         video: {
-                            width: { ideal: 4096 },  // Max resolution
-                            height: { ideal: 2160 }  // Max resolution
+                            width: { ideal: 1920, min: 1280 },  // Prefer HD, minimum 720p
+                            height: { ideal: 1080, min: 720 },  // Prefer HD, minimum 720p
+                            frameRate: { ideal: 30, min: 15 }   // Good frame rate
                         }
                     };
                     
@@ -632,6 +633,18 @@
                     this.videoElement.srcObject = this.stream;
                     this.updateStatus('Camera On', 'recording');
                     this.hideNoCameraMessage();
+                    
+                    // Log actual camera settings
+                    if (this.stream.getVideoTracks().length > 0) {
+                        const track = this.stream.getVideoTracks()[0];
+                        const settings = track.getSettings();
+                        this.logEvent('Camera initialized with settings', {
+                            width: settings.width,
+                            height: settings.height,
+                            frameRate: settings.frameRate,
+                            deviceId: settings.deviceId
+                        });
+                    }
                     
                     // Create hidden canvas for snapshots
                     this.canvas = document.createElement('canvas');
@@ -815,6 +828,18 @@
                             settings: settings,
                             constraints: constraints
                         });
+                        
+                        // Log supported resolutions
+                        if (capabilities.width && capabilities.height) {
+                            this.logEvent('Supported resolutions', {
+                                minWidth: capabilities.width.min,
+                                maxWidth: capabilities.width.max,
+                                minHeight: capabilities.height.min,
+                                maxHeight: capabilities.height.max,
+                                currentWidth: settings.width,
+                                currentHeight: settings.height
+                            });
+                        }
                         
                         // Check if camera supports any special features
                         if (capabilities.focusMode) {
@@ -1033,12 +1058,13 @@
                         this.stream.getTracks().forEach(track => track.stop());
                     }
 
-                    // Start new stream with selected settings at max resolution
+                    // Start new stream with selected settings at best resolution
                     this.stream = await navigator.mediaDevices.getUserMedia({
                         video: {
                             deviceId: { exact: this.cameraSettings.deviceId },
-                            width: { ideal: 4096 },  // Max resolution
-                            height: { ideal: 2160 }  // Max resolution
+                            width: { ideal: 1920, min: 1280 },  // Prefer HD, minimum 720p
+                            height: { ideal: 1080, min: 720 },  // Prefer HD, minimum 720p
+                            frameRate: { ideal: 30, min: 15 }   // Good frame rate
                         }
                     });
 
