@@ -488,9 +488,14 @@
                             <div class="card-body">
                                 <div class="mb-3">
                                     <label for="cameraSelect" class="form-label">Camera Device</label>
-                                    <select class="form-select" id="cameraSelect">
-                                        <option value="">Select Camera...</option>
-                                    </select>
+                                    <div class="d-flex gap-2">
+                                        <select class="form-select" id="cameraSelect">
+                                            <option value="">Select Camera...</option>
+                                        </select>
+                                        <button class="btn btn-outline-secondary" id="refreshCamerasBtn" title="Refresh Camera List">
+                                            <i class="fas fa-sync-alt"></i>
+                                        </button>
+                                    </div>
                                 </div>
                                 
                                 <div class="mb-3">
@@ -596,14 +601,27 @@
 
             async initializeCamera() {
                 try {
-                    // Request camera access
-                    this.stream = await navigator.mediaDevices.getUserMedia({
+                    // First load available devices
+                    await this.loadCameraDevices();
+                    
+                    // Use selected camera or default to first available
+                    const constraints = {
                         video: {
                             width: { ideal: 1280 },
-                            height: { ideal: 720 },
-                            facingMode: 'environment' // Use back camera if available
+                            height: { ideal: 720 }
                         }
-                    });
+                    };
+                    
+                    // If a specific camera is selected, use it
+                    if (this.cameraSettings.deviceId) {
+                        constraints.video.deviceId = { exact: this.cameraSettings.deviceId };
+                    } else {
+                        // Try to prefer external cameras
+                        constraints.video.facingMode = 'environment';
+                    }
+                    
+                    // Request camera access
+                    this.stream = await navigator.mediaDevices.getUserMedia(constraints);
                     
                     this.videoElement.srcObject = this.stream;
                     this.updateStatus('Camera On', 'recording');
@@ -618,11 +636,25 @@
                     console.error('Error accessing camera:', error);
                     this.showNoCameraMessage();
                     this.updateStatus('Camera Error', '');
+                    
+                    // Show specific error message
+                    if (error.name === 'NotAllowedError') {
+                        this.showError('Camera access denied. Please allow camera permissions and refresh the page.');
+                    } else if (error.name === 'NotFoundError') {
+                        this.showError('No camera found. Please ensure your trichoscope is connected.');
+                    } else {
+                        this.showError(`Camera error: ${error.message}`);
+                    }
                 }
             }
 
             async loadCameraDevices() {
                 try {
+                    // First, request camera access to get device labels
+                    const tempStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                    tempStream.getTracks().forEach(track => track.stop()); // Stop the temporary stream
+                    
+                    // Now enumerate devices with proper labels
                     const devices = await navigator.mediaDevices.enumerateDevices();
                     const videoDevices = devices.filter(device => device.kind === 'videoinput');
                     
@@ -632,18 +664,51 @@
                     videoDevices.forEach((device, index) => {
                         const option = document.createElement('option');
                         option.value = device.deviceId;
-                        option.textContent = device.label || `Camera ${index + 1}`;
+                        
+                        // Better device naming
+                        let deviceName = device.label || `Camera ${index + 1}`;
+                        
+                        // Try to identify USB cameras vs built-in cameras
+                        if (device.label) {
+                            if (device.label.toLowerCase().includes('usb') || 
+                                device.label.toLowerCase().includes('external') ||
+                                device.label.toLowerCase().includes('trichoscope')) {
+                                deviceName = `🔌 ${device.label}`;
+                            } else if (device.label.toLowerCase().includes('built-in') ||
+                                      device.label.toLowerCase().includes('facetime') ||
+                                      device.label.toLowerCase().includes('webcam')) {
+                                deviceName = `💻 ${device.label}`;
+                            }
+                        } else {
+                            deviceName = `📷 Camera ${index + 1}`;
+                        }
+                        
+                        option.textContent = deviceName;
                         cameraSelect.appendChild(option);
                     });
                     
-                    // Auto-select first camera if only one available
-                    if (videoDevices.length === 1) {
+                    // Auto-select USB camera if available, otherwise first camera
+                    const usbCamera = videoDevices.find(device => 
+                        device.label && (
+                            device.label.toLowerCase().includes('usb') || 
+                            device.label.toLowerCase().includes('external') ||
+                            device.label.toLowerCase().includes('trichoscope')
+                        )
+                    );
+                    
+                    if (usbCamera) {
+                        cameraSelect.value = usbCamera.deviceId;
+                        this.cameraSettings.deviceId = usbCamera.deviceId;
+                        this.showSuccess(`Auto-selected USB camera: ${usbCamera.label}`);
+                    } else if (videoDevices.length > 0) {
                         cameraSelect.value = videoDevices[0].deviceId;
                         this.cameraSettings.deviceId = videoDevices[0].deviceId;
+                        this.showSuccess(`Selected camera: ${videoDevices[0].label || 'Camera 1'}`);
                     }
                     
                 } catch (error) {
                     console.error('Error loading camera devices:', error);
+                    this.showError('Failed to load camera devices. Please check camera permissions.');
                 }
             }
 
@@ -682,6 +747,11 @@
                 // Retry camera button
                 document.getElementById('retryCameraBtn').addEventListener('click', () => {
                     this.retryCameraAccess();
+                });
+
+                // Refresh cameras button
+                document.getElementById('refreshCamerasBtn').addEventListener('click', () => {
+                    this.refreshCameraDevices();
                 });
 
                 // Keyboard shortcuts
@@ -843,6 +913,21 @@
                 this.hideNoCameraMessage();
                 this.updateStatus('Connecting...', '');
                 await this.initializeCamera();
+            }
+
+            async refreshCameraDevices() {
+                try {
+                    this.showSuccess('Refreshing camera list...');
+                    await this.loadCameraDevices();
+                    
+                    // If a camera is selected, try to apply it
+                    if (this.cameraSettings.deviceId) {
+                        await this.applyCameraSettings();
+                    }
+                } catch (error) {
+                    console.error('Error refreshing camera devices:', error);
+                    this.showError('Failed to refresh camera list');
+                }
             }
 
             updateStatus(message, className) {
