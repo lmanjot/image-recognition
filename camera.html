@@ -504,13 +504,40 @@
                         </div>
 
                         <!-- Recent Snapshots -->
-                        <div class="card">
+                        <div class="card mb-3">
                             <div class="card-header">
                                 <h6 class="mb-0"><i class="fas fa-images"></i> Recent Snapshots</h6>
                             </div>
                             <div class="card-body">
                                 <div id="snapshotsContainer">
                                     <p class="text-muted text-center">No snapshots taken yet</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Debug Panel -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0"><i class="fas fa-bug"></i> Camera Events Debug</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-2">
+                                    <button class="btn btn-sm btn-outline-secondary" id="clearLogsBtn">
+                                        <i class="fas fa-trash"></i> Clear Logs
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-info" id="toggleLogsBtn">
+                                        <i class="fas fa-eye"></i> Show Logs
+                                    </button>
+                                </div>
+                                <div id="debugLogs" style="display: none; max-height: 200px; overflow-y: auto; background: #f8f9fa; padding: 10px; border-radius: 5px; font-family: monospace; font-size: 11px;">
+                                    <div class="text-muted">Camera events will appear here...</div>
+                                </div>
+                                <div class="mt-2">
+                                    <small class="text-muted">
+                                        <i class="fas fa-info-circle"></i> 
+                                        Press your camera's snapshot button and watch for events here. 
+                                        Check browser console (F12) for detailed logs.
+                                    </small>
                                 </div>
                             </div>
                         </div>
@@ -614,6 +641,9 @@
                     this.canvas.width = 1280;
                     this.canvas.height = 720;
                     
+                    // Set up camera event listeners
+                    this.setupCameraEventListeners();
+                    
                 } catch (error) {
                     console.error('Error accessing camera:', error);
                     this.showNoCameraMessage();
@@ -694,6 +724,221 @@
                 }
             }
 
+            setupCameraEventListeners() {
+                // Listen for various camera events
+                if (this.videoElement) {
+                    // Video element events
+                    this.videoElement.addEventListener('loadedmetadata', () => {
+                        this.logEvent('Video metadata loaded', {
+                            videoWidth: this.videoElement.videoWidth,
+                            videoHeight: this.videoElement.videoHeight
+                        });
+                    });
+                    
+                    this.videoElement.addEventListener('canplay', () => {
+                        this.logEvent('Video can play');
+                    });
+                    
+                    this.videoElement.addEventListener('play', () => {
+                        this.logEvent('Video started playing');
+                    });
+                    
+                    this.videoElement.addEventListener('pause', () => {
+                        this.logEvent('Video paused');
+                    });
+                    
+                    this.videoElement.addEventListener('error', (e) => {
+                        this.logEvent('Video error', e);
+                    });
+                }
+                
+                // Listen for media device changes
+                if (navigator.mediaDevices) {
+                    navigator.mediaDevices.addEventListener('devicechange', (event) => {
+                        this.logEvent('Media device changed', event);
+                    });
+                }
+                
+                // Listen for keyboard events (some cameras send keyboard events)
+                document.addEventListener('keydown', (e) => {
+                    // Log all key events to see if camera button sends any
+                    this.logEvent('Key pressed', {
+                        key: e.key,
+                        code: e.code,
+                        keyCode: e.keyCode,
+                        which: e.which
+                    });
+                    
+                    // Spacebar for manual capture
+                    if (e.code === 'Space' && !e.target.matches('input, textarea')) {
+                        e.preventDefault();
+                        this.captureSnapshot();
+                    }
+                });
+                
+                // Listen for mouse events (some cameras might send mouse events)
+                document.addEventListener('mousedown', (e) => {
+                    this.logEvent('Mouse down', {
+                        button: e.button,
+                        clientX: e.clientX,
+                        clientY: e.clientY
+                    });
+                });
+                
+                // Listen for focus events (camera button might trigger focus)
+                window.addEventListener('focus', () => {
+                    this.logEvent('Window focused');
+                });
+                
+                window.addEventListener('blur', () => {
+                    this.logEvent('Window blurred');
+                });
+                
+                // Listen for visibility changes
+                document.addEventListener('visibilitychange', () => {
+                    this.logEvent('Visibility changed', {
+                        hidden: document.hidden
+                    });
+                });
+                
+                // Try to access camera capabilities if available
+                this.checkCameraCapabilities();
+            }
+
+            async checkCameraCapabilities() {
+                try {
+                    if (this.stream && this.stream.getVideoTracks().length > 0) {
+                        const track = this.stream.getVideoTracks()[0];
+                        const capabilities = track.getCapabilities();
+                        const settings = track.getSettings();
+                        const constraints = track.getConstraints();
+                        
+                        this.logEvent('Camera capabilities', {
+                            capabilities: capabilities,
+                            settings: settings,
+                            constraints: constraints
+                        });
+                        
+                        // Check if camera supports any special features
+                        if (capabilities.focusMode) {
+                            this.logEvent('Camera supports focus modes', capabilities.focusMode);
+                        }
+                        if (capabilities.whiteBalanceMode) {
+                            this.logEvent('Camera supports white balance modes', capabilities.whiteBalanceMode);
+                        }
+                        if (capabilities.exposureMode) {
+                            this.logEvent('Camera supports exposure modes', capabilities.exposureMode);
+                        }
+                    }
+                } catch (error) {
+                    this.logEvent('Error checking camera capabilities', error);
+                }
+            }
+
+            logEvent(eventName, data = null) {
+                const timestamp = new Date().toISOString();
+                const logEntry = {
+                    timestamp: timestamp,
+                    event: eventName,
+                    data: data
+                };
+                
+                console.log('📷 Camera Event:', logEntry);
+                
+                // Add to debug panel
+                this.addToDebugLogs(logEntry);
+                
+                // Also show important events in the UI
+                if (eventName.includes('Key pressed') && data && data.key !== ' ') {
+                    this.showTemporaryMessage(`Key detected: ${data.key} (${data.code})`);
+                }
+            }
+
+            addToDebugLogs(logEntry) {
+                const debugLogs = document.getElementById('debugLogs');
+                if (!debugLogs) return;
+
+                const logDiv = document.createElement('div');
+                logDiv.className = 'mb-1';
+                logDiv.style.borderBottom = '1px solid #dee2e6';
+                logDiv.style.paddingBottom = '2px';
+                
+                const time = new Date(logEntry.timestamp).toLocaleTimeString();
+                let logText = `[${time}] ${logEntry.event}`;
+                
+                if (logEntry.data) {
+                    if (typeof logEntry.data === 'object') {
+                        logText += `: ${JSON.stringify(logEntry.data, null, 2)}`;
+                    } else {
+                        logText += `: ${logEntry.data}`;
+                    }
+                }
+                
+                logDiv.textContent = logText;
+                logDiv.style.fontSize = '10px';
+                logDiv.style.lineHeight = '1.2';
+                
+                // Insert at the top
+                const firstChild = debugLogs.firstChild;
+                if (firstChild && firstChild.className === 'text-muted') {
+                    debugLogs.removeChild(firstChild);
+                }
+                debugLogs.insertBefore(logDiv, debugLogs.firstChild);
+                
+                // Limit to 20 entries
+                const entries = debugLogs.children;
+                if (entries.length > 20) {
+                    debugLogs.removeChild(entries[entries.length - 1]);
+                }
+                
+                // Auto-scroll to top
+                debugLogs.scrollTop = 0;
+            }
+
+            clearDebugLogs() {
+                const debugLogs = document.getElementById('debugLogs');
+                if (debugLogs) {
+                    debugLogs.innerHTML = '<div class="text-muted">Camera events will appear here...</div>';
+                }
+            }
+
+            toggleDebugLogs() {
+                const debugLogs = document.getElementById('debugLogs');
+                const toggleBtn = document.getElementById('toggleLogsBtn');
+                
+                if (debugLogs && toggleBtn) {
+                    if (debugLogs.style.display === 'none') {
+                        debugLogs.style.display = 'block';
+                        toggleBtn.innerHTML = '<i class="fas fa-eye-slash"></i> Hide Logs';
+                    } else {
+                        debugLogs.style.display = 'none';
+                        toggleBtn.innerHTML = '<i class="fas fa-eye"></i> Show Logs';
+                    }
+                }
+            }
+
+            showTemporaryMessage(message) {
+                // Create a temporary message display
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'position-fixed top-0 start-50 translate-middle-x mt-3';
+                messageDiv.style.zIndex = '9999';
+                messageDiv.innerHTML = `
+                    <div class="alert alert-info alert-dismissible fade show" role="alert">
+                        <i class="fas fa-info-circle me-2"></i>${message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                `;
+                
+                document.body.appendChild(messageDiv);
+                
+                // Auto-remove after 3 seconds
+                setTimeout(() => {
+                    if (messageDiv.parentNode) {
+                        messageDiv.parentNode.removeChild(messageDiv);
+                    }
+                }, 3000);
+            }
+
             setupEventListeners() {
                 // Capture button
                 document.getElementById('captureBtn').addEventListener('click', () => {
@@ -729,6 +974,15 @@
                 // Refresh cameras button
                 document.getElementById('refreshCamerasBtn').addEventListener('click', () => {
                     this.refreshCameraDevices();
+                });
+
+                // Debug panel buttons
+                document.getElementById('clearLogsBtn').addEventListener('click', () => {
+                    this.clearDebugLogs();
+                });
+
+                document.getElementById('toggleLogsBtn').addEventListener('click', () => {
+                    this.toggleDebugLogs();
                 });
 
                 // Keyboard shortcuts
