@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trichoscope Camera - Māra Advanced Hair Diagnostics</title>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Modern Design System */
+        :root {
+            --bs-primary-rgb: 51, 51, 51;
+            --bs-bg-opacity: 1;
+            --primary-color: #333333;
+            --secondary-color: #555555;
+            --background-color: #f7f5e7;
+            --card-background: #ffffff;
+            --border-color: #e0e0e0;
+            --text-muted: #666666;
+            --shadow-light: 0 2px 8px rgba(0,0,0,0.08);
+            --shadow-medium: 0 4px 16px rgba(0,0,0,0.12);
+            --border-radius: 16px;
+            --border-radius-sm: 12px;
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            background-color: var(--background-color);
+            font-family: 'Sora', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-weight: 300;
+            font-size: 0.95rem;
+            min-height: 100vh;
+            color: var(--primary-color);
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* Font Size Adjustments */
+        h1 { font-size: 1.5rem; font-weight: 600; }
+        h2 { font-size: 1.3rem; font-weight: 500; }
+        h3 { font-size: 1.1rem; font-weight: 500; }
+        h4 { font-size: 1rem; font-weight: 500; }
+        h5 { font-size: 0.95rem; font-weight: 500; }
+        h6 { font-size: 0.9rem; font-weight: 500; }
+        p { font-size: 0.9rem; font-weight: 300; }
+        .small { font-size: 0.8rem; font-weight: 300; }
+        
+        /* Main Container */
+        .main-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Title Container */
+        .title-container {
+            background: transparent;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+        
+        .title-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            text-align: center;
+        }
+        
+        .title-text {
+            color: var(--primary-color);
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+        }
+        
+        .title-text i {
+            font-size: 2.2rem;
+        }
+        
+        .title-subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            margin: 0;
+            font-weight: 400;
+        }
+        
+        /* Content Container */
+        .content-container {
+            flex: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            width: 100%;
+            margin-top: -1rem;
+        }
+        
+        .content-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            align-items: start;
+        }
+        
+        /* Cards */
+        .card {
+            background: var(--card-background);
+            border: none;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-light);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .card-header {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 1rem;
+        }
+        
+        .card-header h5 {
+            margin: 0;
+            font-weight: 600;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .card-header h6 {
+            margin: 0;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .card-body {
+            padding: 1rem;
+        }
+        
+        .btn {
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
+        
+        .btn-lg {
+            padding: 0.6rem 1.2rem;
+            font-size: 1rem;
+        }
+        
+        /* Form Elements */
+        .form-label {
+            color: var(--primary-color);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-control {
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius-sm);
+            padding: 0.75rem 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(51, 51, 51, 0.25);
+        }
+        
+        .form-range {
+            height: 6px;
+            background: #e9ecef;
+            border-radius: 3px;
+        }
+        
+        .form-range::-webkit-slider-thumb {
+            background-color: var(--primary-color);
+            box-shadow: 0 2px 6px rgba(51, 51, 51, 0.3);
+            width: 20px;
+            height: 20px;
+        }
+        
+        .form-range::-moz-range-thumb {
+            background-color: var(--primary-color);
+            border: none;
+            width: 20px;
+            height: 20px;
+        }
+        
+        /* Buttons */
+        .btn-primary {
+            background-color: var(--primary-color) !important;
+            border-color: var(--primary-color) !important;
+            border-radius: var(--border-radius-sm);
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--secondary-color) !important;
+            border-color: var(--secondary-color) !important;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(51, 51, 51, 0.3);
+        }
+        
+        .btn-primary:focus {
+            background-color: var(--primary-color) !important;
+            border-color: var(--primary-color) !important;
+            box-shadow: 0 0 0 0.25rem rgba(51, 51, 51, 0.25);
+        }
+        
+        /* Camera Specific Styles */
+        .camera-container {
+            position: relative;
+            background: #000;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            min-height: 400px;
+        }
+        
+        #videoElement {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        
+        .camera-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 10;
+        }
+        
+        .camera-controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 20;
+        }
+        
+        .camera-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        
+        .camera-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        .capture-btn {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .capture-btn:hover {
+            background: #c82333;
+        }
+        
+        .settings-btn {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .settings-btn:hover {
+            background: #5a6268;
+        }
+        
+        .status-indicator {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            z-index: 20;
+        }
+        
+        .status-indicator.recording {
+            background: #dc3545;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .no-camera {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+        
+        .no-camera i {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+        
+        .snapshots-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .snapshot-item {
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .snapshot-item:hover {
+            transform: scale(1.05);
+        }
+        
+        .snapshot-item img {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+        }
+        
+        .snapshot-info {
+            padding: 8px;
+            background: white;
+            font-size: 11px;
+            color: #666;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+        }
+        
+        @media (max-width: 992px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            
+            .title-text {
+                font-size: 2rem;
+            }
+            
+            .content-container {
+                padding: 0 1rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .title-container {
+                padding: 1.5rem 0;
+                margin-bottom: 1.5rem;
+            }
+            
+            .title-content {
+                padding: 0 1rem;
+            }
+            
+            .title-text {
+                font-size: 1.75rem;
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .content-container {
+                padding: 0 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Title Container -->
+        <div class="title-container">
+            <div class="title-content">
+                <div class="d-flex align-items-center justify-content-center mb-3">
+                    <img src="https://cdn.prod.website-files.com/686ba99f7e881278bf8341e5/686bafa8ce0f0a4ccaf45537_mara-logo.svg" 
+                         alt="Māra Logo" 
+                         style="width: 5rem; height: auto;">
+                </div>
+                <h1 class="title-text" style="font-size: 1.5rem;">
+                    <i class="fas fa-microscope text-primary"></i> Trichoscope Camera
+                </h1>
+                <p class="title-subtitle">Live preview and snapshot capture for trichoscope analysis</p>
+                <nav class="mt-3">
+                    <a href="/" class="btn btn-outline-primary">
+                        <i class="fas fa-arrow-left"></i> Back to Analysis
+                    </a>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="content-container">
+            <div class="content-grid">
+                <!-- Main Content Area -->
+                <div class="main-content">
+                    <!-- Left Panel - Camera -->
+                    <div class="image-panel">
+                        <div class="card h-100">
+                            <div class="card-header">
+                                <h6 class="mb-0"><i class="fas fa-video"></i> Live Camera Feed</h6>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="camera-container" id="cameraContainer">
+                                    <video id="videoElement" autoplay muted playsinline></video>
+                                    <div class="camera-overlay">
+                                        <div class="status-indicator" id="statusIndicator">
+                                            <i class="fas fa-circle"></i> Camera Off
+                                        </div>
+                                        <div class="camera-controls">
+                                            <button class="camera-btn settings-btn" id="settingsBtn" title="Camera Settings">
+                                                <i class="fas fa-cog"></i>
+                                            </button>
+                                            <button class="camera-btn capture-btn" id="captureBtn" title="Take Snapshot">
+                                                <i class="fas fa-camera"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- No Camera Message -->
+                                <div class="no-camera" id="noCameraMessage" style="display: none;">
+                                    <i class="fas fa-video-slash"></i>
+                                    <h4>Camera Not Available</h4>
+                                    <p>Please ensure your trichoscope camera is connected and permissions are granted.</p>
+                                    <button class="btn btn-primary" id="retryCameraBtn">
+                                        <i class="fas fa-redo"></i> Retry Camera Access
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Panel - Controls and Snapshots -->
+                    <div class="analysis-panel">
+                        <!-- Camera Settings -->
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h6 class="mb-0"><i class="fas fa-cogs"></i> Camera Settings</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="cameraSelect" class="form-label">Camera Device</label>
+                                    <select class="form-select" id="cameraSelect">
+                                        <option value="">Select Camera...</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="resolutionSelect" class="form-label">Resolution</label>
+                                    <select class="form-select" id="resolutionSelect">
+                                        <option value="640x480">640x480 (VGA)</option>
+                                        <option value="1280x720" selected>1280x720 (HD)</option>
+                                        <option value="1920x1080">1920x1080 (Full HD)</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="qualitySlider" class="form-label">
+                                        Image Quality: <span id="qualityValue">0.8</span>
+                                    </label>
+                                    <input type="range" class="form-range" id="qualitySlider" 
+                                           min="0.1" max="1" step="0.1" value="0.8">
+                                </div>
+                                
+                                <button class="btn btn-primary w-100" id="applySettingsBtn">
+                                    <i class="fas fa-check"></i> Apply Settings
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Recent Snapshots -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0"><i class="fas fa-images"></i> Recent Snapshots</h6>
+                            </div>
+                            <div class="card-body">
+                                <div id="snapshotsContainer">
+                                    <p class="text-muted text-center">No snapshots taken yet</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Snapshot Preview Modal -->
+    <div class="modal fade" id="snapshotModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title"><i class="fas fa-camera"></i> Snapshot Preview</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img id="snapshotPreview" class="img-fluid" alt="Snapshot preview" style="max-width: 100%; border-radius: 8px;">
+                    <div class="mt-3">
+                        <button class="btn btn-success me-2" id="saveSnapshotBtn">
+                            <i class="fas fa-save"></i> Save Snapshot
+                        </button>
+                        <button class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Modal -->
+    <div class="modal fade" id="errorModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title"><i class="fas fa-exclamation-triangle"></i> Error</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="errorMessage"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Trichoscope Camera JavaScript
+        class TrichoscopeCamera {
+            constructor() {
+                this.videoElement = document.getElementById('videoElement');
+                this.canvas = null;
+                this.stream = null;
+                this.currentSnapshot = null;
+                this.cameraSettings = {
+                    deviceId: null,
+                    resolution: '1280x720',
+                    quality: 0.8
+                };
+                
+                this.initializeCamera();
+                this.setupEventListeners();
+                this.loadCameraDevices();
+            }
+
+            async initializeCamera() {
+                try {
+                    // Request camera access
+                    this.stream = await navigator.mediaDevices.getUserMedia({
+                        video: {
+                            width: { ideal: 1280 },
+                            height: { ideal: 720 },
+                            facingMode: 'environment' // Use back camera if available
+                        }
+                    });
+                    
+                    this.videoElement.srcObject = this.stream;
+                    this.updateStatus('Camera On', 'recording');
+                    this.hideNoCameraMessage();
+                    
+                    // Create hidden canvas for snapshots
+                    this.canvas = document.createElement('canvas');
+                    this.canvas.width = 1280;
+                    this.canvas.height = 720;
+                    
+                } catch (error) {
+                    console.error('Error accessing camera:', error);
+                    this.showNoCameraMessage();
+                    this.updateStatus('Camera Error', '');
+                }
+            }
+
+            async loadCameraDevices() {
+                try {
+                    const devices = await navigator.mediaDevices.enumerateDevices();
+                    const videoDevices = devices.filter(device => device.kind === 'videoinput');
+                    
+                    const cameraSelect = document.getElementById('cameraSelect');
+                    cameraSelect.innerHTML = '<option value="">Select Camera...</option>';
+                    
+                    videoDevices.forEach((device, index) => {
+                        const option = document.createElement('option');
+                        option.value = device.deviceId;
+                        option.textContent = device.label || `Camera ${index + 1}`;
+                        cameraSelect.appendChild(option);
+                    });
+                    
+                    // Auto-select first camera if only one available
+                    if (videoDevices.length === 1) {
+                        cameraSelect.value = videoDevices[0].deviceId;
+                        this.cameraSettings.deviceId = videoDevices[0].deviceId;
+                    }
+                    
+                } catch (error) {
+                    console.error('Error loading camera devices:', error);
+                }
+            }
+
+            setupEventListeners() {
+                // Capture button
+                document.getElementById('captureBtn').addEventListener('click', () => {
+                    this.captureSnapshot();
+                });
+
+                // Apply settings button
+                document.getElementById('applySettingsBtn').addEventListener('click', () => {
+                    this.applyCameraSettings();
+                });
+
+                // Camera selection
+                document.getElementById('cameraSelect').addEventListener('change', (e) => {
+                    this.cameraSettings.deviceId = e.target.value;
+                });
+
+                // Resolution selection
+                document.getElementById('resolutionSelect').addEventListener('change', (e) => {
+                    this.cameraSettings.resolution = e.target.value;
+                });
+
+                // Quality slider
+                document.getElementById('qualitySlider').addEventListener('input', (e) => {
+                    document.getElementById('qualityValue').textContent = e.target.value;
+                    this.cameraSettings.quality = parseFloat(e.target.value);
+                });
+
+                // Save snapshot button
+                document.getElementById('saveSnapshotBtn').addEventListener('click', () => {
+                    this.saveSnapshot();
+                });
+
+                // Retry camera button
+                document.getElementById('retryCameraBtn').addEventListener('click', () => {
+                    this.retryCameraAccess();
+                });
+
+                // Keyboard shortcuts
+                document.addEventListener('keydown', (e) => {
+                    if (e.code === 'Space' && !e.target.matches('input, textarea')) {
+                        e.preventDefault();
+                        this.captureSnapshot();
+                    }
+                });
+            }
+
+            async applyCameraSettings() {
+                if (!this.cameraSettings.deviceId) {
+                    this.showError('Please select a camera device');
+                    return;
+                }
+
+                try {
+                    // Stop current stream
+                    if (this.stream) {
+                        this.stream.getTracks().forEach(track => track.stop());
+                    }
+
+                    // Parse resolution
+                    const [width, height] = this.cameraSettings.resolution.split('x').map(Number);
+
+                    // Start new stream with selected settings
+                    this.stream = await navigator.mediaDevices.getUserMedia({
+                        video: {
+                            deviceId: { exact: this.cameraSettings.deviceId },
+                            width: { ideal: width },
+                            height: { ideal: height }
+                        }
+                    });
+
+                    this.videoElement.srcObject = this.stream;
+                    
+                    // Update canvas size
+                    this.canvas.width = width;
+                    this.canvas.height = height;
+                    
+                    this.updateStatus('Camera On', 'recording');
+                    this.showSuccess('Camera settings applied successfully');
+                    
+                } catch (error) {
+                    console.error('Error applying camera settings:', error);
+                    this.showError('Failed to apply camera settings: ' + error.message);
+                }
+            }
+
+            captureSnapshot() {
+                if (!this.stream || !this.canvas) {
+                    this.showError('Camera not available');
+                    return;
+                }
+
+                try {
+                    const context = this.canvas.getContext('2d');
+                    
+                    // Draw current video frame to canvas
+                    context.drawImage(this.videoElement, 0, 0, this.canvas.width, this.canvas.height);
+                    
+                    // Convert to blob with quality setting
+                    this.canvas.toBlob((blob) => {
+                        this.currentSnapshot = blob;
+                        this.showSnapshotPreview(blob);
+                    }, 'image/jpeg', this.cameraSettings.quality);
+                    
+                } catch (error) {
+                    console.error('Error capturing snapshot:', error);
+                    this.showError('Failed to capture snapshot');
+                }
+            }
+
+            showSnapshotPreview(blob) {
+                const url = URL.createObjectURL(blob);
+                const previewImg = document.getElementById('snapshotPreview');
+                previewImg.src = url;
+                
+                const modal = new bootstrap.Modal(document.getElementById('snapshotModal'));
+                modal.show();
+                
+                // Clean up URL when modal is hidden
+                document.getElementById('snapshotModal').addEventListener('hidden.bs.modal', () => {
+                    URL.revokeObjectURL(url);
+                }, { once: true });
+            }
+
+            async saveSnapshot() {
+                if (!this.currentSnapshot) {
+                    this.showError('No snapshot to save');
+                    return;
+                }
+
+                try {
+                    // For now, we'll just download the image since we don't have a backend
+                    const url = URL.createObjectURL(this.currentSnapshot);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `trichoscope_snapshot_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.jpg`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    
+                    this.showSuccess('Snapshot downloaded successfully!');
+                    this.addSnapshotToGallery(this.currentSnapshot);
+                    
+                    // Close modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('snapshotModal'));
+                    modal.hide();
+                    
+                } catch (error) {
+                    console.error('Error saving snapshot:', error);
+                    this.showError('Failed to save snapshot');
+                }
+            }
+
+            addSnapshotToGallery(blob) {
+                const container = document.getElementById('snapshotsContainer');
+                
+                // Remove "no snapshots" message if present
+                const noSnapshotsMsg = container.querySelector('.text-muted');
+                if (noSnapshotsMsg) {
+                    noSnapshotsMsg.remove();
+                }
+
+                // Create snapshot item
+                const snapshotItem = document.createElement('div');
+                snapshotItem.className = 'snapshot-item';
+                
+                const url = URL.createObjectURL(blob);
+                const timestamp = new Date().toLocaleString();
+                
+                snapshotItem.innerHTML = `
+                    <img src="${url}" alt="Trichoscope snapshot" loading="lazy">
+                    <div class="snapshot-info">
+                        <div><strong>Snapshot</strong></div>
+                        <div>${timestamp}</div>
+                    </div>
+                `;
+
+                // Add click handler to view full size
+                snapshotItem.addEventListener('click', () => {
+                    this.showSnapshotPreview(blob);
+                });
+
+                // Insert at the beginning
+                container.insertBefore(snapshotItem, container.firstChild);
+                
+                // Limit to 6 most recent snapshots
+                const items = container.querySelectorAll('.snapshot-item');
+                if (items.length > 6) {
+                    items[items.length - 1].remove();
+                }
+            }
+
+            async retryCameraAccess() {
+                this.hideNoCameraMessage();
+                this.updateStatus('Connecting...', '');
+                await this.initializeCamera();
+            }
+
+            updateStatus(message, className) {
+                const statusIndicator = document.getElementById('statusIndicator');
+                statusIndicator.textContent = message;
+                statusIndicator.className = `status-indicator ${className}`;
+            }
+
+            showNoCameraMessage() {
+                document.getElementById('noCameraMessage').style.display = 'block';
+                document.getElementById('cameraContainer').style.display = 'none';
+            }
+
+            hideNoCameraMessage() {
+                document.getElementById('noCameraMessage').style.display = 'none';
+                document.getElementById('cameraContainer').style.display = 'block';
+            }
+
+            showError(message) {
+                const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
+                document.getElementById('errorMessage').textContent = message;
+                errorModal.show();
+            }
+
+            showSuccess(message) {
+                // Create a temporary success toast
+                const toast = document.createElement('div');
+                toast.className = 'toast align-items-center text-white bg-success border-0 position-fixed top-0 end-0 m-3';
+                toast.style.zIndex = '9999';
+                toast.innerHTML = `
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            <i class="fas fa-check-circle me-2"></i>${message}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                    </div>
+                `;
+                
+                document.body.appendChild(toast);
+                const bsToast = new bootstrap.Toast(toast);
+                bsToast.show();
+                
+                // Remove toast element after it's hidden
+                toast.addEventListener('hidden.bs.toast', () => {
+                    toast.remove();
+                });
+            }
+
+            // Clean up when page is unloaded
+            cleanup() {
+                if (this.stream) {
+                    this.stream.getTracks().forEach(track => track.stop());
+                }
+            }
+        }
+
+        // Initialize camera when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            window.trichoscopeCamera = new TrichoscopeCamera();
+        });
+
+        // Clean up when page is unloaded
+        window.addEventListener('beforeunload', function() {
+            if (window.trichoscopeCamera) {
+                window.trichoscopeCamera.cleanup();
+            }
+        });
+    </script>
+</body>
+</html>

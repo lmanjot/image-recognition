@@ -11,6 +11,10 @@
       "dest": "/api/$1"
     },
     {
+      "src": "/camera.html",
+      "dest": "/camera.html"
+    },
+    {
       "src": "/(.*)",
       "dest": "/index.html"
     }
