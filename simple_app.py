@@ -14,6 +14,10 @@ def index():
 def camera():
     return render_template('camera.html')
 
+@app.route('/debug')
+def debug():
+    return render_template('debug.html')
+
 @app.route('/snapshot', methods=['POST'])
 def save_snapshot():
     """Save a snapshot from the camera"""

@@ -9,6 +9,5 @@ nohup: ignoring input
  * Restarting with stat
  * Debugger is active!
  * Debugger PIN: 143-833-810
-127.0.0.1 - - [16/Sep/2025 15:32:16] "HEAD /camera HTTP/1.1" 200 -
-127.0.0.1 - - [16/Sep/2025 15:32:19] "HEAD / HTTP/1.1" 200 -
-127.0.0.1 - - [16/Sep/2025 15:44:40] "GET /camera HTTP/1.1" 200 -
+127.0.0.1 - - [16/Sep/2025 16:01:23] "HEAD /debug HTTP/1.1" 200 -
+127.0.0.1 - - [16/Sep/2025 16:01:24] "HEAD /camera?v=1758038484 HTTP/1.1" 200 -
