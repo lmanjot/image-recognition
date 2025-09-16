@@ -451,6 +451,9 @@
                                                 <i class="fas fa-camera"></i>
                                             </button>
                                         </div>
+                                        <div class="position-absolute top-0 start-0 m-3">
+                                            <div class="badge bg-info" id="captureStatus">Ready</div>
+                                        </div>
                                     </div>
                                 </div>
                                 
@@ -519,6 +522,9 @@
                                     </button>
                                     <button class="btn btn-sm btn-outline-info" id="toggleLogsBtn">
                                         <i class="fas fa-eye"></i> Show Logs
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-success" id="testLogBtn">
+                                        <i class="fas fa-test-tube"></i> Test Log
                                     </button>
                                 </div>
                                 <div id="debugLogs" style="display: none; max-height: 200px; overflow-y: auto; background: #f8f9fa; padding: 10px; border-radius: 5px; font-family: monospace; font-size: 11px;">
@@ -908,6 +914,28 @@
                 }
             }
 
+            testLogging() {
+                this.logEvent('Test log entry - logging system is working');
+                this.logEvent('Camera status check', {
+                    stream: !!this.stream,
+                    videoElement: !!this.videoElement,
+                    canvas: !!this.canvas,
+                    deviceId: this.cameraSettings.deviceId
+                });
+                
+                // Test if we can access camera info
+                if (this.stream && this.stream.getVideoTracks().length > 0) {
+                    const track = this.stream.getVideoTracks()[0];
+                    this.logEvent('Camera track info', {
+                        label: track.label,
+                        enabled: track.enabled,
+                        readyState: track.readyState
+                    });
+                }
+                
+                this.showSuccess('Test logging completed - check debug panel');
+            }
+
             showTemporaryMessage(message) {
                 // Create a temporary message display
                 const messageDiv = document.createElement('div');
@@ -931,10 +959,18 @@
             }
 
             setupEventListeners() {
-                // Capture button
-                document.getElementById('captureBtn').addEventListener('click', () => {
-                    this.captureSnapshot();
-                });
+                // Capture button with better error handling
+                const captureBtn = document.getElementById('captureBtn');
+                if (captureBtn) {
+                    captureBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        this.logEvent('Capture button clicked');
+                        this.captureSnapshot();
+                    });
+                } else {
+                    this.logEvent('ERROR: Capture button not found');
+                }
 
                 // Apply settings button
                 document.getElementById('applySettingsBtn').addEventListener('click', () => {
@@ -970,6 +1006,10 @@
 
                 document.getElementById('toggleLogsBtn').addEventListener('click', () => {
                     this.toggleDebugLogs();
+                });
+
+                document.getElementById('testLogBtn').addEventListener('click', () => {
+                    this.testLogging();
                 });
 
                 // Keyboard shortcuts
@@ -1014,8 +1054,19 @@
             }
 
             captureSnapshot() {
-                if (!this.stream || !this.canvas) {
-                    this.showError('Camera not available');
+                this.logEvent('Capture snapshot called');
+                this.updateCaptureStatus('Capturing...', 'bg-warning');
+                
+                if (!this.stream) {
+                    this.logEvent('ERROR: No camera stream available');
+                    this.showError('Camera not available - no stream');
+                    this.updateCaptureStatus('Error', 'bg-danger');
+                    return;
+                }
+                
+                if (!this.canvas) {
+                    this.logEvent('ERROR: No canvas available');
+                    this.showError('Canvas not available');
                     return;
                 }
 
@@ -1026,7 +1077,14 @@
                     const videoWidth = this.videoElement.videoWidth;
                     const videoHeight = this.videoElement.videoHeight;
                     
+                    this.logEvent('Video dimensions', {
+                        width: videoWidth,
+                        height: videoHeight,
+                        readyState: this.videoElement.readyState
+                    });
+                    
                     if (videoWidth === 0 || videoHeight === 0) {
+                        this.logEvent('ERROR: Video not ready');
                         this.showError('Video not ready. Please wait a moment and try again.');
                         return;
                     }
@@ -1035,21 +1093,38 @@
                     this.canvas.width = videoWidth;
                     this.canvas.height = videoHeight;
                     
+                    this.logEvent('Canvas size set', {
+                        width: this.canvas.width,
+                        height: this.canvas.height
+                    });
+                    
                     // Draw current video frame to canvas
                     context.drawImage(this.videoElement, 0, 0, videoWidth, videoHeight);
+                    this.logEvent('Video frame drawn to canvas');
                     
                     // Convert to blob with max quality
                     this.canvas.toBlob((blob) => {
                         if (blob) {
+                            this.logEvent('Snapshot blob created', {
+                                size: blob.size,
+                                type: blob.type
+                            });
                             this.currentSnapshot = blob;
                             this.showSnapshotPreview(blob);
                             this.showSuccess('Snapshot captured successfully!');
+                            this.updateCaptureStatus('Success!', 'bg-success');
                         } else {
-                            this.showError('Failed to create snapshot');
+                            this.logEvent('ERROR: Failed to create blob');
+                            this.showError('Failed to create snapshot blob');
+                            this.updateCaptureStatus('Error', 'bg-danger');
                         }
                     }, 'image/jpeg', 1.0); // Always max quality
                     
                 } catch (error) {
+                    this.logEvent('ERROR: Exception in captureSnapshot', {
+                        error: error.message,
+                        stack: error.stack
+                    });
                     console.error('Error capturing snapshot:', error);
                     this.showError('Failed to capture snapshot: ' + error.message);
                 }
@@ -1179,6 +1254,22 @@
                 const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
                 document.getElementById('errorMessage').textContent = message;
                 errorModal.show();
+            }
+
+            updateCaptureStatus(text, className) {
+                const statusElement = document.getElementById('captureStatus');
+                if (statusElement) {
+                    statusElement.textContent = text;
+                    statusElement.className = `badge ${className}`;
+                    
+                    // Reset to ready after 2 seconds
+                    if (className !== 'bg-info') {
+                        setTimeout(() => {
+                            statusElement.textContent = 'Ready';
+                            statusElement.className = 'badge bg-info';
+                        }, 2000);
+                    }
+                }
             }
 
             showSuccess(message) {
