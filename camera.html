@@ -487,14 +487,6 @@
                                     </div>
                                 </div>
                                 
-                                <div class="mb-3">
-                                    <label for="resolutionSelect" class="form-label">Resolution</label>
-                                    <select class="form-select" id="resolutionSelect">
-                                        <option value="640x480">640x480 (VGA)</option>
-                                        <option value="1280x720" selected>1280x720 (HD)</option>
-                                        <option value="1920x1080">1920x1080 (Full HD)</option>
-                                    </select>
-                                </div>
                                 
                                 
                                 <button class="btn btn-primary w-100" id="applySettingsBtn">
@@ -599,7 +591,6 @@
                 this.currentSnapshot = null;
                 this.cameraSettings = {
                     deviceId: null,
-                    resolution: '1280x720',
                     quality: 1.0  // Always max quality
                 };
                 
@@ -616,8 +607,8 @@
                     // Use selected camera or default to first available
                     const constraints = {
                         video: {
-                            width: { ideal: 1280 },
-                            height: { ideal: 720 }
+                            width: { ideal: 4096 },  // Max resolution
+                            height: { ideal: 2160 }  // Max resolution
                         }
                     };
                     
@@ -955,10 +946,6 @@
                     this.cameraSettings.deviceId = e.target.value;
                 });
 
-                // Resolution selection
-                document.getElementById('resolutionSelect').addEventListener('change', (e) => {
-                    this.cameraSettings.resolution = e.target.value;
-                });
 
 
                 // Save snapshot button
@@ -1006,23 +993,16 @@
                         this.stream.getTracks().forEach(track => track.stop());
                     }
 
-                    // Parse resolution
-                    const [width, height] = this.cameraSettings.resolution.split('x').map(Number);
-
-                    // Start new stream with selected settings
+                    // Start new stream with selected settings at max resolution
                     this.stream = await navigator.mediaDevices.getUserMedia({
                         video: {
                             deviceId: { exact: this.cameraSettings.deviceId },
-                            width: { ideal: width },
-                            height: { ideal: height }
+                            width: { ideal: 4096 },  // Max resolution
+                            height: { ideal: 2160 }  // Max resolution
                         }
                     });
 
                     this.videoElement.srcObject = this.stream;
-                    
-                    // Update canvas size
-                    this.canvas.width = width;
-                    this.canvas.height = height;
                     
                     this.updateStatus('Camera On', 'recording');
                     this.showSuccess('Camera settings applied successfully');
