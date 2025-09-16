@@ -613,8 +613,8 @@
                     // Use selected camera or default to first available
                     const constraints = {
                         video: {
-                            width: { ideal: 1920, min: 1280 },  // Prefer HD, minimum 720p
-                            height: { ideal: 1080, min: 720 },  // Prefer HD, minimum 720p
+                            width: { ideal: 1920, min: 1280 },  // Use max supported resolution
+                            height: { ideal: 1080, min: 720 },  // Use max supported resolution
                             frameRate: { ideal: 30, min: 15 }   // Good frame rate
                         }
                     };
@@ -634,16 +634,24 @@
                     this.updateStatus('Camera On', 'recording');
                     this.hideNoCameraMessage();
                     
-                    // Log actual camera settings
+                    // Log actual camera settings and optimize resolution
                     if (this.stream.getVideoTracks().length > 0) {
                         const track = this.stream.getVideoTracks()[0];
                         const settings = track.getSettings();
+                        const capabilities = track.getCapabilities();
+                        
                         this.logEvent('Camera initialized with settings', {
                             width: settings.width,
                             height: settings.height,
                             frameRate: settings.frameRate,
                             deviceId: settings.deviceId
                         });
+                        
+                        // If camera is using low resolution, try to get max resolution
+                        if (settings.width < 1280 || settings.height < 720) {
+                            this.logEvent('Camera using low resolution, attempting to get max resolution');
+                            this.optimizeCameraResolution();
+                        }
                     }
                     
                     // Create hidden canvas for snapshots
@@ -1257,6 +1265,51 @@
                 } catch (error) {
                     console.error('Error refreshing camera devices:', error);
                     this.showError('Failed to refresh camera list');
+                }
+            }
+
+            async optimizeCameraResolution() {
+                try {
+                    if (!this.stream || !this.cameraSettings.deviceId) {
+                        return;
+                    }
+
+                    this.logEvent('Attempting to optimize camera resolution to maximum');
+                    
+                    // Stop current stream
+                    this.stream.getTracks().forEach(track => track.stop());
+                    
+                    // Try to get maximum resolution
+                    const constraints = {
+                        video: {
+                            deviceId: { exact: this.cameraSettings.deviceId },
+                            width: { ideal: 1920 },  // Max supported resolution
+                            height: { ideal: 1080 }, // Max supported resolution
+                            frameRate: { ideal: 30 }
+                        }
+                    };
+                    
+                    this.stream = await navigator.mediaDevices.getUserMedia(constraints);
+                    this.videoElement.srcObject = this.stream;
+                    
+                    // Log new settings
+                    if (this.stream.getVideoTracks().length > 0) {
+                        const track = this.stream.getVideoTracks()[0];
+                        const settings = track.getSettings();
+                        this.logEvent('Camera resolution optimized', {
+                            width: settings.width,
+                            height: settings.height,
+                            frameRate: settings.frameRate
+                        });
+                        
+                        if (settings.width >= 1280 && settings.height >= 720) {
+                            this.showSuccess(`Resolution optimized to ${settings.width}x${settings.height}`);
+                        }
+                    }
+                    
+                } catch (error) {
+                    this.logEvent('Failed to optimize camera resolution', error);
+                    this.showError('Failed to optimize camera resolution');
                 }
             }
 
