@@ -500,9 +500,6 @@
                                     <i class="fas fa-check"></i> Apply Settings
                                 </button>
                                 
-                                <button class="btn btn-success w-100 mt-2" id="testCaptureBtn">
-                                    <i class="fas fa-camera"></i> Test Capture (Outside Overlay)
-                                </button>
                             </div>
                         </div>
 
@@ -1031,11 +1028,6 @@
                     this.applyCameraSettings();
                 });
 
-                // Test capture button (outside overlay)
-                document.getElementById('testCaptureBtn').addEventListener('click', () => {
-                    this.logEvent('Test capture button clicked');
-                    this.captureSnapshot();
-                });
 
                 // Camera selection
                 document.getElementById('cameraSelect').addEventListener('change', (e) => {
@@ -1170,10 +1162,24 @@
                                 size: blob.size,
                                 type: blob.type
                             });
-                            this.currentSnapshot = blob;
-                            this.showSnapshotPreview(blob);
-                            this.showSuccess('Snapshot captured successfully!');
+                            
+                            // Create filename with timestamp
+                            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+                            const filename = `snapshot-${timestamp}.jpg`;
+                            
+                            // Create download link and auto-download
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = filename;
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+                            URL.revokeObjectURL(url);
+                            
+                            this.showSuccess(`Snapshot saved as ${filename}`);
                             this.updateCaptureStatus('Success!', 'bg-success');
+                            this.logEvent('Snapshot download initiated', { filename });
                         } else {
                             this.logEvent('ERROR: Failed to create blob');
                             this.showError('Failed to create snapshot blob');
