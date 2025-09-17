@@ -337,36 +337,28 @@
             margin-bottom: 8px;
         }
         
-        /* Brand Header */
-        .brand-header {
+        /* Unified Header */
+        .unified-header {
             background: #fff;
-            border-bottom: 1px solid #e9ecef;
-            padding: 20px 0;
-            margin-bottom: 10px;
+            padding: 30px 0;
+            margin-bottom: 0;
         }
         
         .brand-title {
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             font-weight: 600;
             color: #333;
             margin: 0;
         }
         
         .brand-subtitle {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: #6c757d;
             margin: 0;
         }
         
-        /* Treatment Selection Section */
-        .treatment-selection-section {
-            background: #f8f9fa;
-            padding: 20px 0;
-            margin-bottom: 20px;
-        }
-        
         .section-subtitle {
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             font-weight: 500;
             color: #495057;
             text-transform: uppercase;
@@ -375,9 +367,26 @@
         
         .treatment-icons-bar {
             display: flex;
-            gap: 30px;
+            gap: 25px;
             align-items: center;
             justify-content: center;
+        }
+        
+        /* Content Layout */
+        .content-container {
+            background: #f8f9fa;
+            padding: 30px 0;
+            min-height: calc(100vh - 200px);
+        }
+        
+        .instructions-section .card {
+            border: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .instructions-section .card-body {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
         }
         
         .treatment-icon {
@@ -615,20 +624,19 @@
     <!-- Main Container -->
     <div class="main-container">
         <!-- Title Container -->
-        <!-- Brand Header -->
-        <div class="brand-header">
+        <!-- Unified Header Section -->
+        <div class="unified-header">
             <div class="container-fluid">
-                <div class="row align-items-center">
+                <!-- Brand and Navigation -->
+                <div class="row align-items-center mb-4">
                     <div class="col-8">
-                        <div class="brand-content">
-                            <div class="d-flex align-items-center mb-2">
-                                <img src="https://cdn.prod.website-files.com/686ba99f7e881278bf8341e5/686bafa8ce0f0a4ccaf45537_mara-logo.svg" 
-                                     alt="Māra Logo" 
-                                     style="width: 3rem; height: auto; margin-right: 15px;">
-                                <div>
-                                    <h1 class="brand-title mb-0">Trichoscope Capture</h1>
-                                    <p class="brand-subtitle mb-0">Select treatment area and follow guided steps</p>
-                                </div>
+                        <div class="d-flex align-items-center">
+                            <img src="https://cdn.prod.website-files.com/686ba99f7e881278bf8341e5/686bafa8ce0f0a4ccaf45537_mara-logo.svg" 
+                                 alt="Māra Logo" 
+                                 style="width: 2.5rem; height: auto; margin-right: 12px;">
+                            <div>
+                                <h1 class="brand-title mb-0">Trichoscope Capture</h1>
+                                <p class="brand-subtitle mb-0">Select treatment area and follow guided steps</p>
                             </div>
                         </div>
                     </div>
@@ -638,12 +646,8 @@
                         </a>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <!-- Treatment Area Selection -->
-        <div class="treatment-selection-section">
-            <div class="container-fluid">
+                
+                <!-- Treatment Area Selection -->
                 <div class="row justify-content-center">
                     <div class="col-12 text-center">
                         <h6 class="section-subtitle mb-3">Select Treatment Areas</h6>
@@ -735,32 +739,6 @@
                     <!-- Right Panel - Controls and Snapshots -->
                     <div class="analysis-panel">
 
-                        <!-- Camera Settings Dropdown -->
-                        <div class="camera-settings-dropdown">
-                            <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#cameraSettingsCollapse" aria-expanded="false">
-                                <i class="fas fa-cog"></i> Settings
-                            </button>
-                            <div class="collapse mt-2" id="cameraSettingsCollapse">
-                                <div class="card">
-                                    <div class="card-body">
-                                        <div class="mb-3">
-                                            <label for="cameraSelect" class="form-label">Camera Device</label>
-                                            <div class="d-flex gap-2">
-                                                <select class="form-select" id="cameraSelect">
-                                                    <option value="">Select Camera...</option>
-                                                </select>
-                                                <button class="btn btn-outline-secondary" id="refreshCamerasBtn" title="Refresh Camera List">
-                                                    <i class="fas fa-sync-alt"></i>
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <button class="btn btn-primary w-100" id="applySettingsBtn">
-                                            <i class="fas fa-check"></i> Apply Settings
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
 
                         <!-- Capture Checklist -->
                         <div class="card mb-3" id="captureChecklistCard" style="display: none;">
@@ -1631,16 +1609,10 @@
                 
                 instructionsCard.style.display = 'block';
                 instructionsDiv.innerHTML = `
-                    <div class="d-flex align-items-center mb-3">
+                    <div class="d-flex align-items-center">
                         <i class="${guide.icon} text-${guide.color} me-2"></i>
-                        <strong class="text-${guide.color}">Now capturing: ${activeSlot.name}</strong>
-                    </div>
-                    <p class="mb-0">${guide.instruction}</p>
-                    <div class="mt-2">
-                        <small class="text-muted">
-                            <i class="fas fa-info-circle"></i> 
-                            Click the red camera button to capture this area, or click on another slot to switch.
-                        </small>
+                        <strong class="text-${guide.color} me-3">Now capturing: ${activeSlot.name}</strong>
+                        <small class="text-muted">${guide.instruction}</small>
                     </div>
                 `;
             }
