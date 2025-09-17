@@ -726,8 +726,33 @@
                         constraints.video.facingMode = 'environment';
                     }
                     
-                    // Request camera access
-                    this.stream = await navigator.mediaDevices.getUserMedia(constraints);
+                    // Request camera access with fallback options
+                    try {
+                        this.stream = await navigator.mediaDevices.getUserMedia(constraints);
+                    } catch (error) {
+                        this.logEvent('Primary constraints failed, trying fallback', error);
+                        
+                        // Try simpler constraints
+                        const fallbackConstraints = {
+                            video: {
+                                deviceId: this.cameraSettings.deviceId ? { exact: this.cameraSettings.deviceId } : undefined,
+                                width: { ideal: 640 },
+                                height: { ideal: 480 }
+                            }
+                        };
+                        
+                        try {
+                            this.stream = await navigator.mediaDevices.getUserMedia(fallbackConstraints);
+                        } catch (fallbackError) {
+                            this.logEvent('Fallback constraints also failed', fallbackError);
+                            
+                            // Last resort - try without device ID
+                            const basicConstraints = {
+                                video: true
+                            };
+                            this.stream = await navigator.mediaDevices.getUserMedia(basicConstraints);
+                        }
+                    }
                     
                     this.videoElement.srcObject = this.stream;
                     this.updateStatus('Camera On', 'recording');
@@ -763,17 +788,27 @@
                     
                 } catch (error) {
                     console.error('Error accessing camera:', error);
+                    this.logEvent('Camera initialization failed', error);
                     this.showNoCameraMessage();
                     this.updateStatus('Camera Error', '');
                     
-                    // Show specific error message
+                    // Show specific error message with recovery options
                     if (error.name === 'NotAllowedError') {
                         this.showError('Camera access denied. Please allow camera permissions and refresh the page.');
                     } else if (error.name === 'NotFoundError') {
                         this.showError('No camera found. Please ensure your trichoscope is connected.');
+                    } else if (error.name === 'NotReadableError') {
+                        this.showError('Camera is being used by another application. Please close other applications using the camera.');
+                    } else if (error.name === 'OverconstrainedError') {
+                        this.showError('Camera constraints not supported. Try selecting a different camera.');
+                    } else if (error.message.includes('Could not start video source')) {
+                        this.showError('Camera hardware error. Please check camera connection and try again.');
                     } else {
                         this.showError(`Camera error: ${error.message}`);
                     }
+                    
+                    // Add recovery options
+                    this.showRecoveryOptions();
                 }
             }
 
@@ -1391,6 +1426,76 @@
                         instructionsDiv.appendChild(instructionDiv);
                     }
                 });
+            }
+
+            showRecoveryOptions() {
+                // Add recovery buttons to the camera settings card
+                const cameraCard = document.querySelector('.card:has(.card-header:contains("Camera Settings"))');
+                if (cameraCard) {
+                    const cardBody = cameraCard.querySelector('.card-body');
+                    
+                    // Check if recovery options already exist
+                    if (!document.getElementById('recoveryOptions')) {
+                        const recoveryDiv = document.createElement('div');
+                        recoveryDiv.id = 'recoveryOptions';
+                        recoveryDiv.className = 'mt-3 p-3 bg-light border rounded';
+                        recoveryDiv.innerHTML = `
+                            <h6 class="text-danger mb-2"><i class="fas fa-exclamation-triangle"></i> Camera Recovery Options</h6>
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-outline-primary btn-sm" id="retryCameraBtn">
+                                    <i class="fas fa-redo"></i> Retry Camera Access
+                                </button>
+                                <button class="btn btn-outline-secondary btn-sm" id="refreshDevicesBtn">
+                                    <i class="fas fa-sync-alt"></i> Refresh Camera List
+                                </button>
+                                <button class="btn btn-outline-info btn-sm" id="testBasicCameraBtn">
+                                    <i class="fas fa-video"></i> Test Basic Camera
+                                </button>
+                            </div>
+                            <small class="text-muted mt-2 d-block">
+                                If the problem persists, try: 1) Disconnect and reconnect your camera, 
+                                2) Close other applications using the camera, 3) Check browser permissions
+                            </small>
+                        `;
+                        
+                        cardBody.appendChild(recoveryDiv);
+                        
+                        // Add event listeners for recovery buttons
+                        document.getElementById('retryCameraBtn').addEventListener('click', () => {
+                            this.initializeCamera();
+                        });
+                        
+                        document.getElementById('refreshDevicesBtn').addEventListener('click', () => {
+                            this.loadCameraDevices();
+                        });
+                        
+                        document.getElementById('testBasicCameraBtn').addEventListener('click', () => {
+                            this.testBasicCamera();
+                        });
+                    }
+                }
+            }
+
+            async testBasicCamera() {
+                try {
+                    this.logEvent('Testing basic camera access...');
+                    
+                    // Try the most basic camera access
+                    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                    stream.getTracks().forEach(track => track.stop());
+                    
+                    this.showSuccess('Basic camera test successful! Camera is accessible.');
+                    this.logEvent('Basic camera test passed');
+                    
+                    // Now try to initialize with the selected camera
+                    setTimeout(() => {
+                        this.initializeCamera();
+                    }, 1000);
+                    
+                } catch (error) {
+                    this.logEvent('Basic camera test failed', error);
+                    this.showError('Basic camera test failed: ' + error.message);
+                }
             }
 
             async saveSnapshot() {
