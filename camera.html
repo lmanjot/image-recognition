@@ -337,6 +337,89 @@
             margin-bottom: 8px;
         }
         
+        /* Top Navigation Bar */
+        .top-navbar {
+            background: #fff;
+            border-bottom: 1px solid #e9ecef;
+            padding: 15px 0;
+            margin-bottom: 20px;
+        }
+        
+        .treatment-icons-bar {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        
+        .treatment-icon {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            min-width: 80px;
+        }
+        
+        .treatment-icon:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .treatment-icon.selected {
+            background-color: #e7f3ff;
+            border: 2px solid #0d6efd;
+        }
+        
+        .head-outline {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 5px;
+            position: relative;
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+        }
+        
+        .head-outline.frontal-shaded {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border-color: #2196f3;
+        }
+        
+        .head-outline.temporal-shaded {
+            background: linear-gradient(135deg, #e1f5fe 0%, #b3e5fc 100%);
+            border-color: #03a9f4;
+        }
+        
+        .head-outline.diffuse-shaded {
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+            border-color: #ff9800;
+        }
+        
+        .head-outline.crown-shaded {
+            background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
+            border-color: #4caf50;
+        }
+        
+        .treatment-icon.selected .head-outline {
+            box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.25);
+        }
+        
+        .treatment-icon span {
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #6c757d;
+            text-align: center;
+        }
+        
+        .treatment-icon.selected span {
+            color: #0d6efd;
+            font-weight: 600;
+        }
+        
         .camera-controls {
             position: absolute;
             bottom: 20px;
@@ -492,22 +575,45 @@
     <!-- Main Container -->
     <div class="main-container">
         <!-- Title Container -->
-        <div class="title-container">
-            <div class="title-content">
-                <div class="d-flex align-items-center justify-content-center mb-3">
-                    <img src="https://cdn.prod.website-files.com/686ba99f7e881278bf8341e5/686bafa8ce0f0a4ccaf45537_mara-logo.svg" 
-                         alt="Māra Logo" 
-                         style="width: 5rem; height: auto;">
+        <!-- Top Navigation Bar -->
+        <div class="top-navbar">
+            <div class="container-fluid">
+                <div class="row align-items-center">
+                    <div class="col-8">
+                        <!-- Treatment Area Icon Bar -->
+                        <div class="treatment-icons-bar">
+                            <div class="treatment-icon" id="frontalIcon" data-area="frontal" title="Frontal Hairline">
+                                <div class="head-outline frontal-shaded">
+                                    <i class="fas fa-forehead"></i>
+                                </div>
+                                <span>Frontal</span>
+                            </div>
+                            <div class="treatment-icon" id="temporalIcon" data-area="temporal" title="Temporal Areas">
+                                <div class="head-outline temporal-shaded">
+                                    <i class="fas fa-angle-double-left"></i>
+                                </div>
+                                <span>Temporal</span>
+                            </div>
+                            <div class="treatment-icon" id="diffuseIcon" data-area="diffuse" title="Diffuse Thinning">
+                                <div class="head-outline diffuse-shaded">
+                                    <i class="fas fa-circle"></i>
+                                </div>
+                                <span>Diffuse</span>
+                            </div>
+                            <div class="treatment-icon" id="crownIcon" data-area="crown" title="Crown Area">
+                                <div class="head-outline crown-shaded">
+                                    <i class="fas fa-crown"></i>
+                                </div>
+                                <span>Crown</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-4 text-end">
+                        <a href="/" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-arrow-left"></i> Back to Analysis
+                        </a>
+                    </div>
                 </div>
-                <h1 class="title-text" style="font-size: 1.5rem;">
-                    <i class="fas fa-microscope text-primary"></i> Trichoscope Camera
-                </h1>
-                <p class="title-subtitle">Live preview and snapshot capture for trichoscope analysis</p>
-                <nav class="mt-3">
-                    <a href="/" class="btn btn-outline-primary">
-                        <i class="fas fa-arrow-left"></i> Back to Analysis
-                    </a>
-                </nav>
             </div>
         </div>
 
@@ -555,84 +661,31 @@
 
                     <!-- Right Panel - Controls and Snapshots -->
                     <div class="analysis-panel">
-                        <!-- Treatment Area Selection -->
-                        <div class="card mb-3">
-                            <div class="card-header">
-                                <h6 class="mb-0"><i class="fas fa-map-marker-alt"></i> Treatment Areas</h6>
-                            </div>
-                            <div class="card-body">
-                                <p class="text-muted small mb-3">Select the areas you want to treat. You can select multiple areas.</p>
-                                
-                                <div class="row g-2">
-                                    <div class="col-6">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" id="frontalCheck" value="frontal">
-                                            <label class="form-check-label" for="frontalCheck">
-                                                <i class="fas fa-forehead text-primary"></i> Frontal
-                                            </label>
-                                        </div>
-                                    </div>
-                                    <div class="col-6">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" id="temporalCheck" value="temporal">
-                                            <label class="form-check-label" for="temporalCheck">
-                                                <i class="fas fa-angle-double-left text-info"></i> Temporal
-                                            </label>
-                                        </div>
-                                    </div>
-                                    <div class="col-6">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" id="diffuseCheck" value="diffuse">
-                                            <label class="form-check-label" for="diffuseCheck">
-                                                <i class="fas fa-circle text-warning"></i> Diffuse Thinning
-                                            </label>
-                                        </div>
-                                    </div>
-                                    <div class="col-6">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" id="crownCheck" value="crown">
-                                            <label class="form-check-label" for="crownCheck">
-                                                <i class="fas fa-crown text-success"></i> Crown
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="mt-3">
-                                    <button class="btn btn-outline-primary btn-sm" id="selectAllBtn">
-                                        <i class="fas fa-check-square"></i> Select All
-                                    </button>
-                                    <button class="btn btn-outline-secondary btn-sm" id="clearAllBtn">
-                                        <i class="fas fa-square"></i> Clear All
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
 
-                        <!-- Camera Settings -->
-                        <div class="card mb-3">
-                            <div class="card-header">
-                                <h6 class="mb-0"><i class="fas fa-cogs"></i> Camera Settings</h6>
-                            </div>
-                            <div class="card-body">
-                                <div class="mb-3">
-                                    <label for="cameraSelect" class="form-label">Camera Device</label>
-                                    <div class="d-flex gap-2">
-                                        <select class="form-select" id="cameraSelect">
-                                            <option value="">Select Camera...</option>
-                                        </select>
-                                        <button class="btn btn-outline-secondary" id="refreshCamerasBtn" title="Refresh Camera List">
-                                            <i class="fas fa-sync-alt"></i>
+                        <!-- Camera Settings Dropdown -->
+                        <div class="camera-settings-dropdown">
+                            <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#cameraSettingsCollapse" aria-expanded="false">
+                                <i class="fas fa-cog"></i> Settings
+                            </button>
+                            <div class="collapse mt-2" id="cameraSettingsCollapse">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <label for="cameraSelect" class="form-label">Camera Device</label>
+                                            <div class="d-flex gap-2">
+                                                <select class="form-select" id="cameraSelect">
+                                                    <option value="">Select Camera...</option>
+                                                </select>
+                                                <button class="btn btn-outline-secondary" id="refreshCamerasBtn" title="Refresh Camera List">
+                                                    <i class="fas fa-sync-alt"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <button class="btn btn-primary w-100" id="applySettingsBtn">
+                                            <i class="fas fa-check"></i> Apply Settings
                                         </button>
                                     </div>
                                 </div>
-                                
-                                
-                                
-                                <button class="btn btn-primary w-100" id="applySettingsBtn">
-                                    <i class="fas fa-check"></i> Apply Settings
-                                </button>
-                                
                             </div>
                         </div>
 
@@ -662,47 +715,6 @@
                             </div>
                         </div>
 
-                        <!-- Recent Snapshots -->
-                        <div class="card mb-3">
-                            <div class="card-header">
-                                <h6 class="mb-0"><i class="fas fa-images"></i> Recent Snapshots</h6>
-                            </div>
-                            <div class="card-body">
-                                <div id="snapshotsContainer">
-                                    <p class="text-muted text-center">No snapshots taken yet</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Debug Panel -->
-                        <div class="card">
-                            <div class="card-header">
-                                <h6 class="mb-0"><i class="fas fa-bug"></i> Camera Events Debug</h6>
-                            </div>
-                            <div class="card-body">
-                                <div class="mb-2">
-                                    <button class="btn btn-sm btn-outline-secondary" id="clearLogsBtn">
-                                        <i class="fas fa-trash"></i> Clear Logs
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-info" id="toggleLogsBtn">
-                                        <i class="fas fa-eye"></i> Show Logs
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-success" id="testLogBtn">
-                                        <i class="fas fa-test-tube"></i> Test Log
-                                    </button>
-                                </div>
-                                <div id="debugLogs" style="display: none; max-height: 200px; overflow-y: auto; background: #f8f9fa; padding: 10px; border-radius: 5px; font-family: monospace; font-size: 11px;">
-                                    <div class="text-muted">Camera events will appear here...</div>
-                                </div>
-                                <div class="mt-2">
-                                    <small class="text-muted">
-                                        <i class="fas fa-info-circle"></i> 
-                                        Press your camera's snapshot button and watch for events here. 
-                                        Check browser console (F12) for detailed logs.
-                                    </small>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -1109,7 +1121,7 @@
                 console.log('📷 Camera Event:', logEntry);
                 
                 // Add to debug panel
-                this.addToDebugLogs(logEntry);
+                // Debug logging removed - panel no longer exists
                 
                 // Also show important events in the UI
                 if (eventName.includes('Key pressed') && data && data.key !== ' ') {
@@ -1256,26 +1268,18 @@
                     this.applyCameraSettings();
                 });
 
-                // Treatment area checkboxes
-                document.getElementById('frontalCheck').addEventListener('change', () => {
-                    this.updateSelectedAreas();
+                // Treatment area icons
+                document.getElementById('frontalIcon').addEventListener('click', () => {
+                    this.toggleAreaSelection('frontal');
                 });
-                document.getElementById('temporalCheck').addEventListener('change', () => {
-                    this.updateSelectedAreas();
+                document.getElementById('temporalIcon').addEventListener('click', () => {
+                    this.toggleAreaSelection('temporal');
                 });
-                document.getElementById('diffuseCheck').addEventListener('change', () => {
-                    this.updateSelectedAreas();
+                document.getElementById('diffuseIcon').addEventListener('click', () => {
+                    this.toggleAreaSelection('diffuse');
                 });
-                document.getElementById('crownCheck').addEventListener('change', () => {
-                    this.updateSelectedAreas();
-                });
-
-                // Select all and clear all buttons
-                document.getElementById('selectAllBtn').addEventListener('click', () => {
-                    this.selectAllAreas();
-                });
-                document.getElementById('clearAllBtn').addEventListener('click', () => {
-                    this.clearAllAreas();
+                document.getElementById('crownIcon').addEventListener('click', () => {
+                    this.toggleAreaSelection('crown');
                 });
 
 
@@ -1301,18 +1305,6 @@
                     this.refreshCameraDevices();
                 });
 
-                // Debug panel buttons
-                document.getElementById('clearLogsBtn').addEventListener('click', () => {
-                    this.clearDebugLogs();
-                });
-
-                document.getElementById('toggleLogsBtn').addEventListener('click', () => {
-                    this.toggleDebugLogs();
-                });
-
-                document.getElementById('testLogBtn').addEventListener('click', () => {
-                    this.testLogging();
-                });
 
                 // Keyboard shortcuts
                 document.addEventListener('keydown', (e) => {
@@ -1453,20 +1445,33 @@
                 }, { once: true });
             }
 
-            updateSelectedAreas() {
-                this.selectedAreas = [];
-                const checkboxes = ['frontalCheck', 'temporalCheck', 'diffuseCheck', 'crownCheck'];
+            toggleAreaSelection(area) {
+                const icon = document.getElementById(`${area}Icon`);
+                const isSelected = this.selectedAreas.includes(area);
                 
-                checkboxes.forEach(checkboxId => {
-                    const checkbox = document.getElementById(checkboxId);
-                    if (checkbox && checkbox.checked) {
-                        this.selectedAreas.push(checkbox.value);
-                    }
+                if (isSelected) {
+                    // Remove from selection
+                    this.selectedAreas = this.selectedAreas.filter(a => a !== area);
+                    icon.classList.remove('selected');
+                } else {
+                    // Add to selection
+                    this.selectedAreas.push(area);
+                    icon.classList.add('selected');
+                }
+                
+                this.logEvent('Area selection toggled', { 
+                    area: area, 
+                    selected: !isSelected,
+                    allSelected: this.selectedAreas 
                 });
                 
-                this.logEvent('Selected areas updated', { areas: this.selectedAreas });
                 this.generateCaptureSlots();
                 this.updateCaptureGuide();
+            }
+
+            updateSelectedAreas() {
+                // This method is now handled by toggleAreaSelection
+                // Keeping for compatibility but it's no longer used
             }
 
             generateCaptureSlots() {
@@ -1758,27 +1763,6 @@
                 URL.revokeObjectURL(url);
             }
 
-            selectAllAreas() {
-                const checkboxes = ['frontalCheck', 'temporalCheck', 'diffuseCheck', 'crownCheck'];
-                checkboxes.forEach(checkboxId => {
-                    const checkbox = document.getElementById(checkboxId);
-                    if (checkbox) {
-                        checkbox.checked = true;
-                    }
-                });
-                this.updateSelectedAreas();
-            }
-
-            clearAllAreas() {
-                const checkboxes = ['frontalCheck', 'temporalCheck', 'diffuseCheck', 'crownCheck'];
-                checkboxes.forEach(checkboxId => {
-                    const checkbox = document.getElementById(checkboxId);
-                    if (checkbox) {
-                        checkbox.checked = false;
-                    }
-                });
-                this.updateSelectedAreas();
-            }
 
             updateCaptureGuide() {
                 // This method is now handled by the new capture slot system
