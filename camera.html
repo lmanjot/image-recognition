@@ -389,6 +389,34 @@
             border-left: 4px solid #ffc107;
         }
         
+        /* Ensure proper Bootstrap grid */
+        .row {
+            margin: 0;
+        }
+        
+        .col-lg-8, .col-lg-4 {
+            padding: 0 15px;
+        }
+        
+        /* Camera panel styling */
+        .camera-panel .card {
+            border: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .camera-container {
+            position: relative;
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .camera-container video {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        
         .treatment-icon {
             display: flex;
             flex-direction: column;
@@ -684,23 +712,21 @@
 
         <!-- Main Content -->
         <div class="content-container">
-            <div class="content-grid">
-                <!-- Main Content Area -->
-                <div class="main-content">
-                    <!-- Current Instructions -->
-                    <div class="instructions-section mb-3">
-                        <div class="card" id="currentInstructionsCard" style="display: none;">
-                            <div class="card-header">
-                                <h6 class="mb-0"><i class="fas fa-lightbulb"></i> Current Instructions</h6>
-                            </div>
-                            <div class="card-body">
-                                <div id="currentInstructions"></div>
+            <div class="container-fluid">
+                <div class="row">
+                    <!-- Left Column - Camera -->
+                    <div class="col-lg-8">
+                        <!-- Current Instructions -->
+                        <div class="instructions-section mb-3">
+                            <div class="card" id="currentInstructionsCard" style="display: none;">
+                                <div class="card-body py-3">
+                                    <div id="currentInstructions"></div>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Left Panel - Camera -->
-                    <div class="image-panel">
+                        <!-- Camera Panel -->
+                        <div class="camera-panel">
                         <div class="card h-100">
                             <div class="card-header">
                                 <h6 class="mb-0"><i class="fas fa-video"></i> Live Camera Feed</h6>
@@ -734,10 +760,37 @@
                                 </div>
                             </div>
                         </div>
+                        
+                        <!-- Settings Dropdown -->
+                        <div class="camera-settings-dropdown mt-3">
+                            <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#cameraSettingsCollapse" aria-expanded="false">
+                                <i class="fas fa-cog"></i> Settings
+                            </button>
+                            <div class="collapse mt-2" id="cameraSettingsCollapse">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <label for="cameraSelect" class="form-label">Camera Device</label>
+                                            <div class="d-flex gap-2">
+                                                <select class="form-select" id="cameraSelect">
+                                                    <option value="">Select Camera...</option>
+                                                </select>
+                                                <button class="btn btn-outline-secondary" id="refreshCamerasBtn" title="Refresh Camera List">
+                                                    <i class="fas fa-sync-alt"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <button class="btn btn-primary w-100" id="applySettingsBtn">
+                                            <i class="fas fa-check"></i> Apply Settings
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Right Panel - Controls and Snapshots -->
-                    <div class="analysis-panel">
+                    <!-- Right Column - Checklist -->
+                    <div class="col-lg-4">
 
 
                         <!-- Capture Checklist -->
@@ -1025,7 +1078,25 @@
                     
                 } catch (error) {
                     console.error('Error loading camera devices:', error);
-                    this.showError('Failed to load camera devices. Please check camera permissions.');
+                    this.logEvent('Failed to load camera devices', error);
+                    
+                    let errorMessage = 'Failed to load camera devices. ';
+                    if (error.name === 'NotAllowedError') {
+                        errorMessage += 'Please allow camera permissions and refresh the page.';
+                    } else if (error.name === 'NotFoundError') {
+                        errorMessage += 'No cameras found. Please connect your trichoscope.';
+                    } else if (error.name === 'NotSupportedError') {
+                        errorMessage += 'Camera API not supported in this browser.';
+                    } else {
+                        errorMessage += 'Please check camera connection and permissions.';
+                    }
+                    
+                    this.showError(errorMessage);
+                    
+                    const cameraSelect = document.getElementById('cameraSelect');
+                    if (cameraSelect) {
+                        cameraSelect.innerHTML = '<option value="">Camera access denied</option>';
+                    }
                 }
             }
 
