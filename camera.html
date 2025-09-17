@@ -258,6 +258,85 @@
             pointer-events: auto;
         }
         
+        .capture-slot {
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .capture-slot.active {
+            border-color: #0d6efd;
+            background-color: #e7f3ff;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        }
+        
+        .capture-slot.completed {
+            border-color: #198754;
+            background-color: #d1e7dd;
+        }
+        
+        .capture-slot:hover {
+            border-color: #6c757d;
+        }
+        
+        .slot-thumbnail {
+            width: 60px;
+            height: 45px;
+            object-fit: cover;
+            border-radius: 4px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .slot-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .slot-info {
+            flex: 1;
+        }
+        
+        .slot-title {
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+        
+        .slot-status {
+            font-size: 0.875rem;
+            color: #6c757d;
+        }
+        
+        .slot-actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .capture-complete-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .summary-item {
+            text-align: center;
+            padding: 10px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+        }
+        
+        .summary-thumbnail {
+            width: 100%;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
+        
         .camera-controls {
             position: absolute;
             bottom: 20px;
@@ -557,16 +636,29 @@
                             </div>
                         </div>
 
-                        <!-- Capture Guide -->
-                        <div class="card mb-3" id="captureGuideCard" style="display: none;">
+                        <!-- Capture Checklist -->
+                        <div class="card mb-3" id="captureChecklistCard" style="display: none;">
                             <div class="card-header">
-                                <h6 class="mb-0"><i class="fas fa-camera"></i> Capture Guide</h6>
+                                <h6 class="mb-0"><i class="fas fa-list-check"></i> Capture Checklist</h6>
                             </div>
                             <div class="card-body">
-                                <div id="captureInstructions">
-                                    <p class="text-muted small mb-3">Follow these instructions to capture photos for each selected area:</p>
-                                    <div id="areaInstructions"></div>
+                                <div id="captureSlots"></div>
+                                <div id="captureProgress" class="mt-3" style="display: none;">
+                                    <div class="progress mb-2">
+                                        <div class="progress-bar" id="progressBar" role="progressbar" style="width: 0%"></div>
+                                    </div>
+                                    <small class="text-muted" id="progressText">0 of 0 photos captured</small>
                                 </div>
+                            </div>
+                        </div>
+
+                        <!-- Current Capture Instructions -->
+                        <div class="card mb-3" id="currentInstructionsCard" style="display: none;">
+                            <div class="card-header">
+                                <h6 class="mb-0"><i class="fas fa-lightbulb"></i> Current Instructions</h6>
+                            </div>
+                            <div class="card-body">
+                                <div id="currentInstructions"></div>
                             </div>
                         </div>
 
@@ -672,30 +764,37 @@
                     quality: 1.0  // Always max quality
                 };
                 this.selectedAreas = [];
+                this.captureSlots = [];
+                this.currentActiveSlot = null;
+                this.capturedImages = {};
                 this.captureGuide = {
                     frontal: {
                         title: "Frontal Hairline",
-                        instruction: "Capture the front hairline area. Position the camera to show the forehead and front hairline clearly.",
+                        instruction: "Position the trichoscope at the front hairline. Capture the forehead and front hairline clearly, showing the hair density and any recession.",
                         icon: "fas fa-forehead",
-                        color: "primary"
+                        color: "primary",
+                        slots: ["Frontal Hairline"]
                     },
                     temporal: {
                         title: "Temporal Areas",
-                        instruction: "Capture both left and right temple areas. Take separate photos for each side if needed.",
+                        instruction: "Capture both left and right temple areas. Position the scope at each temple to show hairline recession and density.",
                         icon: "fas fa-angle-double-left",
-                        color: "info"
+                        color: "info",
+                        slots: ["Left Temple", "Right Temple"]
                     },
                     diffuse: {
                         title: "Diffuse Thinning",
-                        instruction: "Capture the top of the scalp (mid-section between front and crown). Focus on the overall thinning pattern.",
+                        instruction: "Capture the top of the scalp (mid-section between front and crown). Focus on the overall thinning pattern and hair density.",
                         icon: "fas fa-circle",
-                        color: "warning"
+                        color: "warning",
+                        slots: ["Top Scalp Zone"]
                     },
                     crown: {
                         title: "Crown Area",
-                        instruction: "Capture the crown/vertex area at the back of the head. Show the thinning pattern in this region.",
+                        instruction: "Capture the crown/vertex area at the back of the head. Show the thinning pattern and hair whorl in this region.",
                         icon: "fas fa-crown",
-                        color: "success"
+                        color: "success",
+                        slots: ["Crown Vertex"]
                     }
                 };
                 
@@ -1314,23 +1413,15 @@
                                 type: blob.type
                             });
                             
-                            // Create filename with timestamp
-                            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-                            const filename = `snapshot-${timestamp}.jpg`;
+                            // Assign to active slot if available
+                            if (this.currentActiveSlot !== null && this.captureSlots.length > 0) {
+                                this.assignImageToSlot(blob);
+                            } else {
+                                // Fallback to direct download
+                                this.downloadSnapshot(blob);
+                            }
                             
-                            // Create download link and auto-download
-                            const url = URL.createObjectURL(blob);
-                            const a = document.createElement('a');
-                            a.href = url;
-                            a.download = filename;
-                            document.body.appendChild(a);
-                            a.click();
-                            document.body.removeChild(a);
-                            URL.revokeObjectURL(url);
-                            
-                            this.showSuccess(`Snapshot saved as ${filename}`);
                             this.updateCaptureStatus('Success!', 'bg-success');
-                            this.logEvent('Snapshot download initiated', { filename });
                         } else {
                             this.logEvent('ERROR: Failed to create blob');
                             this.showError('Failed to create snapshot blob');
@@ -1374,7 +1465,297 @@
                 });
                 
                 this.logEvent('Selected areas updated', { areas: this.selectedAreas });
+                this.generateCaptureSlots();
                 this.updateCaptureGuide();
+            }
+
+            generateCaptureSlots() {
+                this.captureSlots = [];
+                this.capturedImages = {};
+                
+                this.selectedAreas.forEach(area => {
+                    const guide = this.captureGuide[area];
+                    if (guide && guide.slots) {
+                        guide.slots.forEach(slotName => {
+                            this.captureSlots.push({
+                                id: `${area}_${slotName.toLowerCase().replace(/\s+/g, '_')}`,
+                                name: slotName,
+                                area: area,
+                                completed: false,
+                                image: null
+                            });
+                        });
+                    }
+                });
+                
+                this.logEvent('Capture slots generated', { 
+                    totalSlots: this.captureSlots.length,
+                    slots: this.captureSlots.map(s => s.name)
+                });
+                
+                this.renderCaptureSlots();
+                this.setActiveSlot(0);
+            }
+
+            renderCaptureSlots() {
+                const slotsContainer = document.getElementById('captureSlots');
+                const checklistCard = document.getElementById('captureChecklistCard');
+                const progressDiv = document.getElementById('captureProgress');
+                
+                if (this.captureSlots.length === 0) {
+                    checklistCard.style.display = 'none';
+                    return;
+                }
+                
+                checklistCard.style.display = 'block';
+                progressDiv.style.display = 'block';
+                
+                slotsContainer.innerHTML = '';
+                
+                this.captureSlots.forEach((slot, index) => {
+                    const slotElement = document.createElement('div');
+                    slotElement.className = `capture-slot ${slot.completed ? 'completed' : ''} ${this.currentActiveSlot === index ? 'active' : ''}`;
+                    slotElement.dataset.slotIndex = index;
+                    
+                    slotElement.innerHTML = `
+                        <div class="slot-content">
+                            ${slot.completed ? `<img src="${slot.image}" class="slot-thumbnail" alt="${slot.name}">` : '<div class="slot-thumbnail bg-light d-flex align-items-center justify-content-center"><i class="fas fa-camera text-muted"></i></div>'}
+                            <div class="slot-info">
+                                <div class="slot-title">${slot.name}</div>
+                                <div class="slot-status">${slot.completed ? 'Completed' : 'Pending'}</div>
+                            </div>
+                            <div class="slot-actions">
+                                ${slot.completed ? `<button class="btn btn-sm btn-outline-warning" onclick="cameraApp.retakeSlot(${index})"><i class="fas fa-redo"></i></button>` : ''}
+                            </div>
+                        </div>
+                    `;
+                    
+                    slotElement.addEventListener('click', () => {
+                        this.setActiveSlot(index);
+                    });
+                    
+                    slotsContainer.appendChild(slotElement);
+                });
+                
+                this.updateProgress();
+            }
+
+            setActiveSlot(index) {
+                if (index >= 0 && index < this.captureSlots.length) {
+                    this.currentActiveSlot = index;
+                    this.renderCaptureSlots();
+                    this.updateCurrentInstructions();
+                }
+            }
+
+            updateCurrentInstructions() {
+                const instructionsCard = document.getElementById('currentInstructionsCard');
+                const instructionsDiv = document.getElementById('currentInstructions');
+                
+                if (this.currentActiveSlot === null || this.captureSlots.length === 0) {
+                    instructionsCard.style.display = 'none';
+                    return;
+                }
+                
+                const activeSlot = this.captureSlots[this.currentActiveSlot];
+                const guide = this.captureGuide[activeSlot.area];
+                
+                instructionsCard.style.display = 'block';
+                instructionsDiv.innerHTML = `
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="${guide.icon} text-${guide.color} me-2"></i>
+                        <strong class="text-${guide.color}">Now capturing: ${activeSlot.name}</strong>
+                    </div>
+                    <p class="mb-0">${guide.instruction}</p>
+                    <div class="mt-2">
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle"></i> 
+                            Click the red camera button to capture this area, or click on another slot to switch.
+                        </small>
+                    </div>
+                `;
+            }
+
+            updateProgress() {
+                const completedSlots = this.captureSlots.filter(slot => slot.completed).length;
+                const totalSlots = this.captureSlots.length;
+                const progressPercentage = totalSlots > 0 ? (completedSlots / totalSlots) * 100 : 0;
+                
+                const progressBar = document.getElementById('progressBar');
+                const progressText = document.getElementById('progressText');
+                
+                progressBar.style.width = `${progressPercentage}%`;
+                progressText.textContent = `${completedSlots} of ${totalSlots} photos captured`;
+                
+                // Check if all slots are completed
+                if (completedSlots === totalSlots && totalSlots > 0) {
+                    this.showCaptureComplete();
+                }
+            }
+
+            assignImageToSlot(blob) {
+                if (this.currentActiveSlot === null || this.currentActiveSlot >= this.captureSlots.length) {
+                    this.downloadSnapshot(blob);
+                    return;
+                }
+                
+                const activeSlot = this.captureSlots[this.currentActiveSlot];
+                const imageUrl = URL.createObjectURL(blob);
+                
+                // Assign image to slot
+                activeSlot.image = imageUrl;
+                activeSlot.completed = true;
+                activeSlot.blob = blob;
+                
+                this.logEvent('Image assigned to slot', { 
+                    slotName: activeSlot.name,
+                    slotIndex: this.currentActiveSlot
+                });
+                
+                // Update UI
+                this.renderCaptureSlots();
+                
+                // Move to next incomplete slot
+                this.moveToNextIncompleteSlot();
+                
+                this.showSuccess(`Captured ${activeSlot.name} successfully!`);
+            }
+
+            moveToNextIncompleteSlot() {
+                const nextIncompleteIndex = this.captureSlots.findIndex((slot, index) => 
+                    index > this.currentActiveSlot && !slot.completed
+                );
+                
+                if (nextIncompleteIndex !== -1) {
+                    this.setActiveSlot(nextIncompleteIndex);
+                } else {
+                    // All slots completed or no more slots
+                    this.currentActiveSlot = null;
+                    this.updateCurrentInstructions();
+                }
+            }
+
+            retakeSlot(slotIndex) {
+                if (slotIndex >= 0 && slotIndex < this.captureSlots.length) {
+                    const slot = this.captureSlots[slotIndex];
+                    
+                    // Clear the slot
+                    if (slot.image) {
+                        URL.revokeObjectURL(slot.image);
+                    }
+                    slot.image = null;
+                    slot.completed = false;
+                    slot.blob = null;
+                    
+                    // Set as active slot
+                    this.setActiveSlot(slotIndex);
+                    
+                    this.logEvent('Slot cleared for retake', { slotName: slot.name });
+                    this.showSuccess(`${slot.name} cleared. Ready to retake.`);
+                }
+            }
+
+            downloadSnapshot(blob) {
+                // Create filename with timestamp
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+                const filename = `snapshot-${timestamp}.jpg`;
+                
+                // Create download link and auto-download
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                this.showSuccess(`Snapshot saved as ${filename}`);
+                this.logEvent('Snapshot download initiated', { filename });
+            }
+
+            showCaptureComplete() {
+                const summaryHtml = this.generateCaptureSummary();
+                
+                // Show completion modal or summary
+                const modalHtml = `
+                    <div class="modal fade" id="captureCompleteModal" tabindex="-1">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header bg-success text-white">
+                                    <h5 class="modal-title">
+                                        <i class="fas fa-check-circle"></i> Capture Complete!
+                                    </h5>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <p class="mb-3">All required photos have been captured successfully!</p>
+                                    ${summaryHtml}
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    <button type="button" class="btn btn-success" onclick="cameraApp.downloadAllImages()">
+                                        <i class="fas fa-download"></i> Download All Images
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Remove existing modal if any
+                const existingModal = document.getElementById('captureCompleteModal');
+                if (existingModal) {
+                    existingModal.remove();
+                }
+                
+                // Add modal to page
+                document.body.insertAdjacentHTML('beforeend', modalHtml);
+                
+                // Show modal
+                const modal = new bootstrap.Modal(document.getElementById('captureCompleteModal'));
+                modal.show();
+                
+                this.logEvent('Capture complete summary shown');
+            }
+
+            generateCaptureSummary() {
+                return `
+                    <div class="capture-complete-summary">
+                        ${this.captureSlots.map(slot => `
+                            <div class="summary-item">
+                                <img src="${slot.image}" class="summary-thumbnail" alt="${slot.name}">
+                                <div class="summary-label">${slot.name}</div>
+                                <button class="btn btn-sm btn-outline-warning mt-2" onclick="cameraApp.retakeSlot(${this.captureSlots.indexOf(slot)})">
+                                    <i class="fas fa-redo"></i> Retake
+                                </button>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+
+            downloadAllImages() {
+                this.captureSlots.forEach((slot, index) => {
+                    if (slot.blob) {
+                        const filename = `${slot.name.toLowerCase().replace(/\s+/g, '_')}_${Date.now()}.jpg`;
+                        this.downloadBlob(slot.blob, filename);
+                    }
+                });
+                
+                this.showSuccess('All images downloaded successfully!');
+                this.logEvent('All images downloaded');
+            }
+
+            downloadBlob(blob, filename) {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
             }
 
             selectAllAreas() {
@@ -1400,32 +1781,8 @@
             }
 
             updateCaptureGuide() {
-                const guideCard = document.getElementById('captureGuideCard');
-                const instructionsDiv = document.getElementById('areaInstructions');
-                
-                if (this.selectedAreas.length === 0) {
-                    guideCard.style.display = 'none';
-                    return;
-                }
-                
-                guideCard.style.display = 'block';
-                instructionsDiv.innerHTML = '';
-                
-                this.selectedAreas.forEach(area => {
-                    const guide = this.captureGuide[area];
-                    if (guide) {
-                        const instructionDiv = document.createElement('div');
-                        instructionDiv.className = 'mb-3 p-3 border rounded';
-                        instructionDiv.innerHTML = `
-                            <div class="d-flex align-items-center mb-2">
-                                <i class="${guide.icon} text-${guide.color} me-2"></i>
-                                <strong class="text-${guide.color}">${guide.title}</strong>
-                            </div>
-                            <p class="mb-0 small text-muted">${guide.instruction}</p>
-                        `;
-                        instructionsDiv.appendChild(instructionDiv);
-                    }
-                });
+                // This method is now handled by the new capture slot system
+                // The old static guide is replaced with dynamic slot-based guidance
             }
 
             showRecoveryOptions() {
