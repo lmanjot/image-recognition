@@ -54,8 +54,6 @@
         /* Main Container */
         .main-container {
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
         }
         
         /* Title Container */
@@ -411,12 +409,23 @@
             .col-lg-8 {
                 flex: 0 0 66.666667%;
                 max-width: 66.666667%;
+                display: block;
+                float: left;
             }
             .col-lg-4 {
                 flex: 0 0 33.333333%;
                 max-width: 33.333333%;
+                display: block;
+                float: left;
             }
         }
+        
+        /* Ensure row doesn't collapse */
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        
         
         /* Camera panel styling */
         .camera-panel .card {
