@@ -410,11 +410,24 @@
         .col-lg-8 {
             border: 3px solid red !important;
             background: rgba(255, 0, 0, 0.1) !important;
+            width: 66.666667% !important;
+            float: left !important;
+            display: block !important;
         }
         
         .col-lg-4 {
             border: 3px solid blue !important;
             background: rgba(0, 0, 255, 0.1) !important;
+            width: 33.333333% !important;
+            float: left !important;
+            display: block !important;
+        }
+        
+        /* Force the row to contain floats */
+        .row::after {
+            content: "";
+            display: table;
+            clear: both;
         }
         
         
