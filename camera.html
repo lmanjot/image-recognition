@@ -337,18 +337,47 @@
             margin-bottom: 8px;
         }
         
-        /* Top Navigation Bar */
-        .top-navbar {
+        /* Brand Header */
+        .brand-header {
             background: #fff;
             border-bottom: 1px solid #e9ecef;
-            padding: 15px 0;
+            padding: 20px 0;
+            margin-bottom: 10px;
+        }
+        
+        .brand-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #333;
+            margin: 0;
+        }
+        
+        .brand-subtitle {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin: 0;
+        }
+        
+        /* Treatment Selection Section */
+        .treatment-selection-section {
+            background: #f8f9fa;
+            padding: 20px 0;
             margin-bottom: 20px;
+        }
+        
+        .section-subtitle {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #495057;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         
         .treatment-icons-bar {
             display: flex;
-            gap: 20px;
+            gap: 30px;
             align-items: center;
+            justify-content: center;
         }
         
         .treatment-icon {
@@ -418,6 +447,17 @@
         .treatment-icon.selected span {
             color: #0d6efd;
             font-weight: 600;
+        }
+        
+        /* Status Colors */
+        .status-pending {
+            color: #ffc107 !important;
+            font-weight: 500;
+        }
+        
+        .status-completed {
+            color: #198754 !important;
+            font-weight: 500;
         }
         
         .camera-controls {
@@ -575,12 +615,38 @@
     <!-- Main Container -->
     <div class="main-container">
         <!-- Title Container -->
-        <!-- Top Navigation Bar -->
-        <div class="top-navbar">
+        <!-- Brand Header -->
+        <div class="brand-header">
             <div class="container-fluid">
                 <div class="row align-items-center">
                     <div class="col-8">
-                        <!-- Treatment Area Icon Bar -->
+                        <div class="brand-content">
+                            <div class="d-flex align-items-center mb-2">
+                                <img src="https://cdn.prod.website-files.com/686ba99f7e881278bf8341e5/686bafa8ce0f0a4ccaf45537_mara-logo.svg" 
+                                     alt="Māra Logo" 
+                                     style="width: 3rem; height: auto; margin-right: 15px;">
+                                <div>
+                                    <h1 class="brand-title mb-0">Trichoscope Capture</h1>
+                                    <p class="brand-subtitle mb-0">Select treatment area and follow guided steps</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-4 text-end">
+                        <a href="/" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-arrow-left"></i> Back to Analysis
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Treatment Area Selection -->
+        <div class="treatment-selection-section">
+            <div class="container-fluid">
+                <div class="row justify-content-center">
+                    <div class="col-12 text-center">
+                        <h6 class="section-subtitle mb-3">Select Treatment Areas</h6>
                         <div class="treatment-icons-bar">
                             <div class="treatment-icon" id="frontalIcon" data-area="frontal" title="Frontal Hairline">
                                 <div class="head-outline frontal-shaded">
@@ -608,11 +674,6 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-4 text-end">
-                        <a href="/" class="btn btn-outline-secondary btn-sm">
-                            <i class="fas fa-arrow-left"></i> Back to Analysis
-                        </a>
-                    </div>
                 </div>
             </div>
         </div>
@@ -622,6 +683,18 @@
             <div class="content-grid">
                 <!-- Main Content Area -->
                 <div class="main-content">
+                    <!-- Current Instructions -->
+                    <div class="instructions-section mb-3">
+                        <div class="card" id="currentInstructionsCard" style="display: none;">
+                            <div class="card-header">
+                                <h6 class="mb-0"><i class="fas fa-lightbulb"></i> Current Instructions</h6>
+                            </div>
+                            <div class="card-body">
+                                <div id="currentInstructions"></div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Left Panel - Camera -->
                     <div class="image-panel">
                         <div class="card h-100">
@@ -705,15 +778,6 @@
                             </div>
                         </div>
 
-                        <!-- Current Capture Instructions -->
-                        <div class="card mb-3" id="currentInstructionsCard" style="display: none;">
-                            <div class="card-header">
-                                <h6 class="mb-0"><i class="fas fa-lightbulb"></i> Current Instructions</h6>
-                            </div>
-                            <div class="card-body">
-                                <div id="currentInstructions"></div>
-                            </div>
-                        </div>
 
                     </div>
                 </div>
@@ -1527,7 +1591,7 @@
                             ${slot.completed ? `<img src="${slot.image}" class="slot-thumbnail" alt="${slot.name}">` : '<div class="slot-thumbnail bg-light d-flex align-items-center justify-content-center"><i class="fas fa-camera text-muted"></i></div>'}
                             <div class="slot-info">
                                 <div class="slot-title">${slot.name}</div>
-                                <div class="slot-status">${slot.completed ? 'Completed' : 'Pending'}</div>
+                                <div class="slot-status ${slot.completed ? 'status-completed' : 'status-pending'}">${slot.completed ? 'Completed' : 'Pending'}</div>
                             </div>
                             <div class="slot-actions">
                                 ${slot.completed ? `<button class="btn btn-sm btn-outline-warning" onclick="cameraApp.retakeSlot(${index})"><i class="fas fa-redo"></i></button>` : ''}
