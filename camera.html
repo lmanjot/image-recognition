@@ -332,6 +332,15 @@
             margin: 0;
         }
         
+        .contact-info {
+            margin-top: 5px;
+        }
+        
+        .contact-info small {
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+        
         .section-subtitle {
             font-size: 0.9rem;
             font-weight: 600;
@@ -751,6 +760,9 @@
                     </div>
                     <div class="col-4 text-center">
                         <h1 class="brand-title">Trichoscope Capture</h1>
+                        <div id="contactInfo" class="contact-info" style="display: none;">
+                            <small class="text-muted">Patient: <span id="patientName"></span></small>
+                        </div>
                     </div>
                     <div class="col-4 text-end">
                         <a href="/" class="btn btn-outline-secondary btn-sm">
@@ -959,6 +971,7 @@
                 this.currentActiveSlot = null;
                 this.capturedImages = {};
                 this.previewMode = false;
+                this.contactData = null;
                 this.captureGuide = {
                     frontal: {
                         title: "Frontal Hairline",
@@ -993,6 +1006,7 @@
                 this.initializeCamera();
                 this.setupEventListeners();
                 this.loadCameraDevices();
+                this.loadContactInfo();
             }
 
             async initializeCamera() {
@@ -1421,6 +1435,59 @@
                         messageDiv.parentNode.removeChild(messageDiv);
                     }
                 }, 3000);
+            }
+
+            async loadContactInfo() {
+                try {
+                    // Get contact ID from URL parameters
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const contactId = urlParams.get('contactid');
+                    
+                    if (!contactId) {
+                        console.log('No contact ID provided in URL');
+                        return;
+                    }
+                    
+                    console.log('Loading contact info for ID:', contactId);
+                    
+                    // Fetch contact information from our API
+                    const response = await fetch(`/api/hubspot-contact?contactid=${contactId}`);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    
+                    if (data.success && data.contact) {
+                        this.contactData = data.contact;
+                        this.displayContactInfo();
+                        console.log('Contact loaded:', this.contactData);
+                    } else {
+                        throw new Error(data.error || 'Failed to load contact');
+                    }
+                    
+                } catch (error) {
+                    console.error('Error loading contact info:', error);
+                    this.showTemporaryMessage('Unable to load patient information');
+                }
+            }
+            
+            displayContactInfo() {
+                if (!this.contactData) return;
+                
+                const contactInfo = document.getElementById('contactInfo');
+                const patientName = document.getElementById('patientName');
+                
+                if (contactInfo && patientName) {
+                    const fullName = this.contactData.fullName || 
+                                   `${this.contactData.firstName || ''} ${this.contactData.lastName || ''}`.trim();
+                    
+                    if (fullName) {
+                        patientName.textContent = fullName;
+                        contactInfo.style.display = 'block';
+                    }
+                }
             }
 
             setupEventListeners() {
