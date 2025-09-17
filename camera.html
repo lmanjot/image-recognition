@@ -761,62 +761,63 @@
 
                         <!-- Camera Panel -->
                         <div class="camera-panel">
-                        <div class="card h-100">
-                            <div class="card-header">
-                                <h6 class="mb-0"><i class="fas fa-video"></i> Live Camera Feed</h6>
-                            </div>
-                            <div class="card-body p-0">
-                                <div class="camera-container" id="cameraContainer">
-                                    <video id="videoElement" autoplay muted playsinline></video>
-                                    <div class="camera-overlay">
-                                        <div class="status-indicator" id="statusIndicator">
-                                            <i class="fas fa-circle"></i> Camera Off
-                                        </div>
-                                        <div class="camera-controls">
-                                            <button class="camera-btn capture-btn" id="captureBtn" title="Take Snapshot" style="pointer-events: auto;">
-                                                <i class="fas fa-camera"></i>
-                                            </button>
-                                        </div>
-                                        <div class="position-absolute top-0 start-0 m-3">
-                                            <div class="badge bg-info" id="captureStatus">Ready</div>
-                                        </div>
-                                    </div>
+                            <div class="card h-100">
+                                <div class="card-header">
+                                    <h6 class="mb-0"><i class="fas fa-video"></i> Live Camera Feed</h6>
                                 </div>
-                                
-                                <!-- No Camera Message -->
-                                <div class="no-camera" id="noCameraMessage" style="display: none;">
-                                    <i class="fas fa-video-slash"></i>
-                                    <h4>Camera Not Available</h4>
-                                    <p>Please ensure your trichoscope camera is connected and permissions are granted.</p>
-                                    <button class="btn btn-primary" id="retryCameraBtn">
-                                        <i class="fas fa-redo"></i> Retry Camera Access
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Settings Dropdown -->
-                        <div class="camera-settings-dropdown mt-3">
-                            <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#cameraSettingsCollapse" aria-expanded="false">
-                                <i class="fas fa-cog"></i> Settings
-                            </button>
-                            <div class="collapse mt-2" id="cameraSettingsCollapse">
-                                <div class="card">
-                                    <div class="card-body">
-                                        <div class="mb-3">
-                                            <label for="cameraSelect" class="form-label">Camera Device</label>
-                                            <div class="d-flex gap-2">
-                                                <select class="form-select" id="cameraSelect">
-                                                    <option value="">Select Camera...</option>
-                                                </select>
-                                                <button class="btn btn-outline-secondary" id="refreshCamerasBtn" title="Refresh Camera List">
-                                                    <i class="fas fa-sync-alt"></i>
+                                <div class="card-body p-0">
+                                    <div class="camera-container" id="cameraContainer">
+                                        <video id="videoElement" autoplay muted playsinline></video>
+                                        <div class="camera-overlay">
+                                            <div class="status-indicator" id="statusIndicator">
+                                                <i class="fas fa-circle"></i> Camera Off
+                                            </div>
+                                            <div class="camera-controls">
+                                                <button class="camera-btn capture-btn" id="captureBtn" title="Take Snapshot" style="pointer-events: auto;">
+                                                    <i class="fas fa-camera"></i>
                                                 </button>
                                             </div>
+                                            <div class="position-absolute top-0 start-0 m-3">
+                                                <div class="badge bg-info" id="captureStatus">Ready</div>
+                                            </div>
                                         </div>
-                                        <button class="btn btn-primary w-100" id="applySettingsBtn">
-                                            <i class="fas fa-check"></i> Apply Settings
+                                    </div>
+                                    
+                                    <!-- No Camera Message -->
+                                    <div class="no-camera" id="noCameraMessage" style="display: none;">
+                                        <i class="fas fa-video-slash"></i>
+                                        <h4>Camera Not Available</h4>
+                                        <p>Please ensure your trichoscope camera is connected and permissions are granted.</p>
+                                        <button class="btn btn-primary" id="retryCameraBtn">
+                                            <i class="fas fa-redo"></i> Retry Camera Access
                                         </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Settings Dropdown -->
+                            <div class="camera-settings-dropdown mt-3">
+                                <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#cameraSettingsCollapse" aria-expanded="false">
+                                    <i class="fas fa-cog"></i> Settings
+                                </button>
+                                <div class="collapse mt-2" id="cameraSettingsCollapse">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <div class="mb-3">
+                                                <label for="cameraSelect" class="form-label">Camera Device</label>
+                                                <div class="d-flex gap-2">
+                                                    <select class="form-select" id="cameraSelect">
+                                                        <option value="">Select Camera...</option>
+                                                    </select>
+                                                    <button class="btn btn-outline-secondary" id="refreshCamerasBtn" title="Refresh Camera List">
+                                                        <i class="fas fa-sync-alt"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <button class="btn btn-primary w-100" id="applySettingsBtn">
+                                                <i class="fas fa-check"></i> Apply Settings
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -825,8 +826,6 @@
 
                     <!-- Right Column - Checklist -->
                     <div class="col-lg-4">
-
-
                         <!-- Capture Checklist -->
                         <div class="card mb-3" id="captureChecklistCard" style="display: none;">
                             <div class="card-header">
@@ -842,8 +841,6 @@
                                 </div>
                             </div>
                         </div>
-
-
                     </div>
                 </div>
             </div>
