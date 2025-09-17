@@ -321,7 +321,7 @@
         }
         
         .brand-logo {
-            width: 3rem;
+            width: 5rem;
             height: auto;
         }
         
@@ -717,12 +717,19 @@
         <!-- Header Section -->
         <div class="header-section">
             <div class="container-fluid">
-                <!-- Top Navigation -->
-                <div class="row align-items-center mb-4">
-                    <div class="col-4">
+                <!-- Logo -->
+                <div class="row justify-content-center mb-3">
+                    <div class="col-12 text-center">
                         <img src="https://cdn.prod.website-files.com/686ba99f7e881278bf8341e5/686bafa8ce0f0a4ccaf45537_mara-logo.svg" 
                              alt="Māra Logo" 
                              class="brand-logo">
+                    </div>
+                </div>
+                
+                <!-- Top Navigation -->
+                <div class="row align-items-center mb-4">
+                    <div class="col-4">
+                        <!-- Empty for spacing -->
                     </div>
                     <div class="col-4 text-center">
                         <h1 class="brand-title">Trichoscope Capture</h1>
@@ -735,35 +742,39 @@
                 </div>
                 
                 <!-- Treatment Area Selection -->
-                <div class="row align-items-center">
-                    <div class="col-6">
-                        <h6 class="section-subtitle mb-0">Select Treatment Areas</h6>
-                    </div>
-                    <div class="col-6">
-                        <div class="treatment-icons-bar">
-                            <div class="treatment-icon" id="frontalIcon" data-area="frontal" title="Frontal Hairline">
-                                <div class="head-outline frontal-shaded">
-                                    <i class="fas fa-forehead"></i>
-                                </div>
-                                <span>Frontal</span>
+                <div class="row justify-content-center">
+                    <div class="col-8">
+                        <div class="row align-items-center">
+                            <div class="col-6">
+                                <h6 class="section-subtitle mb-0">Select Treatment Areas</h6>
                             </div>
-                            <div class="treatment-icon" id="temporalIcon" data-area="temporal" title="Temporal Areas">
-                                <div class="head-outline temporal-shaded">
-                                    <i class="fas fa-angle-double-left"></i>
+                            <div class="col-6">
+                                <div class="treatment-icons-bar">
+                                    <div class="treatment-icon" id="frontalIcon" data-area="frontal" title="Frontal Hairline">
+                                        <div class="head-outline frontal-shaded">
+                                            <i class="fas fa-forehead"></i>
+                                        </div>
+                                        <span>Frontal</span>
+                                    </div>
+                                    <div class="treatment-icon" id="temporalIcon" data-area="temporal" title="Temporal Areas">
+                                        <div class="head-outline temporal-shaded">
+                                            <i class="fas fa-angle-double-left"></i>
+                                        </div>
+                                        <span>Temporal</span>
+                                    </div>
+                                    <div class="treatment-icon" id="diffuseIcon" data-area="diffuse" title="Diffuse Thinning">
+                                        <div class="head-outline diffuse-shaded">
+                                            <i class="fas fa-circle"></i>
+                                        </div>
+                                        <span>Diffuse</span>
+                                    </div>
+                                    <div class="treatment-icon" id="crownIcon" data-area="crown" title="Crown Area">
+                                        <div class="head-outline crown-shaded">
+                                            <i class="fas fa-crown"></i>
+                                        </div>
+                                        <span>Crown</span>
+                                    </div>
                                 </div>
-                                <span>Temporal</span>
-                            </div>
-                            <div class="treatment-icon" id="diffuseIcon" data-area="diffuse" title="Diffuse Thinning">
-                                <div class="head-outline diffuse-shaded">
-                                    <i class="fas fa-circle"></i>
-                                </div>
-                                <span>Diffuse</span>
-                            </div>
-                            <div class="treatment-icon" id="crownIcon" data-area="crown" title="Crown Area">
-                                <div class="head-outline crown-shaded">
-                                    <i class="fas fa-crown"></i>
-                                </div>
-                                <span>Crown</span>
                             </div>
                         </div>
                     </div>
