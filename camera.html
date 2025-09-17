@@ -340,6 +340,15 @@
             letter-spacing: 1px;
         }
         
+        .treatment-area-container {
+            background: #f8f9fa;
+            border-radius: 16px;
+            padding: 30px 20px;
+            margin: 20px 0;
+            border: 1px solid #e9ecef;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
         .treatment-icons-bar {
             display: flex;
             gap: 15px;
@@ -512,8 +521,8 @@
         }
         
         .head-outline {
-            width: 80px;
-            height: 80px;
+            width: 120px;
+            height: 120px;
             border-radius: 12px;
             display: flex;
             align-items: center;
@@ -525,8 +534,8 @@
         }
         
         .treatment-icon-img {
-            width: 60px;
-            height: 60px;
+            width: 90px;
+            height: 90px;
             object-fit: contain;
         }
         
@@ -748,37 +757,39 @@
                 </div>
                 
                 <!-- Treatment Area Selection -->
-                <div class="row justify-content-center">
-                    <div class="col-10">
-                        <div class="row align-items-center">
-                            <div class="col-4">
-                                <h6 class="section-subtitle mb-0">Select Treatment Areas</h6>
-                            </div>
-                            <div class="col-8">
-                                <div class="treatment-icons-bar">
-                                    <div class="treatment-icon" id="frontalIcon" data-area="frontal" title="Frontal Hairline">
-                                        <div class="head-outline frontal-shaded">
-                                            <img src="https://48112143.fs1.hubspotusercontent-eu1.net/hubfs/48112143/icons_hairloss/frontline.png" alt="Frontal" class="treatment-icon-img">
+                <div class="treatment-area-container">
+                    <div class="row justify-content-center">
+                        <div class="col-10">
+                            <div class="row align-items-center">
+                                <div class="col-3">
+                                    <h6 class="section-subtitle mb-0">Select Treatment Areas</h6>
+                                </div>
+                                <div class="col-9">
+                                    <div class="treatment-icons-bar">
+                                        <div class="treatment-icon" id="frontalIcon" data-area="frontal" title="Frontal Hairline">
+                                            <div class="head-outline frontal-shaded">
+                                                <img src="https://48112143.fs1.hubspotusercontent-eu1.net/hubfs/48112143/icons_hairloss/frontline.png" alt="Frontal" class="treatment-icon-img">
+                                            </div>
+                                            <span>Frontal</span>
                                         </div>
-                                        <span>Frontal</span>
-                                    </div>
-                                    <div class="treatment-icon" id="temporalIcon" data-area="temporal" title="Temporal Areas">
-                                        <div class="head-outline temporal-shaded">
-                                            <img src="https://48112143.fs1.hubspotusercontent-eu1.net/hubfs/48112143/icons_hairloss/temples.png" alt="Temporal" class="treatment-icon-img">
+                                        <div class="treatment-icon" id="temporalIcon" data-area="temporal" title="Temporal Areas">
+                                            <div class="head-outline temporal-shaded">
+                                                <img src="https://48112143.fs1.hubspotusercontent-eu1.net/hubfs/48112143/icons_hairloss/temples.png" alt="Temporal" class="treatment-icon-img">
+                                            </div>
+                                            <span>Temporal</span>
                                         </div>
-                                        <span>Temporal</span>
-                                    </div>
-                                    <div class="treatment-icon" id="diffuseIcon" data-area="diffuse" title="Diffuse Thinning">
-                                        <div class="head-outline diffuse-shaded">
-                                            <img src="https://48112143.fs1.hubspotusercontent-eu1.net/hubfs/48112143/icons_hairloss/diffuse.png" alt="Diffuse" class="treatment-icon-img">
+                                        <div class="treatment-icon" id="diffuseIcon" data-area="diffuse" title="Diffuse Thinning">
+                                            <div class="head-outline diffuse-shaded">
+                                                <img src="https://48112143.fs1.hubspotusercontent-eu1.net/hubfs/48112143/icons_hairloss/diffuse.png" alt="Diffuse" class="treatment-icon-img">
+                                            </div>
+                                            <span>Diffuse</span>
                                         </div>
-                                        <span>Diffuse</span>
-                                    </div>
-                                    <div class="treatment-icon" id="crownIcon" data-area="crown" title="Crown Area">
-                                        <div class="head-outline crown-shaded">
-                                            <img src="https://48112143.fs1.hubspotusercontent-eu1.net/hubfs/48112143/icons_hairloss/crown.png" alt="Crown" class="treatment-icon-img">
+                                        <div class="treatment-icon" id="crownIcon" data-area="crown" title="Crown Area">
+                                            <div class="head-outline crown-shaded">
+                                                <img src="https://48112143.fs1.hubspotusercontent-eu1.net/hubfs/48112143/icons_hairloss/crown.png" alt="Crown" class="treatment-icon-img">
+                                            </div>
+                                            <span>Crown</span>
                                         </div>
-                                        <span>Crown</span>
                                     </div>
                                 </div>
                             </div>
