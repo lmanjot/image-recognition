@@ -341,12 +341,12 @@
         }
         
         .treatment-area-container {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #000;
             border-radius: 16px;
             padding: 20px 20px;
             margin: 10px 0;
             border: none;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
         }
         
         .treatment-icons-bar {
@@ -359,7 +359,7 @@
         /* Content Layout */
         .content-container {
             padding: 20px 0;
-            height: calc(100vh - 200px);
+            height: calc(90vh - 200px);
         }
         
         .instructions-section .card {
@@ -760,36 +760,38 @@
                 </div>
                 
                 <!-- Treatment Area Selection -->
-                <div class="treatment-area-container">
-                    <div class="row align-items-center">
-                        <div class="col-3">
-                            <h6 class="section-subtitle mb-0">Select Treatment Areas</h6>
-                        </div>
-                        <div class="col-9">
-                            <div class="treatment-icons-bar">
-                                <div class="treatment-icon" id="frontalIcon" data-area="frontal" title="Frontal Hairline">
-                                    <div class="head-outline frontal-shaded">
-                                        <img src="https://48112143.fs1.hubspotusercontent-eu1.net/hubfs/48112143/icons_hairloss/frontline.png" alt="Frontal" class="treatment-icon-img">
+                <div class="container-fluid">
+                    <div class="treatment-area-container">
+                        <div class="row align-items-center">
+                            <div class="col-3">
+                                <h6 class="section-subtitle mb-0">Select Treatment Areas</h6>
+                            </div>
+                            <div class="col-9">
+                                <div class="treatment-icons-bar">
+                                    <div class="treatment-icon" id="frontalIcon" data-area="frontal" title="Frontal Hairline">
+                                        <div class="head-outline frontal-shaded">
+                                            <img src="https://48112143.fs1.hubspotusercontent-eu1.net/hubfs/48112143/icons_hairloss/frontline.png" alt="Frontal" class="treatment-icon-img">
+                                        </div>
+                                        <span>Frontal</span>
                                     </div>
-                                    <span>Frontal</span>
-                                </div>
-                                <div class="treatment-icon" id="temporalIcon" data-area="temporal" title="Temporal Areas">
-                                    <div class="head-outline temporal-shaded">
-                                        <img src="https://48112143.fs1.hubspotusercontent-eu1.net/hubfs/48112143/icons_hairloss/temples.png" alt="Temporal" class="treatment-icon-img">
+                                    <div class="treatment-icon" id="temporalIcon" data-area="temporal" title="Temporal Areas">
+                                        <div class="head-outline temporal-shaded">
+                                            <img src="https://48112143.fs1.hubspotusercontent-eu1.net/hubfs/48112143/icons_hairloss/temples.png" alt="Temporal" class="treatment-icon-img">
+                                        </div>
+                                        <span>Temporal</span>
                                     </div>
-                                    <span>Temporal</span>
-                                </div>
-                                <div class="treatment-icon" id="diffuseIcon" data-area="diffuse" title="Diffuse Thinning">
-                                    <div class="head-outline diffuse-shaded">
-                                        <img src="https://48112143.fs1.hubspotusercontent-eu1.net/hubfs/48112143/icons_hairloss/diffuse.png" alt="Diffuse" class="treatment-icon-img">
+                                    <div class="treatment-icon" id="diffuseIcon" data-area="diffuse" title="Diffuse Thinning">
+                                        <div class="head-outline diffuse-shaded">
+                                            <img src="https://48112143.fs1.hubspotusercontent-eu1.net/hubfs/48112143/icons_hairloss/diffuse.png" alt="Diffuse" class="treatment-icon-img">
+                                        </div>
+                                        <span>Diffuse</span>
                                     </div>
-                                    <span>Diffuse</span>
-                                </div>
-                                <div class="treatment-icon" id="crownIcon" data-area="crown" title="Crown Area">
-                                    <div class="head-outline crown-shaded">
-                                        <img src="https://48112143.fs1.hubspotusercontent-eu1.net/hubfs/48112143/icons_hairloss/crown.png" alt="Crown" class="treatment-icon-img">
+                                    <div class="treatment-icon" id="crownIcon" data-area="crown" title="Crown Area">
+                                        <div class="head-outline crown-shaded">
+                                            <img src="https://48112143.fs1.hubspotusercontent-eu1.net/hubfs/48112143/icons_hairloss/crown.png" alt="Crown" class="treatment-icon-img">
+                                        </div>
+                                        <span>Crown</span>
                                     </div>
-                                    <span>Crown</span>
                                 </div>
                             </div>
                         </div>
