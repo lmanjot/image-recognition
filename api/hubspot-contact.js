@@ -20,17 +20,17 @@ export default async function handler(req, res) {
   }
 
   try {
-    const hubspotToken = process.env.HUBSPOT_TOKEN;
+    const hubspotToken = process.env.hubspot_token || process.env.HUBSPOT_TOKEN;
     
     if (!hubspotToken) {
-      console.error('HUBSPOT_TOKEN environment variable is not set');
-      console.error('Available environment variables:', Object.keys(process.env).filter(key => key.includes('HUBSPOT')));
+      console.error('HubSpot token environment variable is not set');
+      console.error('Available environment variables:', Object.keys(process.env).filter(key => key.toLowerCase().includes('hubspot')));
       return res.status(500).json({ 
         error: 'HubSpot configuration error',
-        details: 'HUBSPOT_TOKEN environment variable is not set',
+        details: 'HubSpot token environment variable is not set',
         debug: {
           hasToken: !!hubspotToken,
-          availableEnvVars: Object.keys(process.env).filter(key => key.includes('HUBSPOT'))
+          availableEnvVars: Object.keys(process.env).filter(key => key.toLowerCase().includes('hubspot'))
         }
       });
     }
