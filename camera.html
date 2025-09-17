@@ -321,24 +321,21 @@
         }
         
         .brand-content {
-            text-align: left;
+            text-align: center;
         }
         
         .brand-logo {
-            width: 3rem;
+            width: 4rem;
             height: auto;
-            margin-right: 15px;
-            display: inline-block;
-            vertical-align: middle;
+            margin-bottom: 15px;
+            display: block;
         }
         
         .brand-title {
-            font-size: 1.8rem;
+            font-size: 2rem;
             font-weight: 700;
             color: #333;
             margin: 0;
-            display: inline-block;
-            vertical-align: middle;
         }
         
         .section-subtitle {
@@ -406,18 +403,14 @@
             flex-wrap: wrap !important;
         }
         
-        /* Debug: Add visible borders to see layout */
+        /* Ensure proper column layout */
         .col-lg-8 {
-            border: 3px solid red !important;
-            background: rgba(255, 0, 0, 0.1) !important;
             width: 66.666667% !important;
             float: left !important;
             display: block !important;
         }
         
         .col-lg-4 {
-            border: 3px solid blue !important;
-            background: rgba(0, 0, 255, 0.1) !important;
             width: 33.333333% !important;
             float: left !important;
             display: block !important;
@@ -450,6 +443,44 @@
             width: 100%;
             height: auto;
             display: block;
+        }
+        
+        /* Image Preview Mode */
+        .image-preview-container {
+            position: relative;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            min-height: 400px;
+        }
+        
+        .preview-image {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        
+        .preview-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .image-preview-container:hover .preview-overlay {
+            opacity: 1;
+        }
+        
+        .preview-controls {
+            display: flex;
+            gap: 10px;
         }
         
         /* Checklist styling */
@@ -694,7 +725,7 @@
             <div class="container-fluid">
                 <!-- Top Navigation -->
                 <div class="row align-items-center mb-4">
-                    <div class="col-10">
+                    <div class="col-12 text-center">
                         <div class="brand-content">
                             <img src="https://cdn.prod.website-files.com/686ba99f7e881278bf8341e5/686bafa8ce0f0a4ccaf45537_mara-logo.svg" 
                                  alt="Māra Logo" 
@@ -702,7 +733,11 @@
                             <h1 class="brand-title">Trichoscope Capture</h1>
                         </div>
                     </div>
-                    <div class="col-2 text-end">
+                </div>
+                
+                <!-- Back Button -->
+                <div class="row">
+                    <div class="col-12 text-center mb-3">
                         <a href="/" class="btn btn-outline-secondary btn-sm">
                             <i class="fas fa-arrow-left"></i> Back to Analysis
                         </a>
@@ -750,15 +785,6 @@
                 <div class="row">
                     <!-- Left Column - Camera -->
                     <div class="col-lg-8">
-                        <!-- Current Instructions -->
-                        <div class="instructions-section mb-3">
-                            <div class="card" id="currentInstructionsCard" style="display: none;">
-                                <div class="card-body py-3">
-                                    <div id="currentInstructions"></div>
-                                </div>
-                            </div>
-                        </div>
-
                         <!-- Camera Panel -->
                         <div class="camera-panel">
                             <div class="card h-100">
@@ -779,6 +805,18 @@
                                             </div>
                                             <div class="position-absolute top-0 start-0 m-3">
                                                 <div class="badge bg-info" id="captureStatus">Ready</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Image Preview Mode -->
+                                    <div class="image-preview-container" id="imagePreviewContainer" style="display: none;">
+                                        <img id="previewImage" class="preview-image" alt="Captured Image">
+                                        <div class="preview-overlay">
+                                            <div class="preview-controls">
+                                                <button class="btn btn-outline-light btn-sm" id="backToCameraBtn" title="Back to Live Camera">
+                                                    <i class="fas fa-video"></i> Live Camera
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
@@ -826,6 +864,15 @@
 
                     <!-- Right Column - Checklist -->
                     <div class="col-lg-4">
+                        <!-- Current Instructions -->
+                        <div class="instructions-section mb-3">
+                            <div class="card" id="currentInstructionsCard" style="display: none;">
+                                <div class="card-body py-3">
+                                    <div id="currentInstructions"></div>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Capture Checklist -->
                         <div class="card mb-3" id="captureChecklistCard" style="display: none;">
                             <div class="card-header">
@@ -905,6 +952,7 @@
                 this.captureSlots = [];
                 this.currentActiveSlot = null;
                 this.capturedImages = {};
+                this.previewMode = false;
                 this.captureGuide = {
                     frontal: {
                         title: "Frontal Hairline",
@@ -1438,6 +1486,11 @@
                     this.refreshCameraDevices();
                 });
 
+                // Back to camera button
+                document.getElementById('backToCameraBtn').addEventListener('click', () => {
+                    this.showLiveCamera();
+                });
+
 
                 // Keyboard shortcuts
                 document.addEventListener('keydown', (e) => {
@@ -1657,19 +1710,25 @@
                     
                     slotElement.innerHTML = `
                         <div class="slot-content">
-                            ${slot.completed ? `<img src="${slot.image}" class="slot-thumbnail" alt="${slot.name}">` : '<div class="slot-thumbnail bg-light d-flex align-items-center justify-content-center"><i class="fas fa-camera text-muted"></i></div>'}
+                            ${slot.completed ? `<img src="${slot.image}" class="slot-thumbnail" alt="${slot.name}" style="cursor: pointer;">` : '<div class="slot-thumbnail bg-light d-flex align-items-center justify-content-center"><i class="fas fa-camera text-muted"></i></div>'}
                             <div class="slot-info">
                                 <div class="slot-title">${slot.name}</div>
                                 <div class="slot-status ${slot.completed ? 'status-completed' : 'status-pending'}">${slot.completed ? 'Completed' : 'Pending'}</div>
                             </div>
                             <div class="slot-actions">
-                                ${slot.completed ? `<button class="btn btn-sm btn-outline-warning" onclick="cameraApp.retakeSlot(${index})"><i class="fas fa-redo"></i></button>` : ''}
+                                ${slot.completed ? `<button class="btn btn-sm btn-outline-warning" onclick="window.trichoscopeCamera.retakeSlot(${index})"><i class="fas fa-redo"></i></button>` : ''}
                             </div>
                         </div>
                     `;
                     
                     slotElement.addEventListener('click', () => {
-                        this.setActiveSlot(index);
+                        if (slot.completed) {
+                            // Show image preview
+                            this.showImagePreview(slot.image);
+                        } else {
+                            // Set as active slot for capture
+                            this.setActiveSlot(index);
+                        }
                     });
                     
                     slotsContainer.appendChild(slotElement);
@@ -1779,6 +1838,9 @@
                     slot.completed = false;
                     slot.blob = null;
                     
+                    // Return to live camera mode
+                    this.showLiveCamera();
+                    
                     // Set as active slot
                     this.setActiveSlot(slotIndex);
                     
@@ -1819,7 +1881,7 @@
                             <div class="summary-item">
                                 <img src="${slot.image}" class="summary-thumbnail" alt="${slot.name}">
                                 <div class="summary-label">${slot.name}</div>
-                                <button class="btn btn-sm btn-outline-warning mt-2" onclick="cameraApp.retakeSlot(${this.captureSlots.indexOf(slot)})">
+                                <button class="btn btn-sm btn-outline-warning mt-2" onclick="window.trichoscopeCamera.retakeSlot(${this.captureSlots.indexOf(slot)})">
                                     <i class="fas fa-redo"></i> Retake
                                 </button>
                             </div>
@@ -2076,6 +2138,20 @@
             hideNoCameraMessage() {
                 document.getElementById('noCameraMessage').style.display = 'none';
                 document.getElementById('cameraContainer').style.display = 'block';
+            }
+
+            showLiveCamera() {
+                document.getElementById('noCameraMessage').style.display = 'none';
+                document.getElementById('cameraContainer').style.display = 'block';
+                document.getElementById('imagePreviewContainer').style.display = 'none';
+                this.previewMode = false;
+            }
+
+            showImagePreview(imageUrl) {
+                document.getElementById('cameraContainer').style.display = 'none';
+                document.getElementById('imagePreviewContainer').style.display = 'block';
+                document.getElementById('previewImage').src = imageUrl;
+                this.previewMode = true;
             }
 
             showError(message) {
