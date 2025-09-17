@@ -24,7 +24,15 @@ export default async function handler(req, res) {
     
     if (!hubspotToken) {
       console.error('HUBSPOT_TOKEN environment variable is not set');
-      return res.status(500).json({ error: 'HubSpot configuration error' });
+      console.error('Available environment variables:', Object.keys(process.env).filter(key => key.includes('HUBSPOT')));
+      return res.status(500).json({ 
+        error: 'HubSpot configuration error',
+        details: 'HUBSPOT_TOKEN environment variable is not set',
+        debug: {
+          hasToken: !!hubspotToken,
+          availableEnvVars: Object.keys(process.env).filter(key => key.includes('HUBSPOT'))
+        }
+      });
     }
 
     // Fetch contact from HubSpot
