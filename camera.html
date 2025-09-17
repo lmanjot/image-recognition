@@ -476,6 +476,60 @@
 
                     <!-- Right Panel - Controls and Snapshots -->
                     <div class="analysis-panel">
+                        <!-- Treatment Area Selection -->
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h6 class="mb-0"><i class="fas fa-map-marker-alt"></i> Treatment Areas</h6>
+                            </div>
+                            <div class="card-body">
+                                <p class="text-muted small mb-3">Select the areas you want to treat. You can select multiple areas.</p>
+                                
+                                <div class="row g-2">
+                                    <div class="col-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="frontalCheck" value="frontal">
+                                            <label class="form-check-label" for="frontalCheck">
+                                                <i class="fas fa-forehead text-primary"></i> Frontal
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="temporalCheck" value="temporal">
+                                            <label class="form-check-label" for="temporalCheck">
+                                                <i class="fas fa-angle-double-left text-info"></i> Temporal
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="diffuseCheck" value="diffuse">
+                                            <label class="form-check-label" for="diffuseCheck">
+                                                <i class="fas fa-circle text-warning"></i> Diffuse Thinning
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="crownCheck" value="crown">
+                                            <label class="form-check-label" for="crownCheck">
+                                                <i class="fas fa-crown text-success"></i> Crown
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-3">
+                                    <button class="btn btn-outline-primary btn-sm" id="selectAllBtn">
+                                        <i class="fas fa-check-square"></i> Select All
+                                    </button>
+                                    <button class="btn btn-outline-secondary btn-sm" id="clearAllBtn">
+                                        <i class="fas fa-square"></i> Clear All
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Camera Settings -->
                         <div class="card mb-3">
                             <div class="card-header">
@@ -500,6 +554,19 @@
                                     <i class="fas fa-check"></i> Apply Settings
                                 </button>
                                 
+                            </div>
+                        </div>
+
+                        <!-- Capture Guide -->
+                        <div class="card mb-3" id="captureGuideCard" style="display: none;">
+                            <div class="card-header">
+                                <h6 class="mb-0"><i class="fas fa-camera"></i> Capture Guide</h6>
+                            </div>
+                            <div class="card-body">
+                                <div id="captureInstructions">
+                                    <p class="text-muted small mb-3">Follow these instructions to capture photos for each selected area:</p>
+                                    <div id="areaInstructions"></div>
+                                </div>
                             </div>
                         </div>
 
@@ -603,6 +670,33 @@
                 this.cameraSettings = {
                     deviceId: null,
                     quality: 1.0  // Always max quality
+                };
+                this.selectedAreas = [];
+                this.captureGuide = {
+                    frontal: {
+                        title: "Frontal Hairline",
+                        instruction: "Capture the front hairline area. Position the camera to show the forehead and front hairline clearly.",
+                        icon: "fas fa-forehead",
+                        color: "primary"
+                    },
+                    temporal: {
+                        title: "Temporal Areas",
+                        instruction: "Capture both left and right temple areas. Take separate photos for each side if needed.",
+                        icon: "fas fa-angle-double-left",
+                        color: "info"
+                    },
+                    diffuse: {
+                        title: "Diffuse Thinning",
+                        instruction: "Capture the top of the scalp (mid-section between front and crown). Focus on the overall thinning pattern.",
+                        icon: "fas fa-circle",
+                        color: "warning"
+                    },
+                    crown: {
+                        title: "Crown Area",
+                        instruction: "Capture the crown/vertex area at the back of the head. Show the thinning pattern in this region.",
+                        icon: "fas fa-crown",
+                        color: "success"
+                    }
                 };
                 
                 this.initializeCamera();
@@ -1028,6 +1122,28 @@
                     this.applyCameraSettings();
                 });
 
+                // Treatment area checkboxes
+                document.getElementById('frontalCheck').addEventListener('change', () => {
+                    this.updateSelectedAreas();
+                });
+                document.getElementById('temporalCheck').addEventListener('change', () => {
+                    this.updateSelectedAreas();
+                });
+                document.getElementById('diffuseCheck').addEventListener('change', () => {
+                    this.updateSelectedAreas();
+                });
+                document.getElementById('crownCheck').addEventListener('change', () => {
+                    this.updateSelectedAreas();
+                });
+
+                // Select all and clear all buttons
+                document.getElementById('selectAllBtn').addEventListener('click', () => {
+                    this.selectAllAreas();
+                });
+                document.getElementById('clearAllBtn').addEventListener('click', () => {
+                    this.clearAllAreas();
+                });
+
 
                 // Camera selection
                 document.getElementById('cameraSelect').addEventListener('change', (e) => {
@@ -1209,6 +1325,72 @@
                 document.getElementById('snapshotModal').addEventListener('hidden.bs.modal', () => {
                     URL.revokeObjectURL(url);
                 }, { once: true });
+            }
+
+            updateSelectedAreas() {
+                this.selectedAreas = [];
+                const checkboxes = ['frontalCheck', 'temporalCheck', 'diffuseCheck', 'crownCheck'];
+                
+                checkboxes.forEach(checkboxId => {
+                    const checkbox = document.getElementById(checkboxId);
+                    if (checkbox && checkbox.checked) {
+                        this.selectedAreas.push(checkbox.value);
+                    }
+                });
+                
+                this.logEvent('Selected areas updated', { areas: this.selectedAreas });
+                this.updateCaptureGuide();
+            }
+
+            selectAllAreas() {
+                const checkboxes = ['frontalCheck', 'temporalCheck', 'diffuseCheck', 'crownCheck'];
+                checkboxes.forEach(checkboxId => {
+                    const checkbox = document.getElementById(checkboxId);
+                    if (checkbox) {
+                        checkbox.checked = true;
+                    }
+                });
+                this.updateSelectedAreas();
+            }
+
+            clearAllAreas() {
+                const checkboxes = ['frontalCheck', 'temporalCheck', 'diffuseCheck', 'crownCheck'];
+                checkboxes.forEach(checkboxId => {
+                    const checkbox = document.getElementById(checkboxId);
+                    if (checkbox) {
+                        checkbox.checked = false;
+                    }
+                });
+                this.updateSelectedAreas();
+            }
+
+            updateCaptureGuide() {
+                const guideCard = document.getElementById('captureGuideCard');
+                const instructionsDiv = document.getElementById('areaInstructions');
+                
+                if (this.selectedAreas.length === 0) {
+                    guideCard.style.display = 'none';
+                    return;
+                }
+                
+                guideCard.style.display = 'block';
+                instructionsDiv.innerHTML = '';
+                
+                this.selectedAreas.forEach(area => {
+                    const guide = this.captureGuide[area];
+                    if (guide) {
+                        const instructionDiv = document.createElement('div');
+                        instructionDiv.className = 'mb-3 p-3 border rounded';
+                        instructionDiv.innerHTML = `
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="${guide.icon} text-${guide.color} me-2"></i>
+                                <strong class="text-${guide.color}">${guide.title}</strong>
+                            </div>
+                            <p class="mb-0 small text-muted">${guide.instruction}</p>
+                        `;
+                        instructionsDiv.appendChild(instructionDiv);
+                    }
+                });
             }
 
             async saveSnapshot() {
