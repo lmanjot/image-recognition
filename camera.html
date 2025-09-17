@@ -339,32 +339,28 @@
         
         /* Header Section */
         .header-section {
-            background: #fff;
             padding: 40px 0;
-            border-bottom: 1px solid #e9ecef;
         }
         
         .brand-content {
-            text-align: center;
+            text-align: left;
         }
         
         .brand-logo {
-            width: 4rem;
+            width: 3rem;
             height: auto;
-            margin-bottom: 15px;
+            margin-right: 15px;
+            display: inline-block;
+            vertical-align: middle;
         }
         
         .brand-title {
-            font-size: 2rem;
+            font-size: 1.8rem;
             font-weight: 700;
             color: #333;
-            margin: 0 0 8px 0;
-        }
-        
-        .brand-subtitle {
-            font-size: 1rem;
-            color: #6c757d;
-            margin: 0 0 20px 0;
+            margin: 0;
+            display: inline-block;
+            vertical-align: middle;
         }
         
         .section-subtitle {
@@ -385,7 +381,6 @@
         
         /* Content Layout */
         .content-container {
-            background: #fff;
             padding: 40px 0;
             min-height: calc(100vh - 300px);
         }
@@ -409,6 +404,18 @@
         
         .col-lg-8, .col-lg-4 {
             padding: 0 20px;
+        }
+        
+        /* Force side-by-side layout */
+        @media (min-width: 992px) {
+            .col-lg-8 {
+                flex: 0 0 66.666667%;
+                max-width: 66.666667%;
+            }
+            .col-lg-4 {
+                flex: 0 0 33.333333%;
+                max-width: 33.333333%;
+            }
         }
         
         /* Camera panel styling */
@@ -684,16 +691,20 @@
         <!-- Header Section -->
         <div class="header-section">
             <div class="container-fluid">
-                <!-- Brand and Navigation -->
+                <!-- Top Navigation -->
                 <div class="row align-items-center mb-4">
-                    <div class="col-12 text-center">
+                    <div class="col-10">
                         <div class="brand-content">
                             <img src="https://cdn.prod.website-files.com/686ba99f7e881278bf8341e5/686bafa8ce0f0a4ccaf45537_mara-logo.svg" 
                                  alt="Māra Logo" 
                                  class="brand-logo">
                             <h1 class="brand-title">Trichoscope Capture</h1>
-                            <p class="brand-subtitle">Select treatment area and follow guided steps</p>
                         </div>
+                    </div>
+                    <div class="col-2 text-end">
+                        <a href="/" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-arrow-left"></i> Back to Analysis
+                        </a>
                     </div>
                 </div>
                 
@@ -727,15 +738,6 @@
                                 <span>Crown</span>
                             </div>
                         </div>
-                    </div>
-                </div>
-                
-                <!-- Back Button -->
-                <div class="row">
-                    <div class="col-12 text-center mt-3">
-                        <a href="/" class="btn btn-outline-secondary btn-sm">
-                            <i class="fas fa-arrow-left"></i> Back to Analysis
-                        </a>
                     </div>
                 </div>
             </div>
