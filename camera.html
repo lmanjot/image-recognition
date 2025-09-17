@@ -320,19 +320,13 @@
             padding: 40px 0;
         }
         
-        .brand-content {
-            text-align: center;
-        }
-        
         .brand-logo {
-            width: 4rem;
+            width: 3rem;
             height: auto;
-            margin-bottom: 15px;
-            display: block;
         }
         
         .brand-title {
-            font-size: 2rem;
+            font-size: 1.8rem;
             font-weight: 700;
             color: #333;
             margin: 0;
@@ -348,10 +342,9 @@
         
         .treatment-icons-bar {
             display: flex;
-            gap: 30px;
+            gap: 20px;
             align-items: center;
-            justify-content: center;
-            margin-bottom: 20px;
+            justify-content: flex-end;
         }
         
         /* Content Layout */
@@ -491,8 +484,9 @@
         }
         
         .card-header {
-            background: #f8f9fa;
-            border-bottom: 1px solid #e9ecef;
+            background: #495057;
+            color: white;
+            border-bottom: 1px solid #495057;
             border-radius: 12px 12px 0 0 !important;
             font-weight: 600;
         }
@@ -725,19 +719,15 @@
             <div class="container-fluid">
                 <!-- Top Navigation -->
                 <div class="row align-items-center mb-4">
-                    <div class="col-12 text-center">
-                        <div class="brand-content">
-                            <img src="https://cdn.prod.website-files.com/686ba99f7e881278bf8341e5/686bafa8ce0f0a4ccaf45537_mara-logo.svg" 
-                                 alt="Māra Logo" 
-                                 class="brand-logo">
-                            <h1 class="brand-title">Trichoscope Capture</h1>
-                        </div>
+                    <div class="col-4">
+                        <img src="https://cdn.prod.website-files.com/686ba99f7e881278bf8341e5/686bafa8ce0f0a4ccaf45537_mara-logo.svg" 
+                             alt="Māra Logo" 
+                             class="brand-logo">
                     </div>
-                </div>
-                
-                <!-- Back Button -->
-                <div class="row">
-                    <div class="col-12 text-center mb-3">
+                    <div class="col-4 text-center">
+                        <h1 class="brand-title">Trichoscope Capture</h1>
+                    </div>
+                    <div class="col-4 text-end">
                         <a href="/" class="btn btn-outline-secondary btn-sm">
                             <i class="fas fa-arrow-left"></i> Back to Analysis
                         </a>
@@ -745,9 +735,11 @@
                 </div>
                 
                 <!-- Treatment Area Selection -->
-                <div class="row justify-content-center">
-                    <div class="col-12 text-center">
-                        <h6 class="section-subtitle mb-3">Select Treatment Areas</h6>
+                <div class="row align-items-center">
+                    <div class="col-6">
+                        <h6 class="section-subtitle mb-0">Select Treatment Areas</h6>
+                    </div>
+                    <div class="col-6">
                         <div class="treatment-icons-bar">
                             <div class="treatment-icon" id="frontalIcon" data-area="frontal" title="Frontal Hairline">
                                 <div class="head-outline frontal-shaded">
@@ -864,15 +856,6 @@
 
                     <!-- Right Column - Checklist -->
                     <div class="col-lg-4">
-                        <!-- Current Instructions -->
-                        <div class="instructions-section mb-3">
-                            <div class="card" id="currentInstructionsCard" style="display: none;">
-                                <div class="card-body py-3">
-                                    <div id="currentInstructions"></div>
-                                </div>
-                            </div>
-                        </div>
-
                         <!-- Capture Checklist -->
                         <div class="card mb-3" id="captureChecklistCard" style="display: none;">
                             <div class="card-header">
@@ -1726,8 +1709,9 @@
                             // Show image preview
                             this.showImagePreview(slot.image);
                         } else {
-                            // Set as active slot for capture
+                            // Set as active slot for capture and return to live camera
                             this.setActiveSlot(index);
+                            this.showLiveCamera();
                         }
                     });
                     
@@ -1746,25 +1730,7 @@
             }
 
             updateCurrentInstructions() {
-                const instructionsCard = document.getElementById('currentInstructionsCard');
-                const instructionsDiv = document.getElementById('currentInstructions');
-                
-                if (this.currentActiveSlot === null || this.captureSlots.length === 0) {
-                    instructionsCard.style.display = 'none';
-                    return;
-                }
-                
-                const activeSlot = this.captureSlots[this.currentActiveSlot];
-                const guide = this.captureGuide[activeSlot.area];
-                
-                instructionsCard.style.display = 'block';
-                instructionsDiv.innerHTML = `
-                    <div class="d-flex align-items-center">
-                        <i class="${guide.icon} text-${guide.color} me-2"></i>
-                        <strong class="text-${guide.color} me-3">Now capturing: ${activeSlot.name}</strong>
-                        <small class="text-muted">${guide.instruction}</small>
-                    </div>
-                `;
+                // Instructions removed - no longer needed
             }
 
             updateProgress() {
