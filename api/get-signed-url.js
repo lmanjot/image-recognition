@@ -46,7 +46,9 @@ module.exports = async (req, res) => {
     }
 
     const bucketName = process.env.GCS_BUCKET_NAME || 'mara-hair-fu-h';
-    const file = storage.bucket(bucketName).file(fileName);
+    // Store images in patient_scans folder
+    const filePath = `patient_scans/${fileName}`;
+    const file = storage.bucket(bucketName).file(filePath);
 
     // Generate signed URL for PUT request
     const [url] = await file.getSignedUrl({

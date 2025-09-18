@@ -1846,7 +1846,7 @@
                 }
             }
 
-            assignImageToSlot(blob) {
+            async assignImageToSlot(blob) {
                 if (this.currentActiveSlot === null || this.currentActiveSlot >= this.captureSlots.length) {
                     this.downloadSnapshot(blob);
                     return;
@@ -1867,6 +1867,14 @@
                 
                 // Update UI
                 this.renderCaptureSlots();
+                
+                // Upload to GCS
+                try {
+                    await this.uploadImageToGCS(blob, activeSlot);
+                } catch (error) {
+                    console.error('GCS upload failed:', error);
+                    this.showError(`Upload failed: ${error.message}`);
+                }
                 
                 // Move to next incomplete slot
                 this.moveToNextIncompleteSlot();
@@ -1928,6 +1936,74 @@
                 
                 this.showSuccess(`Snapshot saved as ${filename}`);
                 this.logEvent('Snapshot download initiated', { filename });
+            }
+
+            async uploadImageToGCS(blob, slot) {
+                try {
+                    // Generate filename with slot info and timestamp
+                    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+                    const filename = `${slot.area}_${slot.name.replace(/\s+/g, '_')}_${timestamp}.jpg`;
+                    
+                    this.logEvent('Starting GCS upload', { 
+                        filename: filename,
+                        slotName: slot.name,
+                        blobSize: blob.size,
+                        blobType: blob.type
+                    });
+
+                    // Step 1: Get signed URL from our backend
+                    const response = await fetch(`${window.location.origin}/api/get-signed-url`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            fileName: filename,
+                            contentType: blob.type
+                        })
+                    });
+
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        throw new Error(`Failed to get signed URL: ${response.status} - ${errorText}`);
+                    }
+
+                    const { url } = await response.json();
+                    this.logEvent('Signed URL received', { url: url.substring(0, 100) + '...' });
+
+                    // Step 2: Upload directly to GCS using the signed URL
+                    const uploadResponse = await fetch(url, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': blob.type },
+                        body: blob
+                    });
+
+                    if (!uploadResponse.ok) {
+                        const errorText = await uploadResponse.text();
+                        throw new Error(`GCS upload failed: ${uploadResponse.status} - ${errorText}`);
+                    }
+
+                    // Store GCS info in the slot
+                    slot.gcsInfo = {
+                        bucket: 'mara-hair-fu-h',
+                        path: `patient_scans/${filename}`,
+                        url: `gs://mara-hair-fu-h/patient_scans/${filename}`,
+                        public_url: `https://storage.googleapis.com/mara-hair-fu-h/patient_scans/${filename}`,
+                        method: 'Signed URL Upload'
+                    };
+
+                    this.logEvent('GCS upload successful', {
+                        filename: filename,
+                        path: slot.gcsInfo.path,
+                        bucket: slot.gcsInfo.bucket
+                    });
+
+                } catch (error) {
+                    console.error('GCS upload error:', error);
+                    this.logEvent('GCS upload failed', { 
+                        error: error.message,
+                        slotName: slot.name
+                    });
+                    throw error;
+                }
             }
 
             showCaptureComplete() {
