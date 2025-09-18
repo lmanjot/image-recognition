@@ -368,7 +368,7 @@
         /* Content Layout */
         .content-container {
             padding: 10px 0 20px 0;
-            height: calc(85vh - 200px);
+            height: calc(85vh - 200px) !important;
         }
         
         .instructions-section .card {
@@ -442,6 +442,10 @@
             border-radius: 12px;
             overflow: hidden;
             height: 100%;
+        }
+        
+        .camera-card {
+            height: calc(85vh - 200px) !important;
         }
         
         .camera-container {
@@ -705,13 +709,14 @@
         }
         
         /* Responsive Design */
-            
+        @media (max-width: 992px) {
             .title-text {
                 font-size: 2rem;
             }
             
             .content-container {
                 padding: 0 1rem;
+                height: calc(85vh - 200px) !important;
             }
         }
         
@@ -733,6 +738,7 @@
             
             .content-container {
                 padding: 0 1rem;
+                height: calc(85vh - 200px) !important;
             }
         }
     </style>
@@ -820,7 +826,7 @@
                     <div class="col-lg-8">
                         <!-- Camera Panel -->
                         <div class="camera-panel">
-                            <div class="card h-100">
+                            <div class="card camera-card">
                                 <div class="card-body p-0">
                                     <div class="camera-container" id="cameraContainer">
                                         <video id="videoElement" autoplay muted playsinline></video>
