@@ -368,7 +368,7 @@
         /* Content Layout */
         .content-container {
             padding: 10px 0 20px 0;
-            height: calc(85vh - 200px) !important;
+            height: calc(70vh - 200px) !important;
         }
         
         .instructions-section .card {
@@ -445,7 +445,7 @@
         }
         
         .camera-card {
-            height: calc(85vh - 200px) !important;
+            height: calc(70vh - 200px) !important;
         }
         
         .camera-container {
@@ -716,7 +716,7 @@
             
             .content-container {
                 padding: 0 1rem;
-                height: calc(85vh - 200px) !important;
+                height: calc(70vh - 200px) !important;
             }
         }
         
@@ -738,7 +738,7 @@
             
             .content-container {
                 padding: 0 1rem;
-                height: calc(85vh - 200px) !important;
+                height: calc(70vh - 200px) !important;
             }
         }
     </style>
@@ -1792,10 +1792,20 @@
                             ${slot.completed ? `<img src="${slot.image}" class="slot-thumbnail" alt="${slot.name}" style="cursor: pointer;">` : '<div class="slot-thumbnail bg-light d-flex align-items-center justify-content-center"><i class="fas fa-camera text-muted"></i></div>'}
                             <div class="slot-info">
                                 <div class="slot-title">${slot.name}</div>
-                                <div class="slot-status ${slot.completed ? 'status-completed' : 'status-pending'}">${slot.completed ? 'Completed' : 'Pending'}</div>
+                                <div class="slot-status ${slot.completed ? 'status-completed' : 'status-pending'}">
+                                    ${slot.completed ? (slot.uploaded ? 'Uploaded' : 'Ready to upload') : 'Pending'}
+                                </div>
+                                ${slot.completed && slot.uploaded ? '<div class="upload-status text-success"><i class="fas fa-cloud-check"></i> In cloud</div>' : ''}
                             </div>
                             <div class="slot-actions">
-                                ${slot.completed ? `<button class="btn btn-sm btn-outline-warning" onclick="window.trichoscopeCamera.retakeSlot(${index})"><i class="fas fa-redo"></i></button>` : ''}
+                                ${slot.completed ? `
+                                    <button class="btn btn-sm btn-outline-warning me-1" onclick="window.trichoscopeCamera.retakeSlot(${index})" title="Retake">
+                                        <i class="fas fa-redo"></i>
+                                    </button>
+                                    ${!slot.uploaded ? `<button class="btn btn-sm btn-primary" onclick="window.trichoscopeCamera.uploadSlot(${index})" title="Upload to cloud">
+                                        <i class="fas fa-cloud-upload-alt"></i>
+                                    </button>` : ''}
+                                ` : ''}
                             </div>
                         </div>
                     `;
@@ -1846,7 +1856,7 @@
                 }
             }
 
-            async assignImageToSlot(blob) {
+            assignImageToSlot(blob) {
                 if (this.currentActiveSlot === null || this.currentActiveSlot >= this.captureSlots.length) {
                     this.downloadSnapshot(blob);
                     return;
@@ -1859,6 +1869,7 @@
                 activeSlot.image = imageUrl;
                 activeSlot.completed = true;
                 activeSlot.blob = blob;
+                activeSlot.uploaded = false; // Track upload status
                 
                 this.logEvent('Image assigned to slot', { 
                     slotName: activeSlot.name,
@@ -1868,18 +1879,10 @@
                 // Update UI
                 this.renderCaptureSlots();
                 
-                // Upload to GCS
-                try {
-                    await this.uploadImageToGCS(blob, activeSlot);
-                } catch (error) {
-                    console.error('GCS upload failed:', error);
-                    this.showError(`Upload failed: ${error.message}`);
-                }
-                
                 // Move to next incomplete slot
                 this.moveToNextIncompleteSlot();
                 
-                this.showSuccess(`Captured ${activeSlot.name} successfully!`);
+                this.showSuccess(`Captured ${activeSlot.name} successfully! Click upload to save to cloud.`);
             }
 
             moveToNextIncompleteSlot() {
@@ -1936,6 +1939,33 @@
                 
                 this.showSuccess(`Snapshot saved as ${filename}`);
                 this.logEvent('Snapshot download initiated', { filename });
+            }
+
+            async uploadSlot(slotIndex) {
+                const slot = this.captureSlots[slotIndex];
+                if (!slot || !slot.blob) {
+                    this.showError('No image to upload');
+                    return;
+                }
+
+                try {
+                    // Show uploading status
+                    this.showSuccess(`Uploading ${slot.name} to cloud...`);
+                    
+                    await this.uploadImageToGCS(slot.blob, slot);
+                    
+                    // Mark as uploaded
+                    slot.uploaded = true;
+                    
+                    // Update UI
+                    this.renderCaptureSlots();
+                    
+                    this.showSuccess(`${slot.name} uploaded successfully!`);
+                    
+                } catch (error) {
+                    console.error('Upload failed:', error);
+                    this.showError(`Upload failed: ${error.message}`);
+                }
             }
 
             async uploadImageToGCS(blob, slot) {
