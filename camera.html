@@ -229,7 +229,7 @@
             right: 0;
             bottom: 0;
             pointer-events: none;
-            z-index: 10;
+            z-index: 20;
         }
         
         .camera-overlay .camera-controls {
@@ -352,8 +352,8 @@
         .treatment-area-container {
             background: #fff;
             border-radius: 16px;
-            padding: 20px 20px;
-            margin: 10px 0 5px 0;
+            padding: 15px 20px;
+            margin: 5px 0 2px 0;
             border: none;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
         }
@@ -367,8 +367,8 @@
         
         /* Content Layout */
         .content-container {
-            padding: 10px 0 20px 0;
-            height: calc(70vh - 200px) !important;
+            padding: 5px 0 10px 0;
+            height: calc(80vh - 150px) !important;
         }
         
         .instructions-section .card {
@@ -445,7 +445,7 @@
         }
         
         .camera-card {
-            height: calc(70vh - 200px) !important;
+            height: calc(80vh - 150px) !important;
         }
         
         .camera-container {
@@ -609,7 +609,8 @@
             transform: translateX(-50%);
             display: flex;
             gap: 15px;
-            z-index: 20;
+            z-index: 30;
+            pointer-events: auto;
         }
         
         .camera-btn {
@@ -716,7 +717,7 @@
             
             .content-container {
                 padding: 0 1rem;
-                height: calc(70vh - 200px) !important;
+                height: calc(80vh - 150px) !important;
             }
         }
         
@@ -738,7 +739,7 @@
             
             .content-container {
                 padding: 0 1rem;
-                height: calc(70vh - 200px) !important;
+                height: calc(80vh - 150px) !important;
             }
         }
     </style>
@@ -1174,11 +1175,9 @@
                     if (usbCamera) {
                         cameraSelect.value = usbCamera.deviceId;
                         this.cameraSettings.deviceId = usbCamera.deviceId;
-                        this.showSuccess(`Auto-selected USB camera: ${usbCamera.label}`);
                     } else if (videoDevices.length > 0) {
                         cameraSelect.value = videoDevices[0].deviceId;
                         this.cameraSettings.deviceId = videoDevices[0].deviceId;
-                        this.showSuccess(`Selected camera: ${videoDevices[0].label || 'Camera 1'}`);
                     }
                     
                 } catch (error) {
@@ -1605,7 +1604,6 @@
                     this.videoElement.srcObject = this.stream;
                     
                     this.updateStatus('Camera On', 'recording');
-                    this.showSuccess('Camera settings applied successfully');
                     
                 } catch (error) {
                     console.error('Error applying camera settings:', error);
@@ -2143,7 +2141,7 @@
                     const stream = await navigator.mediaDevices.getUserMedia({ video: true });
                     stream.getTracks().forEach(track => track.stop());
                     
-                    this.showSuccess('Basic camera test successful! Camera is accessible.');
+                    // Camera test successful
                     this.logEvent('Basic camera test passed');
                     
                     // Now try to initialize with the selected camera
@@ -2234,7 +2232,7 @@
 
             async refreshCameraDevices() {
                 try {
-                    this.showSuccess('Refreshing camera list...');
+                    // Refreshing camera list
                     await this.loadCameraDevices();
                     
                     // If a camera is selected, try to apply it
@@ -2281,9 +2279,7 @@
                             frameRate: settings.frameRate
                         });
                         
-                        if (settings.width >= 1280 && settings.height >= 720) {
-                            this.showSuccess(`Resolution optimized to ${settings.width}x${settings.height}`);
-                        }
+                        // Resolution optimized
                     }
                     
                 } catch (error) {
