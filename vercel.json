@@ -3,6 +3,9 @@
   "functions": {
     "api/upload.py": {
       "maxDuration": 30
+    },
+    "api/get-signed-url.js": {
+      "maxDuration": 10
     }
   },
   "routes": [
@@ -13,6 +16,10 @@
     {
       "src": "/camera.html",
       "dest": "/camera.html"
+    },
+    {
+      "src": "/gcs-test.html",
+      "dest": "/gcs-test.html"
     },
     {
       "src": "/(.*)",

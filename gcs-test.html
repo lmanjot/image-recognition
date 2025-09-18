@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GCS File Uploader Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .upload-section {
+            border: 2px dashed #ddd;
+            padding: 30px;
+            text-align: center;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .upload-section.dragover {
+            border-color: #007bff;
+            background-color: #f8f9fa;
+        }
+        input[type="file"] {
+            margin: 20px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            width: 100%;
+            max-width: 400px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+        }
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        button:hover:not(:disabled) {
+            background-color: #0056b3;
+        }
+        #status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .status-info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .status-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .file-info {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            border-left: 4px solid #007bff;
+        }
+        .log {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 20px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>GCS File Uploader Test</h1>
+        
+        <div class="upload-section" id="uploadSection">
+            <h3>Select a file to upload to Google Cloud Storage</h3>
+            <input type="file" id="fileInput" accept="image/*">
+            <br>
+            <button id="uploadBtn" disabled>Upload to GCS</button>
+            <button id="clearBtn">Clear</button>
+        </div>
+
+        <div id="fileInfo" class="file-info" style="display: none;">
+            <h4>Selected File:</h4>
+            <div id="fileDetails"></div>
+        </div>
+
+        <div id="status"></div>
+
+        <div class="log" id="log" style="display: none;">
+            <h4>Upload Log:</h4>
+            <div id="logContent"></div>
+        </div>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const statusDiv = document.getElementById('status');
+        const fileInfoDiv = document.getElementById('fileInfo');
+        const fileDetailsDiv = document.getElementById('fileDetails');
+        const logDiv = document.getElementById('log');
+        const logContentDiv = document.getElementById('logContent');
+        const uploadSection = document.getElementById('uploadSection');
+
+        // Get the current domain for API calls
+        const API_URL = window.location.origin;
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}`;
+            console.log(logEntry);
+            
+            logContentDiv.innerHTML += `<div class="log-${type}">${logEntry}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            logDiv.style.display = 'block';
+        }
+
+        function setStatus(message, type = 'info') {
+            statusDiv.textContent = message;
+            statusDiv.className = `status-${type}`;
+        }
+
+        function showFileInfo(file) {
+            fileDetailsDiv.innerHTML = `
+                <strong>Name:</strong> ${file.name}<br>
+                <strong>Size:</strong> ${(file.size / 1024).toFixed(2)} KB<br>
+                <strong>Type:</strong> ${file.type}<br>
+                <strong>Last Modified:</strong> ${new Date(file.lastModified).toLocaleString()}
+            `;
+            fileInfoDiv.style.display = 'block';
+        }
+
+        function clearAll() {
+            fileInput.value = '';
+            uploadBtn.disabled = true;
+            statusDiv.textContent = '';
+            statusDiv.className = '';
+            fileInfoDiv.style.display = 'none';
+            logDiv.style.display = 'none';
+            logContentDiv.innerHTML = '';
+        }
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                uploadBtn.disabled = false;
+                showFileInfo(file);
+                log(`File selected: ${file.name} (${(file.size / 1024).toFixed(2)} KB)`);
+            } else {
+                uploadBtn.disabled = true;
+                fileInfoDiv.style.display = 'none';
+            }
+        });
+
+        // Drag and drop functionality
+        uploadSection.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadSection.classList.add('dragover');
+        });
+
+        uploadSection.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            uploadSection.classList.remove('dragover');
+        });
+
+        uploadSection.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadSection.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                fileInput.dispatchEvent(new Event('change'));
+            }
+        });
+
+        clearBtn.addEventListener('click', clearAll);
+
+        uploadBtn.addEventListener('click', async () => {
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            setStatus('Starting upload process...', 'info');
+            uploadBtn.disabled = true;
+            clearBtn.disabled = true;
+
+            try {
+                log('=== GCS Upload Test Started ===');
+                log(`File: ${file.name} (${file.type}, ${(file.size / 1024).toFixed(2)} KB)`);
+                log(`API URL: ${API_URL}/api/get-signed-url`);
+
+                // Step 1: Request signed URL
+                log('Step 1: Requesting signed URL from server...');
+                setStatus('Requesting upload URL...', 'info');
+
+                const response = await fetch(`${API_URL}/api/get-signed-url`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        fileName: file.name,
+                        contentType: file.type
+                    })
+                });
+
+                log(`Server response: ${response.status} ${response.statusText}`);
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    log(`Server error: ${errorText}`, 'error');
+                    throw new Error(`Failed to get signed URL: ${response.status} - ${errorText}`);
+                }
+
+                const { url, fileName, contentType } = await response.json();
+                log(`Signed URL received: ${url.substring(0, 100)}...`);
+                log(`File name: ${fileName}`);
+                log(`Content type: ${contentType}`);
+
+                // Step 2: Upload to GCS
+                log('Step 2: Uploading file directly to GCS...');
+                setStatus('Uploading file directly to GCS...', 'info');
+
+                const uploadResponse = await fetch(url, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': file.type },
+                    body: file,
+                });
+
+                log(`GCS response: ${uploadResponse.status} ${uploadResponse.statusText}`);
+
+                if (uploadResponse.ok) {
+                    log('✅ Upload successful!', 'success');
+                    setStatus('Upload successful!', 'success');
+                } else {
+                    const errorBody = await uploadResponse.text();
+                    log(`GCS error: ${errorBody}`, 'error');
+                    throw new Error(`Upload failed with status: ${uploadResponse.status}, body: ${errorBody}`);
+                }
+
+            } catch (error) {
+                console.error('Upload error:', error);
+                log(`❌ Error: ${error.message}`, 'error');
+                setStatus(`Error: ${error.message}`, 'error');
+            } finally {
+                uploadBtn.disabled = false;
+                clearBtn.disabled = false;
+                log('=== Upload Test Complete ===');
+            }
+        });
+    </script>
+</body>
+</html>
