@@ -641,30 +641,6 @@
             background: #c82333;
         }
 
-        .log-entry {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 5px;
-            padding: 2px 0;
-            border-bottom: 1px solid #eee;
-        }
-
-        .log-time {
-            color: #666;
-            font-size: 11px;
-            min-width: 80px;
-        }
-
-        .log-action {
-            color: #007bff;
-            font-weight: bold;
-            min-width: 120px;
-        }
-
-        .log-details {
-            color: #333;
-            flex: 1;
-        }
         
         
         
@@ -894,17 +870,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Camera Action Log -->
-                                <div class="card mt-2">
-                                    <div class="card-header">
-                                        <h6><i class="fas fa-list"></i> Camera Actions Log</h6>
-                                    </div>
-                                    <div class="card-body">
-                                        <div id="cameraActionLog" style="max-height: 200px; overflow-y: auto; font-family: monospace; font-size: 12px;">
-                                            <div class="text-muted">No camera actions logged yet...</div>
-                                        </div>
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -1085,11 +1050,6 @@
                     this.videoElement.srcObject = this.stream;
                     this.hideNoCameraMessage();
                     
-                    // Log camera initialization
-                    this.logCameraAction('CAMERA_INITIALIZED', {
-                        deviceId: this.cameraSettings.deviceId,
-                        streamTracks: this.stream.getTracks().length
-                    });
                     
                     // Log actual camera settings and optimize resolution
                     if (this.stream.getVideoTracks().length > 0) {
@@ -1268,36 +1228,6 @@
                     }
                 });
                 
-                // Listen for mouse events (some cameras might send mouse events)
-                document.addEventListener('mousedown', (e) => {
-                    this.logCameraAction('MOUSE_DOWN', {
-                        button: e.button,
-                        clientX: e.clientX,
-                        clientY: e.clientY,
-                        target: e.target.tagName,
-                        targetId: e.target.id
-                    });
-                });
-
-                // Listen for keydown events (physical camera buttons might send these)
-                document.addEventListener('keydown', (e) => {
-                    this.logCameraAction('KEY_DOWN', {
-                        key: e.key,
-                        code: e.code,
-                        ctrlKey: e.ctrlKey,
-                        altKey: e.altKey,
-                        shiftKey: e.shiftKey,
-                        metaKey: e.metaKey
-                    });
-                });
-
-                // Listen for keyup events
-                document.addEventListener('keyup', (e) => {
-                    this.logCameraAction('KEY_UP', {
-                        key: e.key,
-                        code: e.code
-                    });
-                });
                 
                 // Listen for focus events (camera button might trigger focus)
                 window.addEventListener('focus', () => {
@@ -1654,20 +1584,12 @@
             }
 
             captureSnapshot() {
-                this.logCameraAction('SNAPSHOT_REQUESTED', {
-                    source: 'manual_click',
-                    streamActive: !!this.stream,
-                    videoReady: this.videoElement ? this.videoElement.readyState : 'unknown'
-                });
-                
                 if (!this.stream) {
-                    this.logCameraAction('SNAPSHOT_FAILED', { reason: 'no_stream' });
                     this.showError('Camera not available - no stream');
                     return;
                 }
                 
                 if (!this.canvas) {
-                    this.logCameraAction('SNAPSHOT_FAILED', { reason: 'no_canvas' });
                     this.showError('Canvas not available');
                     return;
                 }
@@ -1712,12 +1634,6 @@
                                 type: blob.type
                             });
                             
-                            this.logCameraAction('SNAPSHOT_SUCCESS', {
-                                blobSize: blob.size,
-                                blobType: blob.type,
-                                hasActiveSlot: this.currentActiveSlot !== null,
-                                totalSlots: this.captureSlots.length
-                            });
                             
                             // Assign to active slot if available
                             if (this.currentActiveSlot !== null && this.captureSlots.length > 0) {
@@ -2062,47 +1978,6 @@
                 }
             }
 
-            logCameraAction(action, details = {}) {
-                const timestamp = new Date().toISOString();
-                const logEntry = {
-                    timestamp,
-                    action,
-                    currentCamera: this.currentCamera,
-                    details,
-                    streamActive: !!this.stream,
-                    videoReady: this.videoElement ? this.videoElement.readyState : 'unknown'
-                };
-                
-                console.log(`[CAMERA ACTION] ${timestamp} - ${action}:`, logEntry);
-                
-                // Also store in a visible log for debugging
-                if (!this.cameraActionLog) {
-                    this.cameraActionLog = [];
-                }
-                this.cameraActionLog.push(logEntry);
-                
-                // Keep only last 50 entries
-                if (this.cameraActionLog.length > 50) {
-                    this.cameraActionLog = this.cameraActionLog.slice(-50);
-                }
-                
-                // Update visible log if element exists
-                this.updateCameraActionLog();
-            }
-
-            updateCameraActionLog() {
-                const logContainer = document.getElementById('cameraActionLog');
-                if (!logContainer || !this.cameraActionLog) return;
-                
-                const recentLogs = this.cameraActionLog.slice(-10); // Show last 10 entries
-                logContainer.innerHTML = recentLogs.map(log => 
-                    `<div class="log-entry">
-                        <span class="log-time">${new Date(log.timestamp).toLocaleTimeString()}</span>
-                        <span class="log-action">${log.action}</span>
-                        <span class="log-details">${JSON.stringify(log.details)}</span>
-                    </div>`
-                ).join('');
-            }
 
             async uploadImageToGCS(blob, slot) {
                 try {
