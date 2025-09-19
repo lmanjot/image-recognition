@@ -641,28 +641,6 @@
         }
         
         
-        .status-indicator {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: rgba(0,0,0,0.7);
-            color: white;
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-size: 14px;
-            z-index: 20;
-        }
-        
-        .status-indicator.recording {
-            background: #dc3545;
-            animation: pulse 1.5s infinite;
-        }
-        
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
-        }
         
         .no-camera {
             text-align: center;
@@ -832,16 +810,10 @@
                                     <div class="camera-container" id="cameraContainer">
                                         <video id="videoElement" autoplay muted playsinline></video>
                                         <div class="camera-overlay">
-                                            <div class="status-indicator" id="statusIndicator">
-                                                <i class="fas fa-circle"></i> Camera Off
-                                            </div>
                                             <div class="camera-controls">
                                                 <button class="camera-btn capture-btn" id="captureBtn" title="Take Snapshot" style="pointer-events: auto;">
                                                     <i class="fas fa-camera"></i>
                                                 </button>
-                                            </div>
-                                            <div class="position-absolute top-0 start-0 m-3">
-                                                <div class="badge bg-info" id="captureStatus">Ready</div>
                                             </div>
                                         </div>
                                     </div>
@@ -910,6 +882,11 @@
                                         <div class="progress-bar" id="progressBar" role="progressbar" style="width: 0%"></div>
                                     </div>
                                     <small class="text-muted" id="progressText">0 of 0 photos captured</small>
+                                </div>
+                                <div id="uploadAllSection" class="mt-3" style="display: none;">
+                                    <button class="btn btn-success w-100" id="uploadAllBtn" onclick="window.trichoscopeCamera.uploadAllImages()">
+                                        <i class="fas fa-cloud-upload-alt"></i> Upload All to Cloud
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -1067,7 +1044,6 @@
                     }
                     
                     this.videoElement.srcObject = this.stream;
-                    this.updateStatus('Camera On', 'recording');
                     this.hideNoCameraMessage();
                     
                     // Log actual camera settings and optimize resolution
@@ -1102,7 +1078,6 @@
                     console.error('Error accessing camera:', error);
                     this.logEvent('Camera initialization failed', error);
                     this.showNoCameraMessage();
-                    this.updateStatus('Camera Error', '');
                     
                     // Show specific error message with recovery options
                     if (error.name === 'NotAllowedError') {
@@ -1603,7 +1578,6 @@
 
                     this.videoElement.srcObject = this.stream;
                     
-                    this.updateStatus('Camera On', 'recording');
                     
                 } catch (error) {
                     console.error('Error applying camera settings:', error);
@@ -1769,6 +1743,7 @@
                 const slotsContainer = document.getElementById('captureSlots');
                 const checklistCard = document.getElementById('captureChecklistCard');
                 const progressDiv = document.getElementById('captureProgress');
+                const uploadAllSection = document.getElementById('uploadAllSection');
                 
                 if (this.captureSlots.length === 0) {
                     checklistCard.style.display = 'none';
@@ -1777,6 +1752,14 @@
                 
                 checklistCard.style.display = 'block';
                 progressDiv.style.display = 'block';
+                
+                // Show Upload All button if there are completed slots
+                const completedSlots = this.captureSlots.filter(slot => slot.completed);
+                if (completedSlots.length > 0) {
+                    uploadAllSection.style.display = 'block';
+                } else {
+                    uploadAllSection.style.display = 'none';
+                }
                 
                 slotsContainer.innerHTML = '';
                 
@@ -1963,6 +1946,44 @@
                 } catch (error) {
                     console.error('Upload failed:', error);
                     this.showError(`Upload failed: ${error.message}`);
+                }
+            }
+
+            async uploadAllImages() {
+                const completedSlots = this.captureSlots.filter(slot => slot.completed && !slot.uploaded);
+                
+                if (completedSlots.length === 0) {
+                    this.showError('No images to upload');
+                    return;
+                }
+
+                const uploadAllBtn = document.getElementById('uploadAllBtn');
+                const originalText = uploadAllBtn.innerHTML;
+                
+                try {
+                    uploadAllBtn.disabled = true;
+                    uploadAllBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+                    
+                    this.showSuccess(`Uploading ${completedSlots.length} images to cloud...`);
+                    
+                    // Upload all images in parallel
+                    const uploadPromises = completedSlots.map(slot => this.uploadImageToGCS(slot.blob, slot));
+                    await Promise.all(uploadPromises);
+                    
+                    // Mark all as uploaded
+                    completedSlots.forEach(slot => {
+                        slot.uploaded = true;
+                    });
+                    
+                    this.renderCaptureSlots();
+                    this.showSuccess(`All ${completedSlots.length} images uploaded successfully!`);
+                    
+                } catch (error) {
+                    console.error('Bulk upload failed:', error);
+                    this.showError(`Upload failed: ${error.message}`);
+                } finally {
+                    uploadAllBtn.disabled = false;
+                    uploadAllBtn.innerHTML = originalText;
                 }
             }
 
@@ -2226,7 +2247,6 @@
 
             async retryCameraAccess() {
                 this.hideNoCameraMessage();
-                this.updateStatus('Connecting...', '');
                 await this.initializeCamera();
             }
 
@@ -2288,11 +2308,6 @@
                 }
             }
 
-            updateStatus(message, className) {
-                const statusIndicator = document.getElementById('statusIndicator');
-                statusIndicator.textContent = message;
-                statusIndicator.className = `status-indicator ${className}`;
-            }
 
             showNoCameraMessage() {
                 document.getElementById('noCameraMessage').style.display = 'block';
@@ -2324,21 +2339,6 @@
                 errorModal.show();
             }
 
-            updateCaptureStatus(text, className) {
-                const statusElement = document.getElementById('captureStatus');
-                if (statusElement) {
-                    statusElement.textContent = text;
-                    statusElement.className = `badge ${className}`;
-                    
-                    // Reset to ready after 2 seconds
-                    if (className !== 'bg-info') {
-                        setTimeout(() => {
-                            statusElement.textContent = 'Ready';
-                            statusElement.className = 'badge bg-info';
-                        }, 2000);
-                    }
-                }
-            }
 
             showSuccess(message) {
                 // Create a temporary success toast
