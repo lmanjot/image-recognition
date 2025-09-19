@@ -604,7 +604,7 @@
         
         .camera-controls {
             position: absolute;
-            top: 20px;
+            bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
@@ -1587,12 +1587,10 @@
 
             captureSnapshot() {
                 this.logEvent('Capture snapshot called');
-                this.updateCaptureStatus('Capturing...', 'bg-warning');
                 
                 if (!this.stream) {
                     this.logEvent('ERROR: No camera stream available');
                     this.showError('Camera not available - no stream');
-                    this.updateCaptureStatus('Error', 'bg-danger');
                     return;
                 }
                 
@@ -1650,11 +1648,9 @@
                                 this.downloadSnapshot(blob);
                             }
                             
-                            this.updateCaptureStatus('Success!', 'bg-success');
                         } else {
                             this.logEvent('ERROR: Failed to create blob');
                             this.showError('Failed to create snapshot blob');
-                            this.updateCaptureStatus('Error', 'bg-danger');
                         }
                     }, 'image/jpeg', 1.0); // Always max quality
                     
