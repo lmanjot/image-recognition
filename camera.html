@@ -368,7 +368,7 @@
         /* Content Layout */
         .content-container {
             padding: 5px 0 10px 0;
-            height: calc(72vh - 150px) !important;
+            height: calc(79vh - 150px) !important;
         }
         
         .instructions-section .card {
@@ -445,7 +445,7 @@
         }
         
         .camera-card {
-            height: calc(72vh - 150px) !important;
+            height: calc(79vh - 150px) !important;
         }
         
         .camera-container {
@@ -604,7 +604,7 @@
         
         .camera-controls {
             position: absolute;
-            bottom: 20px;
+            bottom: 30px;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
@@ -625,6 +625,28 @@
             cursor: pointer;
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .camera-switch-btn {
+            width: 70px;
+            height: 70px;
+            font-size: 28px;
+            background: rgba(108, 117, 125, 0.8);
+            color: white;
+        }
+
+        .camera-switch-btn:hover {
+            background: rgba(108, 117, 125, 1);
+            transform: scale(1.05);
+        }
+
+        .camera-switch-btn.active {
+            background: #007bff;
+            color: white;
+        }
+
+        .camera-switch-btn.active:hover {
+            background: #0056b3;
         }
         
         .camera-btn:hover {
@@ -695,7 +717,7 @@
             
             .content-container {
                 padding: 0 1rem;
-                height: calc(72vh - 150px) !important;
+                height: calc(79vh - 150px) !important;
             }
         }
         
@@ -717,7 +739,7 @@
             
             .content-container {
                 padding: 0 1rem;
-                height: calc(72vh - 150px) !important;
+                height: calc(79vh - 150px) !important;
             }
         }
     </style>
@@ -811,7 +833,13 @@
                                         <video id="videoElement" autoplay muted playsinline></video>
                                         <div class="camera-overlay">
                                             <div class="camera-controls">
+                                                <button class="camera-btn camera-switch-btn" id="frontCameraBtn" title="Front Camera" style="pointer-events: auto;">
+                                                    <i class="fas fa-camera"></i>
+                                                </button>
                                                 <button class="camera-btn capture-btn" id="captureBtn" title="Take Snapshot" style="pointer-events: auto;">
+                                                    <i class="fas fa-camera"></i>
+                                                </button>
+                                                <button class="camera-btn camera-switch-btn" id="backCameraBtn" title="Back Camera" style="pointer-events: auto;">
                                                     <i class="fas fa-camera"></i>
                                                 </button>
                                             </div>
@@ -956,6 +984,7 @@
                 this.capturedImages = {};
                 this.previewMode = false;
                 this.contactData = null;
+                this.currentCamera = 'front'; // Track current camera (front/back)
                 this.captureGuide = {
                     frontal: {
                         title: "Frontal Hairline",
@@ -1045,6 +1074,9 @@
                     
                     this.videoElement.srcObject = this.stream;
                     this.hideNoCameraMessage();
+                    
+                    // Initialize camera button states
+                    this.updateCameraButtonStates();
                     
                     // Log actual camera settings and optimize resolution
                     if (this.stream.getVideoTracks().length > 0) {
@@ -1495,6 +1527,28 @@
                     
                 } else {
                     this.logEvent('ERROR: Capture button not found');
+                }
+
+                // Camera switch buttons
+                const frontCameraBtn = document.getElementById('frontCameraBtn');
+                const backCameraBtn = document.getElementById('backCameraBtn');
+                
+                if (frontCameraBtn) {
+                    frontCameraBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        this.logEvent('Front camera button clicked');
+                        this.handleCameraSwitch('front');
+                    });
+                }
+                
+                if (backCameraBtn) {
+                    backCameraBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        this.logEvent('Back camera button clicked');
+                        this.handleCameraSwitch('back');
+                    });
                 }
 
                 // Apply settings button
@@ -1980,6 +2034,50 @@
                 } finally {
                     uploadAllBtn.disabled = false;
                     uploadAllBtn.innerHTML = originalText;
+                }
+            }
+
+            handleCameraSwitch(cameraType) {
+                this.logEvent('Camera switch requested', { 
+                    requestedCamera: cameraType, 
+                    currentCamera: this.currentCamera 
+                });
+
+                // If clicking the same camera that's already active, take a snapshot
+                if (this.currentCamera === cameraType) {
+                    this.logEvent('Same camera clicked - taking snapshot');
+                    this.captureSnapshot();
+                    return;
+                }
+
+                // Switch to the new camera
+                this.currentCamera = cameraType;
+                this.updateCameraButtonStates();
+                
+                // For now, just log the switch - in a real implementation, 
+                // you would switch between different camera devices
+                this.logEvent('Camera switched', { newCamera: cameraType });
+                this.showSuccess(`Switched to ${cameraType} camera`);
+            }
+
+            updateCameraButtonStates() {
+                const frontBtn = document.getElementById('frontCameraBtn');
+                const backBtn = document.getElementById('backCameraBtn');
+                
+                if (frontBtn) {
+                    if (this.currentCamera === 'front') {
+                        frontBtn.classList.add('active');
+                    } else {
+                        frontBtn.classList.remove('active');
+                    }
+                }
+                
+                if (backBtn) {
+                    if (this.currentCamera === 'back') {
+                        backBtn.classList.add('active');
+                    } else {
+                        backBtn.classList.remove('active');
+                    }
                 }
             }
 
