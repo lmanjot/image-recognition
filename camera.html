@@ -627,27 +627,6 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
 
-        .camera-switch-btn {
-            width: 70px;
-            height: 70px;
-            font-size: 28px;
-            background: rgba(108, 117, 125, 0.8);
-            color: white;
-        }
-
-        .camera-switch-btn:hover {
-            background: rgba(108, 117, 125, 1);
-            transform: scale(1.05);
-        }
-
-        .camera-switch-btn.active {
-            background: #007bff;
-            color: white;
-        }
-
-        .camera-switch-btn.active:hover {
-            background: #0056b3;
-        }
         
         .camera-btn:hover {
             transform: scale(1.1);
@@ -660,6 +639,31 @@
         
         .capture-btn:hover {
             background: #c82333;
+        }
+
+        .log-entry {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 5px;
+            padding: 2px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .log-time {
+            color: #666;
+            font-size: 11px;
+            min-width: 80px;
+        }
+
+        .log-action {
+            color: #007bff;
+            font-weight: bold;
+            min-width: 120px;
+        }
+
+        .log-details {
+            color: #333;
+            flex: 1;
         }
         
         
@@ -833,13 +837,7 @@
                                         <video id="videoElement" autoplay muted playsinline></video>
                                         <div class="camera-overlay">
                                             <div class="camera-controls">
-                                                <button class="camera-btn camera-switch-btn" id="frontCameraBtn" title="Front Camera" style="pointer-events: auto;">
-                                                    <i class="fas fa-camera"></i>
-                                                </button>
                                                 <button class="camera-btn capture-btn" id="captureBtn" title="Take Snapshot" style="pointer-events: auto;">
-                                                    <i class="fas fa-camera"></i>
-                                                </button>
-                                                <button class="camera-btn camera-switch-btn" id="backCameraBtn" title="Back Camera" style="pointer-events: auto;">
                                                     <i class="fas fa-camera"></i>
                                                 </button>
                                             </div>
@@ -892,6 +890,18 @@
                                             <button class="btn btn-primary w-100" id="applySettingsBtn">
                                                 <i class="fas fa-check"></i> Apply Settings
                                             </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Camera Action Log -->
+                                <div class="card mt-2">
+                                    <div class="card-header">
+                                        <h6><i class="fas fa-list"></i> Camera Actions Log</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="cameraActionLog" style="max-height: 200px; overflow-y: auto; font-family: monospace; font-size: 12px;">
+                                            <div class="text-muted">No camera actions logged yet...</div>
                                         </div>
                                     </div>
                                 </div>
@@ -1075,8 +1085,11 @@
                     this.videoElement.srcObject = this.stream;
                     this.hideNoCameraMessage();
                     
-                    // Initialize camera button states
-                    this.updateCameraButtonStates();
+                    // Log camera initialization
+                    this.logCameraAction('CAMERA_INITIALIZED', {
+                        deviceId: this.cameraSettings.deviceId,
+                        streamTracks: this.stream.getTracks().length
+                    });
                     
                     // Log actual camera settings and optimize resolution
                     if (this.stream.getVideoTracks().length > 0) {
@@ -1257,10 +1270,32 @@
                 
                 // Listen for mouse events (some cameras might send mouse events)
                 document.addEventListener('mousedown', (e) => {
-                    this.logEvent('Mouse down', {
+                    this.logCameraAction('MOUSE_DOWN', {
                         button: e.button,
                         clientX: e.clientX,
-                        clientY: e.clientY
+                        clientY: e.clientY,
+                        target: e.target.tagName,
+                        targetId: e.target.id
+                    });
+                });
+
+                // Listen for keydown events (physical camera buttons might send these)
+                document.addEventListener('keydown', (e) => {
+                    this.logCameraAction('KEY_DOWN', {
+                        key: e.key,
+                        code: e.code,
+                        ctrlKey: e.ctrlKey,
+                        altKey: e.altKey,
+                        shiftKey: e.shiftKey,
+                        metaKey: e.metaKey
+                    });
+                });
+
+                // Listen for keyup events
+                document.addEventListener('keyup', (e) => {
+                    this.logCameraAction('KEY_UP', {
+                        key: e.key,
+                        code: e.code
                     });
                 });
                 
@@ -1529,27 +1564,6 @@
                     this.logEvent('ERROR: Capture button not found');
                 }
 
-                // Camera switch buttons
-                const frontCameraBtn = document.getElementById('frontCameraBtn');
-                const backCameraBtn = document.getElementById('backCameraBtn');
-                
-                if (frontCameraBtn) {
-                    frontCameraBtn.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        this.logEvent('Front camera button clicked');
-                        this.handleCameraSwitch('front');
-                    });
-                }
-                
-                if (backCameraBtn) {
-                    backCameraBtn.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        this.logEvent('Back camera button clicked');
-                        this.handleCameraSwitch('back');
-                    });
-                }
 
                 // Apply settings button
                 document.getElementById('applySettingsBtn').addEventListener('click', () => {
@@ -1640,16 +1654,20 @@
             }
 
             captureSnapshot() {
-                this.logEvent('Capture snapshot called');
+                this.logCameraAction('SNAPSHOT_REQUESTED', {
+                    source: 'manual_click',
+                    streamActive: !!this.stream,
+                    videoReady: this.videoElement ? this.videoElement.readyState : 'unknown'
+                });
                 
                 if (!this.stream) {
-                    this.logEvent('ERROR: No camera stream available');
+                    this.logCameraAction('SNAPSHOT_FAILED', { reason: 'no_stream' });
                     this.showError('Camera not available - no stream');
                     return;
                 }
                 
                 if (!this.canvas) {
-                    this.logEvent('ERROR: No canvas available');
+                    this.logCameraAction('SNAPSHOT_FAILED', { reason: 'no_canvas' });
                     this.showError('Canvas not available');
                     return;
                 }
@@ -1692,6 +1710,13 @@
                             this.logEvent('Snapshot blob created', {
                                 size: blob.size,
                                 type: blob.type
+                            });
+                            
+                            this.logCameraAction('SNAPSHOT_SUCCESS', {
+                                blobSize: blob.size,
+                                blobType: blob.type,
+                                hasActiveSlot: this.currentActiveSlot !== null,
+                                totalSlots: this.captureSlots.length
                             });
                             
                             // Assign to active slot if available
@@ -2037,48 +2062,46 @@
                 }
             }
 
-            handleCameraSwitch(cameraType) {
-                this.logEvent('Camera switch requested', { 
-                    requestedCamera: cameraType, 
-                    currentCamera: this.currentCamera 
-                });
-
-                // If clicking the same camera that's already active, take a snapshot
-                if (this.currentCamera === cameraType) {
-                    this.logEvent('Same camera clicked - taking snapshot');
-                    this.captureSnapshot();
-                    return;
-                }
-
-                // Switch to the new camera
-                this.currentCamera = cameraType;
-                this.updateCameraButtonStates();
+            logCameraAction(action, details = {}) {
+                const timestamp = new Date().toISOString();
+                const logEntry = {
+                    timestamp,
+                    action,
+                    currentCamera: this.currentCamera,
+                    details,
+                    streamActive: !!this.stream,
+                    videoReady: this.videoElement ? this.videoElement.readyState : 'unknown'
+                };
                 
-                // For now, just log the switch - in a real implementation, 
-                // you would switch between different camera devices
-                this.logEvent('Camera switched', { newCamera: cameraType });
-                this.showSuccess(`Switched to ${cameraType} camera`);
+                console.log(`[CAMERA ACTION] ${timestamp} - ${action}:`, logEntry);
+                
+                // Also store in a visible log for debugging
+                if (!this.cameraActionLog) {
+                    this.cameraActionLog = [];
+                }
+                this.cameraActionLog.push(logEntry);
+                
+                // Keep only last 50 entries
+                if (this.cameraActionLog.length > 50) {
+                    this.cameraActionLog = this.cameraActionLog.slice(-50);
+                }
+                
+                // Update visible log if element exists
+                this.updateCameraActionLog();
             }
 
-            updateCameraButtonStates() {
-                const frontBtn = document.getElementById('frontCameraBtn');
-                const backBtn = document.getElementById('backCameraBtn');
+            updateCameraActionLog() {
+                const logContainer = document.getElementById('cameraActionLog');
+                if (!logContainer || !this.cameraActionLog) return;
                 
-                if (frontBtn) {
-                    if (this.currentCamera === 'front') {
-                        frontBtn.classList.add('active');
-                    } else {
-                        frontBtn.classList.remove('active');
-                    }
-                }
-                
-                if (backBtn) {
-                    if (this.currentCamera === 'back') {
-                        backBtn.classList.add('active');
-                    } else {
-                        backBtn.classList.remove('active');
-                    }
-                }
+                const recentLogs = this.cameraActionLog.slice(-10); // Show last 10 entries
+                logContainer.innerHTML = recentLogs.map(log => 
+                    `<div class="log-entry">
+                        <span class="log-time">${new Date(log.timestamp).toLocaleTimeString()}</span>
+                        <span class="log-action">${log.action}</span>
+                        <span class="log-details">${JSON.stringify(log.details)}</span>
+                    </div>`
+                ).join('');
             }
 
             async uploadImageToGCS(blob, slot) {
