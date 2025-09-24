@@ -9,6 +9,9 @@ import io
 from PIL import Image, ImageDraw, ImageFont
 import requests
 import time
+import uuid
+from datetime import datetime
+from database import get_database_manager, initialize_database
 
 # Only import Google Auth if available (reduces bundle size)
 try:
@@ -1279,6 +1282,35 @@ def create_annotated_image(image_bytes, predictions, padding_factor=0.0):
         traceback.print_exc()
         return None
 
+def upload_to_gcs(image_bytes, filename, user_id):
+    """
+    Upload image to Google Cloud Storage
+    Returns the GCS URL if successful, None otherwise
+    """
+    try:
+        # For now, we'll generate a mock GCS URL since we don't have GCS setup
+        # In a real implementation, you would use the Google Cloud Storage client
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        unique_filename = f"{user_id}/{timestamp}_{filename}"
+        gcs_url = f"gs://hairscan-images/{unique_filename}"
+        
+        print(f"📤 Mock GCS upload: {gcs_url}")
+        print(f"  - File size: {len(image_bytes)} bytes")
+        print(f"  - User ID: {user_id}")
+        
+        # TODO: Implement actual GCS upload using google-cloud-storage
+        # from google.cloud import storage
+        # client = storage.Client()
+        # bucket = client.bucket('hairscan-images')
+        # blob = bucket.blob(unique_filename)
+        # blob.upload_from_string(image_bytes, content_type='image/jpeg')
+        
+        return gcs_url
+        
+    except Exception as e:
+        print(f"❌ Error uploading to GCS: {e}")
+        return None
+
 def parse_multipart_data(body, content_type):
     """Parse multipart form data from request body"""
     try:
@@ -1292,6 +1324,11 @@ def parse_multipart_data(body, content_type):
         # Extract form data
         image_file = form.getfirst('image')
         
+        # User information
+        user_id = form.getfirst('userId', str(uuid.uuid4()))  # Generate UUID if not provided
+        user_email = form.getfirst('userEmail')
+        user_name = form.getfirst('userName')
+        
         # Model selection
         run_density_model = form.getfirst('runDensityModel', 'false').lower() == 'true'
         run_thickness_model = form.getfirst('runThicknessModel', 'false').lower() == 'true'
@@ -1301,6 +1338,9 @@ def parse_multipart_data(body, content_type):
         print(f"  - runThicknessModel raw: '{form.getfirst('runThicknessModel', 'false')}'")
         print(f"  - run_density_model: {run_density_model}")
         print(f"  - run_thickness_model: {run_thickness_model}")
+        print(f"  - user_id: {user_id}")
+        print(f"  - user_email: {user_email}")
+        print(f"  - user_name: {user_name}")
         
         # Density model parameters
         density_confidence = float(form.getfirst('densityConfidence', 0.2))
@@ -1316,6 +1356,9 @@ def parse_multipart_data(body, content_type):
         
         return {
             'image': image_file,
+            'user_id': user_id,
+            'user_email': user_email,
+            'user_name': user_name,
             'run_density_model': run_density_model,
             'run_thickness_model': run_thickness_model,
             'density_confidence': density_confidence,
@@ -1354,6 +1397,10 @@ class handler(BaseHTTPRequestHandler):
             return
     
     def do_POST(self):
+        # Initialize database connection
+        db_manager = get_database_manager()
+        upload_id = None
+        
         try:
             # Get content length and type
             content_length = int(self.headers.get('Content-Length', 0))
@@ -1369,21 +1416,53 @@ class handler(BaseHTTPRequestHandler):
                 self.send_error_response('No image file provided', 400)
                 return
             
-            # Get model selection and parameters
+            # Extract user and image information
+            user_id = form_data['user_id']
+            user_email = form_data['user_email']
+            user_name = form_data['user_name']
             run_density_model = form_data['run_density_model']
             run_thickness_model = form_data['run_thickness_model']
             
-            print(f"🖼️ Processing image - Density: {run_density_model}, Thickness: {run_thickness_model}")
+            print(f"🖼️ Processing image for user {user_id} - Density: {run_density_model}, Thickness: {run_thickness_model}")
             
             # Convert image file to bytes
             if hasattr(form_data['image'], 'file'):
                 image_bytes = form_data['image'].file.read()
+                filename = getattr(form_data['image'], 'filename', 'unknown.jpg')
             else:
                 image_bytes = form_data['image']
+                filename = 'uploaded_image.jpg'
+            
+            # Get file information
+            file_size = len(image_bytes)
+            file_type = 'image/jpeg'  # Default, could be determined from file header
+            
+            # Insert user information into database
+            if user_email or user_name:
+                db_manager.insert_user(user_id, user_email, user_name)
+            
+            # Upload to GCS (mock for now)
+            gcs_url = upload_to_gcs(image_bytes, filename, user_id)
+            
+            # Insert initial picture upload record
+            upload_id = db_manager.insert_picture_upload(
+                user_id=user_id,
+                filename=filename,
+                file_size=file_size,
+                file_type=file_type,
+                gcs_url=gcs_url,
+                density_model_run=run_density_model,
+                thickness_model_run=run_thickness_model,
+                processing_status='processing'
+            )
+            
+            if not upload_id:
+                print("⚠️ Failed to create database record, continuing with analysis...")
             
             # Initialize response data
             response_data = {
                 'success': True,
+                'upload_id': upload_id,
                 'density_results': None,
                 'thickness_results': None,
                 'combined_annotated_image': None
@@ -1458,15 +1537,59 @@ class handler(BaseHTTPRequestHandler):
                     response_data['combined_annotated_image'] = combined_image
             
             # Calculate combined metrics if we have any predictions
+            combined_metrics = None
             if density_predictions or thickness_predictions:
                 print("📊 Calculating combined metrics...")
                 combined_metrics = calculate_combined_metrics(density_predictions, thickness_predictions)
                 response_data['combined_metrics'] = combined_metrics
             
+            # Update database with analysis results
+            if upload_id:
+                analysis_results = {
+                    'density_results': response_data.get('density_results'),
+                    'thickness_results': response_data.get('thickness_results'),
+                    'combined_metrics': combined_metrics,
+                    'processing_timestamp': datetime.now().isoformat()
+                }
+                
+                # Remove large image data from database storage to keep it lightweight
+                if analysis_results['density_results']:
+                    analysis_results['density_results'] = {
+                        'predictions': analysis_results['density_results']['predictions'],
+                        'follicular_metrics': analysis_results['density_results']['follicular_metrics'],
+                        'total_predictions': analysis_results['density_results']['total_predictions']
+                    }
+                
+                if analysis_results['thickness_results']:
+                    analysis_results['thickness_results'] = {
+                        'predictions': analysis_results['thickness_results']['predictions'],
+                        'thickness_metrics': analysis_results['thickness_results']['thickness_metrics'],
+                        'total_predictions': analysis_results['thickness_results']['total_predictions']
+                    }
+                
+                db_manager.update_picture_upload(
+                    upload_id=upload_id,
+                    analysis_results=analysis_results,
+                    processing_status='completed'
+                )
+                print(f"✅ Database updated with analysis results for upload {upload_id}")
+            
             self.send_success_response(response_data)
             
         except Exception as e:
             print(f"❌ Error processing request: {e}")
+            
+            # Update database with error status if we have an upload_id
+            if upload_id:
+                try:
+                    db_manager.update_picture_upload(
+                        upload_id=upload_id,
+                        processing_status='error',
+                        error_message=str(e)
+                    )
+                except Exception as db_error:
+                    print(f"❌ Failed to update database with error: {db_error}")
+            
             self.send_error_response(str(e), 500)
     
     def do_OPTIONS(self):
