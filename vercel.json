@@ -6,6 +6,9 @@
     },
     "api/get-signed-url.js": {
       "maxDuration": 10
+    },
+    "api/test-postgres.js": {
+      "maxDuration": 10
     }
   },
   "routes": [
@@ -20,6 +23,10 @@
     {
       "src": "/gcs-test.html",
       "dest": "/gcs-test.html"
+    },
+    {
+      "src": "/test-postgres.html",
+      "dest": "/test-postgres.html"
     },
     {
       "src": "/(.*)",

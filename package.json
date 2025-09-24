@@ -4,7 +4,8 @@
   "description": "GCS upload test for Mara project",
   "main": "index.js",
   "dependencies": {
-    "@google-cloud/storage": "^7.7.0"
+    "@google-cloud/storage": "^7.7.0",
+    "pg": "^8.11.3"
   },
   "engines": {
     "node": ">=18.0.0"
