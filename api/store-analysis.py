@@ -8,14 +8,26 @@ from psycopg2.extras import RealDictCursor
 def get_database_connection():
     """Get PostgreSQL database connection using same config as test-postgres.js"""
     try:
+        pg_user = os.getenv('pg_user')
+        pg_pw = os.getenv('pg_pw')
+        
+        if not pg_user or not pg_pw:
+            print(f"❌ PostgreSQL credentials not configured:")
+            print(f"  - pg_user: {'SET' if pg_user else 'NOT SET'}")
+            print(f"  - pg_pw: {'SET' if pg_pw else 'NOT SET'}")
+            return None
+        
+        print(f"🔍 Connecting to PostgreSQL with user: {pg_user}")
+        
         conn = psycopg2.connect(
             host="mara.postgres.database.azure.com",
             database="postgres",
-            user=os.getenv('pg_user'),
-            password=os.getenv('pg_pw'),
+            user=pg_user,
+            password=pg_pw,
             port=5432,
             sslmode='require'
         )
+        print("✅ Database connection successful")
         return conn
     except Exception as e:
         print(f"❌ Database connection failed: {e}")

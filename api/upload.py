@@ -18,6 +18,8 @@ try:
 except ImportError as e:
     POSTGRES_AVAILABLE = False
     print(f"⚠️ PostgreSQL storage module not available: {e}")
+    print("💡 To enable PostgreSQL storage, install psycopg2-binary:")
+    print("   pip install psycopg2-binary")
 
 # Only import Google Auth if available (reduces bundle size)
 try:
