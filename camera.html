@@ -2202,8 +2202,8 @@
                                 url: '', // Camera app doesn't upload to GCS
                                 density_model_run: true,
                                 thickness_model_run: true,
-                                density_results: result.density_results,
-                                thickness_results: result.thickness_results,
+                                density_results: result.density_results ? result.density_results.follicular_metrics : null,
+                                thickness_results: result.thickness_results ? result.thickness_results.thickness_metrics : null,
                                 combined_metrics: result.combined_metrics,
                                 model_parameters: {
                                     density_confidence: 0.20,
