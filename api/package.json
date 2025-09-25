@@ -1,0 +1,11 @@
+{
+  "name": "api-functions",
+  "version": "1.0.0",
+  "description": "Vercel API functions",
+  "dependencies": {
+    "pg": "^8.11.3"
+  },
+  "engines": {
+    "node": "18.x"
+  }
+}
