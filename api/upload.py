@@ -18,11 +18,14 @@ def store_analysis_results_via_api(user_id, analysis_data):
     try:
         # Call the Node.js storage API
         api_url = f"{os.getenv('VERCEL_URL', 'http://localhost:3000')}/api/store-analysis"
+        print(f"🔍 Calling storage API: {api_url}")
         
         payload = {
             'user_id': user_id,
             'analysis_data': analysis_data
         }
+        
+        print(f"🔍 Payload: {json.dumps(payload, indent=2)}")
         
         response = requests.post(
             api_url,
@@ -31,11 +34,18 @@ def store_analysis_results_via_api(user_id, analysis_data):
             timeout=10
         )
         
+        print(f"🔍 API Response status: {response.status_code}")
+        print(f"🔍 API Response headers: {dict(response.headers)}")
+        print(f"🔍 API Response text: {response.text}")
+        
         if response.status_code == 200:
             result = response.json()
+            print(f"🔍 Parsed response: {json.dumps(result, indent=2)}")
+            
             if result.get('status') == 'success':
-                print(f"✅ Analysis results stored via API with upload_id: {result.get('upload_id')}")
-                return result.get('upload_id')
+                upload_id = result.get('upload_id')
+                print(f"✅ Analysis results stored via API with upload_id: {upload_id}")
+                return upload_id
             else:
                 print(f"⚠️ API returned error: {result.get('message')}")
                 return None
@@ -45,6 +55,8 @@ def store_analysis_results_via_api(user_id, analysis_data):
             
     except Exception as e:
         print(f"❌ Error calling storage API: {e}")
+        import traceback
+        traceback.print_exc()
         return None
 
 # Only import Google Auth if available (reduces bundle size)
@@ -1505,11 +1517,14 @@ class handler(BaseHTTPRequestHandler):
             
             # Store results in database if requested and PostgreSQL is available
             upload_id = None
+            print(f"🔍 Database storage check: save_to_database={save_to_database}, POSTGRES_AVAILABLE={POSTGRES_AVAILABLE}")
+            
             if save_to_database and POSTGRES_AVAILABLE:
                 print("💾 Storing analysis results in PostgreSQL...")
                 
                 # Get user_id from form data (camera app sends this)
                 user_id = form_data.get('user_id', 'unknown')
+                print(f"🔍 User ID from form data: '{user_id}'")
                 
                 # Prepare analysis data for storage (matching existing table structure)
                 analysis_data = {
@@ -1538,7 +1553,11 @@ class handler(BaseHTTPRequestHandler):
                     }
                 }
                 
+                print(f"🔍 Analysis data prepared: {json.dumps(analysis_data, indent=2)}")
+                
                 upload_id = store_analysis_results_via_api(user_id, analysis_data)
+                print(f"🔍 Storage API returned upload_id: {upload_id}")
+                
                 if upload_id:
                     response_data['upload_id'] = upload_id
                     print(f"✅ Analysis results stored with upload_id: {upload_id}")
@@ -1546,6 +1565,8 @@ class handler(BaseHTTPRequestHandler):
                     print("⚠️ Failed to store analysis results in database")
             elif save_to_database and not POSTGRES_AVAILABLE:
                 print("⚠️ Database storage requested but PostgreSQL module not available")
+            else:
+                print(f"🔍 Database storage not requested: save_to_database={save_to_database}")
             
             self.send_success_response(response_data)
             
