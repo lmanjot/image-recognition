@@ -10,6 +10,15 @@ from PIL import Image, ImageDraw, ImageFont
 import requests
 import time
 
+# Import the PostgreSQL storage function
+try:
+    from store_analysis import store_analysis_results
+    POSTGRES_AVAILABLE = True
+    print("✅ PostgreSQL storage module loaded")
+except ImportError as e:
+    POSTGRES_AVAILABLE = False
+    print(f"⚠️ PostgreSQL storage module not available: {e}")
+
 # Only import Google Auth if available (reduces bundle size)
 try:
     import google.auth
@@ -1295,6 +1304,7 @@ def parse_multipart_data(body, content_type):
         # Model selection
         run_density_model = form.getfirst('runDensityModel', 'false').lower() == 'true'
         run_thickness_model = form.getfirst('runThicknessModel', 'false').lower() == 'true'
+        save_to_database = form.getfirst('save_to_database', 'false').lower() == 'true'
         
         print(f"🔍 Model selection from form:")
         print(f"  - runDensityModel raw: '{form.getfirst('runDensityModel', 'false')}'")
@@ -1318,6 +1328,7 @@ def parse_multipart_data(body, content_type):
             'image': image_file,
             'run_density_model': run_density_model,
             'run_thickness_model': run_thickness_model,
+            'save_to_database': save_to_database,
             'density_confidence': density_confidence,
             'density_iou_threshold': density_iou_threshold,
             'density_padding_factor': density_padding_factor,
@@ -1372,8 +1383,9 @@ class handler(BaseHTTPRequestHandler):
             # Get model selection and parameters
             run_density_model = form_data['run_density_model']
             run_thickness_model = form_data['run_thickness_model']
+            save_to_database = form_data['save_to_database']
             
-            print(f"🖼️ Processing image - Density: {run_density_model}, Thickness: {run_thickness_model}")
+            print(f"🖼️ Processing image - Density: {run_density_model}, Thickness: {run_thickness_model}, Save to DB: {save_to_database}")
             
             # Convert image file to bytes
             if hasattr(form_data['image'], 'file'):
@@ -1462,6 +1474,50 @@ class handler(BaseHTTPRequestHandler):
                 print("📊 Calculating combined metrics...")
                 combined_metrics = calculate_combined_metrics(density_predictions, thickness_predictions)
                 response_data['combined_metrics'] = combined_metrics
+            
+            # Store results in database if requested and PostgreSQL is available
+            upload_id = None
+            if save_to_database and POSTGRES_AVAILABLE:
+                print("💾 Storing analysis results in PostgreSQL...")
+                
+                # Get user_id from form data (camera app sends this)
+                user_id = form_data.get('user_id', 'unknown')
+                
+                # Prepare analysis data for storage (matching existing table structure)
+                analysis_data = {
+                    'filename': f"camera-capture-{int(time.time())}.jpg",
+                    'file_size': len(image_bytes),
+                    'file_type': 'image/jpeg',
+                    'url': '',  # Camera app doesn't upload to GCS in this flow
+                    'density_model_run': run_density_model,
+                    'thickness_model_run': run_thickness_model,
+                    'density_results': response_data.get('density_results'),
+                    'thickness_results': response_data.get('thickness_results'),
+                    'combined_metrics': response_data.get('combined_metrics'),
+                    'model_parameters': {
+                        'density_confidence': form_data['density_confidence'],
+                        'density_iou_threshold': form_data['density_iou_threshold'],
+                        'density_padding_factor': form_data['density_padding_factor'],
+                        'density_max_predictions': form_data['density_max_predictions'],
+                        'thickness_confidence': form_data['thickness_confidence'],
+                        'thickness_iou_threshold': form_data['thickness_iou_threshold'],
+                        'thickness_padding_factor': form_data['thickness_padding_factor'],
+                        'thickness_max_predictions': form_data['thickness_max_predictions']
+                    },
+                    'image_metadata': {
+                        'image_size_bytes': len(image_bytes),
+                        'processing_time': time.time()
+                    }
+                }
+                
+                upload_id = store_analysis_results(user_id, analysis_data)
+                if upload_id:
+                    response_data['upload_id'] = upload_id
+                    print(f"✅ Analysis results stored with upload_id: {upload_id}")
+                else:
+                    print("⚠️ Failed to store analysis results in database")
+            elif save_to_database and not POSTGRES_AVAILABLE:
+                print("⚠️ Database storage requested but PostgreSQL module not available")
             
             self.send_success_response(response_data)
             
