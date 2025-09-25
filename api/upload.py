@@ -10,16 +10,42 @@ from PIL import Image, ImageDraw, ImageFont
 import requests
 import time
 
-# Import the PostgreSQL storage function
-try:
-    from store_analysis import store_analysis_results
-    POSTGRES_AVAILABLE = True
-    print("✅ PostgreSQL storage module loaded")
-except ImportError as e:
-    POSTGRES_AVAILABLE = False
-    print(f"⚠️ PostgreSQL storage module not available: {e}")
-    print("💡 To enable PostgreSQL storage, install psycopg2-binary:")
-    print("   pip install psycopg2-binary")
+# PostgreSQL storage via Node.js API endpoint
+POSTGRES_AVAILABLE = True  # Always available since we use HTTP API
+
+def store_analysis_results_via_api(user_id, analysis_data):
+    """Store analysis results via Node.js API endpoint"""
+    try:
+        # Call the Node.js storage API
+        api_url = f"{os.getenv('VERCEL_URL', 'http://localhost:3000')}/api/store-analysis"
+        
+        payload = {
+            'user_id': user_id,
+            'analysis_data': analysis_data
+        }
+        
+        response = requests.post(
+            api_url,
+            json=payload,
+            headers={'Content-Type': 'application/json'},
+            timeout=10
+        )
+        
+        if response.status_code == 200:
+            result = response.json()
+            if result.get('status') == 'success':
+                print(f"✅ Analysis results stored via API with upload_id: {result.get('upload_id')}")
+                return result.get('upload_id')
+            else:
+                print(f"⚠️ API returned error: {result.get('message')}")
+                return None
+        else:
+            print(f"❌ API call failed with status {response.status_code}: {response.text}")
+            return None
+            
+    except Exception as e:
+        print(f"❌ Error calling storage API: {e}")
+        return None
 
 # Only import Google Auth if available (reduces bundle size)
 try:
@@ -1512,7 +1538,7 @@ class handler(BaseHTTPRequestHandler):
                     }
                 }
                 
-                upload_id = store_analysis_results(user_id, analysis_data)
+                upload_id = store_analysis_results_via_api(user_id, analysis_data)
                 if upload_id:
                     response_data['upload_id'] = upload_id
                     print(f"✅ Analysis results stored with upload_id: {upload_id}")
