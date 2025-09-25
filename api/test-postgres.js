@@ -39,40 +39,78 @@ async function testConnection() {
     }
 }
 
-// Test creating a simple table
-async function testTableCreation() {
+// Test inserting data into hairscan.picture_uploads table
+async function testPictureUploadsInsert() {
     try {
         const client = await pool.connect();
         
-        // Create a simple test table
-        await client.query(`
-            CREATE TABLE IF NOT EXISTS test_table (
-                id SERIAL PRIMARY KEY,
-                message TEXT,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
+        // First, let's check what columns exist in the table
+        const columnCheck = await client.query(`
+            SELECT column_name, data_type, is_nullable 
+            FROM information_schema.columns 
+            WHERE table_schema = 'hairscan' AND table_name = 'picture_uploads'
+            ORDER BY ordinal_position
         `);
         
-        // Insert test data
-        await client.query(`
-            INSERT INTO test_table (message) VALUES ('PostgreSQL connection test successful!')
-        `);
+        console.log('📋 Table columns:', columnCheck.rows);
         
-        // Query test data
-        const result = await client.query('SELECT * FROM test_table ORDER BY created_at DESC LIMIT 1');
+        // Insert test data into picture_uploads table
+        const testData = {
+            upload_id: 'test-upload-' + Date.now(),
+            contact_id: 'test-contact-' + Date.now(),
+            filename: 'test-image.jpg',
+            file_size: 1024,
+            file_type: 'image/jpeg',
+            url: 'https://example.com/test-image.jpg',
+            density_model_run: true,
+            thickness_model_run: true,
+            processing_status: 'completed',
+            analysis_results: JSON.stringify({
+                test: true,
+                timestamp: new Date().toISOString(),
+                message: 'PostgreSQL connection test successful!'
+            })
+        };
+        
+        const insertResult = await client.query(`
+            INSERT INTO hairscan.picture_uploads (
+                upload_id, contact_id, filename, file_size, file_type, 
+                url, density_model_run, thickness_model_run, processing_status, analysis_results
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+            RETURNING *
+        `, [
+            testData.upload_id,
+            testData.contact_id,
+            testData.filename,
+            testData.file_size,
+            testData.file_type,
+            testData.url,
+            testData.density_model_run,
+            testData.thickness_model_run,
+            testData.processing_status,
+            testData.analysis_results
+        ]);
+        
+        // Query the inserted data
+        const queryResult = await client.query(`
+            SELECT * FROM hairscan.picture_uploads 
+            WHERE upload_id = $1
+        `, [testData.upload_id]);
         
         client.release();
         
         return {
             success: true,
-            message: 'Table creation and data insertion successful',
-            data: result.rows[0]
+            message: 'Data insertion into picture_uploads successful',
+            table_columns: columnCheck.rows,
+            inserted_data: insertResult.rows[0],
+            queried_data: queryResult.rows[0]
         };
     } catch (error) {
-        console.error('❌ Table creation failed:', error);
+        console.error('❌ Picture uploads insert failed:', error);
         return {
             success: false,
-            message: 'Table creation failed',
+            message: 'Picture uploads insert failed',
             error: error.message
         };
     }
@@ -97,16 +135,16 @@ module.exports = async (req, res) => {
         const connectionTest = await testConnection();
         console.log('Connection test result:', connectionTest);
         
-        // Test 2: Table creation and data insertion
-        const tableTest = await testTableCreation();
-        console.log('Table test result:', tableTest);
+        // Test 2: Insert data into picture_uploads table
+        const pictureUploadsTest = await testPictureUploadsInsert();
+        console.log('Picture uploads test result:', pictureUploadsTest);
         
         const response = {
             status: 'completed',
             timestamp: new Date().toISOString(),
             tests: {
                 connection: connectionTest,
-                table_creation: tableTest
+                picture_uploads_insert: pictureUploadsTest
             },
             credentials_configured: !!(process.env.pg_user && process.env.pg_pw)
         };

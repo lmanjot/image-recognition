@@ -104,7 +104,7 @@
         
         <div class="test-section">
             <h3>📊 Full Test Suite</h3>
-            <p>Run complete test including table creation and data insertion</p>
+            <p>Run complete test including connection and data insertion into hairscan.picture_uploads table</p>
             <button onclick="runFullTest()" id="fullTestBtn">Run Full Test</button>
             <div id="fullTestResult" class="result" style="display: none;"></div>
         </div>
@@ -179,13 +179,13 @@
             let statusHtml = '';
             if (result.status === 'completed') {
                 const connectionSuccess = result.tests?.connection?.success;
-                const tableSuccess = result.tests?.table_creation?.success;
+                const insertSuccess = result.tests?.picture_uploads_insert?.success;
                 
                 statusHtml = `
                     <div class="result success">
                         <strong>✅ ${testName} - ${timestamp}</strong><br>
                         Connection: ${connectionSuccess ? '✅ Success' : '❌ Failed'}<br>
-                        Table Creation: ${tableSuccess ? '✅ Success' : '❌ Failed'}<br>
+                        Picture Uploads Insert: ${insertSuccess ? '✅ Success' : '❌ Failed'}<br>
                         Credentials Configured: ${result.credentials_configured ? '✅ Yes' : '❌ No'}
                     </div>
                 `;
