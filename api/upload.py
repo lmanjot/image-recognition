@@ -1349,8 +1349,10 @@ def parse_multipart_data(body, content_type):
         print(f"🔍 Model selection from form:")
         print(f"  - runDensityModel raw: '{form.getfirst('runDensityModel', 'false')}'")
         print(f"  - runThicknessModel raw: '{form.getfirst('runThicknessModel', 'false')}'")
+        print(f"  - save_to_database raw: '{form.getfirst('save_to_database', 'false')}'")
         print(f"  - run_density_model: {run_density_model}")
         print(f"  - run_thickness_model: {run_thickness_model}")
+        print(f"  - save_to_database: {save_to_database}")
         
         # Density model parameters
         density_confidence = float(form.getfirst('densityConfidence', 0.2))
@@ -1426,6 +1428,8 @@ class handler(BaseHTTPRequestHandler):
             save_to_database = form_data['save_to_database']
             
             print(f"🖼️ Processing image - Density: {run_density_model}, Thickness: {run_thickness_model}, Save to DB: {save_to_database}")
+            print(f"🔍 DEBUG: save_to_database type: {type(save_to_database)}, value: '{save_to_database}'")
+            print(f"🔍 DEBUG: POSTGRES_AVAILABLE: {POSTGRES_AVAILABLE}")
             
             # Convert image file to bytes
             if hasattr(form_data['image'], 'file'):
@@ -1517,6 +1521,7 @@ class handler(BaseHTTPRequestHandler):
             
             # Store results in database if requested and PostgreSQL is available
             upload_id = None
+            print(f"🔍 REACHED DATABASE STORAGE SECTION")
             print(f"🔍 Database storage check: save_to_database={save_to_database}, POSTGRES_AVAILABLE={POSTGRES_AVAILABLE}")
             
             if save_to_database and POSTGRES_AVAILABLE:
