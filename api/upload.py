@@ -1407,18 +1407,24 @@ class handler(BaseHTTPRequestHandler):
             return
     
     def do_POST(self):
+        print(f"🔍 POST REQUEST RECEIVED - Starting do_POST method")
         try:
             # Get content length and type
             content_length = int(self.headers.get('Content-Length', 0))
             content_type = self.headers.get('Content-Type', '')
             
+            print(f"🔍 Request details: Content-Length={content_length}, Content-Type={content_type}")
+            
             # Read request body
             body = self.rfile.read(content_length)
+            print(f"🔍 Body read successfully, length: {len(body)}")
             
             # Parse multipart form data
             form_data = parse_multipart_data(body, content_type)
+            print(f"🔍 Form data parsed successfully: {form_data is not None}")
             
             if not form_data or not form_data['image']:
+                print(f"❌ No image file provided - form_data: {form_data is not None}, image: {form_data.get('image') if form_data else 'None'}")
                 self.send_error_response('No image file provided', 400)
                 return
             
@@ -1519,6 +1525,9 @@ class handler(BaseHTTPRequestHandler):
                 combined_metrics = calculate_combined_metrics(density_predictions, thickness_predictions)
                 response_data['combined_metrics'] = combined_metrics
             
+            print(f"🔍 ABOUT TO ENTER DATABASE STORAGE SECTION")
+            print(f"🔍 Current response_data keys: {list(response_data.keys())}")
+            
             # Store results in database if requested and PostgreSQL is available
             upload_id = None
             print(f"🔍 REACHED DATABASE STORAGE SECTION")
@@ -1577,6 +1586,8 @@ class handler(BaseHTTPRequestHandler):
             
         except Exception as e:
             print(f"❌ Error processing request: {e}")
+            import traceback
+            print(f"❌ Full traceback: {traceback.format_exc()}")
             self.send_error_response(str(e), 500)
     
     def do_OPTIONS(self):
