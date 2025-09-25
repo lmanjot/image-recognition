@@ -640,6 +640,16 @@
         .capture-btn:hover {
             background: #c82333;
         }
+        
+        .upload-btn {
+            background: #28a745;
+            color: white;
+            margin-left: 10px;
+        }
+        
+        .upload-btn:hover {
+            background: #218838;
+        }
 
         
         
@@ -816,6 +826,9 @@
                                                 <button class="camera-btn capture-btn" id="captureBtn" title="Take Snapshot" style="pointer-events: auto;">
                                                     <i class="fas fa-camera"></i>
                                                 </button>
+                                                <button class="camera-btn upload-btn" id="uploadBtn" title="Upload Image" style="pointer-events: auto;">
+                                                    <i class="fas fa-upload"></i>
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
@@ -841,6 +854,9 @@
                                             <i class="fas fa-redo"></i> Retry Camera Access
                                         </button>
                                     </div>
+                                    
+                                    <!-- Hidden file input for upload -->
+                                    <input type="file" id="imageUploadInput" accept="image/*" style="display: none;">
                                 </div>
                             </div>
                             
@@ -1515,6 +1531,32 @@
                     this.logEvent('ERROR: Capture button not found');
                 }
 
+                // Upload button setup
+                const uploadBtn = document.getElementById('uploadBtn');
+                const imageUploadInput = document.getElementById('imageUploadInput');
+                
+                if (uploadBtn && imageUploadInput) {
+                    uploadBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        this.logEvent('Upload button clicked');
+                        imageUploadInput.click();
+                    });
+                    
+                    imageUploadInput.addEventListener('change', (e) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                            this.logEvent('Image file selected', {
+                                fileName: file.name,
+                                fileSize: file.size,
+                                fileType: file.type
+                            });
+                            this.handleImageUpload(file);
+                        }
+                    });
+                } else {
+                    this.logEvent('ERROR: Upload button or file input not found');
+                }
 
                 // Apply settings button
                 document.getElementById('applySettingsBtn').addEventListener('click', () => {
@@ -2231,6 +2273,64 @@
                 });
 
                 resultsContent.innerHTML = resultsHtml;
+            }
+
+            async handleImageUpload(file) {
+                try {
+                    this.logEvent('Handling image upload', {
+                        fileName: file.name,
+                        fileSize: file.size,
+                        fileType: file.type
+                    });
+
+                    // Validate file type
+                    if (!file.type.startsWith('image/')) {
+                        this.showError('Please select an image file');
+                        return;
+                    }
+
+                    // Validate file size (max 10MB)
+                    if (file.size > 10 * 1024 * 1024) {
+                        this.showError('Image file is too large. Please select an image smaller than 10MB');
+                        return;
+                    }
+
+                    // Convert file to blob
+                    const blob = new Blob([file], { type: file.type });
+                    
+                    // Create a temporary slot for the uploaded image
+                    const tempSlot = {
+                        id: 'uploaded_' + Date.now(),
+                        name: 'Uploaded Image',
+                        area: 'uploaded',
+                        completed: true,
+                        uploaded: false,
+                        analyzed: false,
+                        blob: blob,
+                        image: URL.createObjectURL(blob),
+                        timestamp: new Date().toISOString()
+                    };
+
+                    // Add to capture slots
+                    this.captureSlots.push(tempSlot);
+                    
+                    // Update UI
+                    this.renderCaptureSlots();
+                    this.updateProgress();
+                    
+                    this.showSuccess(`Image "${file.name}" uploaded successfully! You can now upload and analyze it.`);
+                    
+                    // Clear the file input
+                    document.getElementById('imageUploadInput').value = '';
+
+                } catch (error) {
+                    console.error('Image upload error:', error);
+                    this.logEvent('Image upload failed', { 
+                        error: error.message,
+                        fileName: file.name
+                    });
+                    this.showError(`Failed to upload image: ${error.message}`);
+                }
             }
 
             showCaptureComplete() {
