@@ -2151,13 +2151,13 @@
                     formData.append('save_to_database', 'true'); // Enable database storage
                     
                     // Use default model parameters (same as homepage defaults)
-                    formData.append('densityConfidence', '0.5');
-                    formData.append('densityPadding', '0.1');
-                    formData.append('densityNMS', '0.5');
+                    formData.append('densityConfidence', '0.20');  // 20/100 = 0.20
+                    formData.append('densityPadding', '2.00');    // 200/100 = 2.00
+                    formData.append('densityNMS', '0.00');         // 0/100 = 0.00
                     formData.append('densityMaxPred', '100');
-                    formData.append('thicknessConfidence', '0.5');
-                    formData.append('thicknessPadding', '0.1');
-                    formData.append('thicknessNMS', '0.5');
+                    formData.append('thicknessConfidence', '0.10'); // 10/100 = 0.10
+                    formData.append('thicknessPadding', '0.00');   // 0/100 = 0.00
+                    formData.append('thicknessNMS', '1.00');       // 100/100 = 1.00
                     formData.append('thicknessMaxPred', '100');
 
                     // Debug: Log FormData contents
