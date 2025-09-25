@@ -2148,7 +2148,7 @@
                     formData.append('user_name', ''); // Not needed for camera app
                     formData.append('runDensityModel', 'true');
                     formData.append('runThicknessModel', 'true');
-                    formData.append('save_to_database', 'true'); // Enable database storage
+                    formData.append('save_to_database', 'false'); // We'll handle database storage separately
                     
                     // Use default model parameters (same as homepage defaults)
                     formData.append('densityConfidence', '0.20');  // 20/100 = 0.20
@@ -2185,6 +2185,55 @@
                     if (!result.success) {
                         throw new Error(`Analysis failed: ${result.message || 'Unknown error'}`);
                     }
+
+                    // Now store the analysis results in PostgreSQL via Node.js API
+                    console.log('💾 Storing analysis results in PostgreSQL...');
+                    const storageResponse = await fetch('/api/store-analysis', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            user_id: contactId,
+                            analysis_data: {
+                                filename: `${slot.name}.jpg`,
+                                file_size: blob.size,
+                                file_type: 'image/jpeg',
+                                url: '', // Camera app doesn't upload to GCS
+                                density_model_run: true,
+                                thickness_model_run: true,
+                                density_results: result.density_results,
+                                thickness_results: result.thickness_results,
+                                combined_metrics: result.combined_metrics,
+                                model_parameters: {
+                                    density_confidence: 0.20,
+                                    density_iou_threshold: 0.00,
+                                    density_padding_factor: 2.00,
+                                    density_max_predictions: 100,
+                                    thickness_confidence: 0.10,
+                                    thickness_iou_threshold: 1.00,
+                                    thickness_padding_factor: 0.00,
+                                    thickness_max_predictions: 100
+                                },
+                                image_metadata: {
+                                    image_size_bytes: blob.size,
+                                    processing_time: Date.now()
+                                }
+                            }
+                        })
+                    });
+
+                    if (!storageResponse.ok) {
+                        const storageError = await storageResponse.text();
+                        console.error('❌ PostgreSQL storage failed:', storageError);
+                        throw new Error(`PostgreSQL storage failed: ${storageError}`);
+                    }
+
+                    const storageResult = await storageResponse.json();
+                    console.log('✅ PostgreSQL storage successful:', storageResult);
+                    
+                    // Update the result with the upload_id from PostgreSQL storage
+                    result.upload_id = storageResult.upload_id;
 
                     this.logEvent('Image analysis successful', {
                         slotName: slot.name,
