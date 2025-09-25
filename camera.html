@@ -887,9 +887,30 @@
                                     <small class="text-muted" id="progressText">0 of 0 photos captured</small>
                                 </div>
                                 <div id="uploadAllSection" class="mt-3" style="display: none;">
+                                    <div class="mb-3">
+                                        <label for="contactIdInput" class="form-label">
+                                            <i class="fas fa-user"></i> Contact ID (HubSpot)
+                                        </label>
+                                        <input type="text" class="form-control" id="contactIdInput" 
+                                               placeholder="Enter HubSpot contact ID" 
+                                               value="test-contact-camera">
+                                        <small class="form-text text-muted">Required for analysis and storage</small>
+                                    </div>
                                     <button class="btn btn-success w-100" id="uploadAllBtn" onclick="window.trichoscopeCamera.uploadAllImages()">
-                                        <i class="fas fa-cloud-upload-alt"></i> Upload All to Cloud
+                                        <i class="fas fa-cloud-upload-alt"></i> Upload & Analyze All
                                     </button>
+                                </div>
+                                
+                                <!-- Analysis Results Section -->
+                                <div id="analysisResultsSection" class="mt-4" style="display: none;">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h6 class="mb-0"><i class="fas fa-chart-line"></i> Analysis Results</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div id="analysisResultsContent"></div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1765,9 +1786,10 @@
                             <div class="slot-info">
                                 <div class="slot-title">${slot.name}</div>
                                 <div class="slot-status ${slot.completed ? 'status-completed' : 'status-pending'}">
-                                    ${slot.completed ? (slot.uploaded ? 'Uploaded' : 'Ready to upload') : 'Pending'}
+                                    ${slot.completed ? (slot.uploaded ? (slot.analyzed ? 'Analyzed' : 'Uploaded') : 'Ready to upload') : 'Pending'}
                                 </div>
                                 ${slot.completed && slot.uploaded ? '<div class="upload-status text-success"><i class="fas fa-cloud-check"></i> In cloud</div>' : ''}
+                                ${slot.completed && slot.analyzed ? '<div class="analysis-status text-info"><i class="fas fa-chart-line"></i> Analyzed</div>' : ''}
                             </div>
                             <div class="slot-actions">
                                 ${slot.completed ? `
@@ -1948,30 +1970,51 @@
                     return;
                 }
 
+                // Get contact ID
+                const contactId = document.getElementById('contactIdInput').value.trim();
+                if (!contactId) {
+                    this.showError('Please enter a Contact ID');
+                    return;
+                }
+
                 const uploadAllBtn = document.getElementById('uploadAllBtn');
                 const originalText = uploadAllBtn.innerHTML;
                 
                 try {
                     uploadAllBtn.disabled = true;
-                    uploadAllBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+                    uploadAllBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading & Analyzing...';
                     
-                    this.showSuccess(`Uploading ${completedSlots.length} images to cloud...`);
+                    this.showSuccess(`Uploading and analyzing ${completedSlots.length} images...`);
                     
-                    // Upload all images in parallel
-                    const uploadPromises = completedSlots.map(slot => this.uploadImageToGCS(slot.blob, slot));
-                    await Promise.all(uploadPromises);
-                    
-                    // Mark all as uploaded
-                    completedSlots.forEach(slot => {
-                        slot.uploaded = true;
-                    });
+                    // Process each image: upload to GCS, then analyze and store in PostgreSQL
+                    const analysisResults = [];
+                    for (const slot of completedSlots) {
+                        try {
+                            // Step 1: Upload to GCS
+                            await this.uploadImageToGCS(slot.blob, slot);
+                            
+                            // Step 2: Analyze image and store in PostgreSQL
+                            const analysisResult = await this.analyzeAndStoreImage(slot.blob, slot, contactId);
+                            analysisResults.push(analysisResult);
+                            
+                            // Mark as uploaded and analyzed
+                            slot.uploaded = true;
+                            slot.analyzed = true;
+                            slot.analysisResult = analysisResult;
+                            
+                        } catch (error) {
+                            console.error(`Failed to process ${slot.name}:`, error);
+                            this.showError(`Failed to process ${slot.name}: ${error.message}`);
+                        }
+                    }
                     
                     this.renderCaptureSlots();
-                    this.showSuccess(`All ${completedSlots.length} images uploaded successfully!`);
+                    this.displayAnalysisResults(analysisResults);
+                    this.showSuccess(`All ${completedSlots.length} images uploaded and analyzed successfully!`);
                     
                 } catch (error) {
-                    console.error('Bulk upload failed:', error);
-                    this.showError(`Upload failed: ${error.message}`);
+                    console.error('Bulk upload/analysis failed:', error);
+                    this.showError(`Upload/Analysis failed: ${error.message}`);
                 } finally {
                     uploadAllBtn.disabled = false;
                     uploadAllBtn.innerHTML = originalText;
@@ -2045,6 +2088,149 @@
                     });
                     throw error;
                 }
+            }
+
+            async analyzeAndStoreImage(blob, slot, contactId) {
+                try {
+                    this.logEvent('Starting image analysis', { 
+                        slotName: slot.name,
+                        contactId: contactId,
+                        blobSize: blob.size
+                    });
+
+                    // Create FormData for analysis API
+                    const formData = new FormData();
+                    formData.append('image', blob, `${slot.name}.jpg`);
+                    formData.append('user_id', contactId);
+                    formData.append('user_email', ''); // Not needed for camera app
+                    formData.append('user_name', ''); // Not needed for camera app
+                    formData.append('run_density_model', 'true');
+                    formData.append('run_thickness_model', 'true');
+                    formData.append('save_to_database', 'true'); // Enable database storage
+                    
+                    // Use default model parameters (same as homepage defaults)
+                    formData.append('densityConfidence', '0.5');
+                    formData.append('densityPadding', '0.1');
+                    formData.append('densityNMS', '0.5');
+                    formData.append('densityMaxPred', '100');
+                    formData.append('thicknessConfidence', '0.5');
+                    formData.append('thicknessPadding', '0.1');
+                    formData.append('thicknessNMS', '0.5');
+                    formData.append('thicknessMaxPred', '100');
+
+                    // Call the analysis API
+                    const response = await fetch('/api/upload', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        throw new Error(`Analysis API error: ${response.status} - ${errorText}`);
+                    }
+
+                    const result = await response.json();
+                    
+                    if (!result.success) {
+                        throw new Error(`Analysis failed: ${result.message || 'Unknown error'}`);
+                    }
+
+                    this.logEvent('Image analysis successful', {
+                        slotName: slot.name,
+                        uploadId: result.upload_id,
+                        densityResults: result.density_results ? 'Yes' : 'No',
+                        thicknessResults: result.thickness_results ? 'Yes' : 'No'
+                    });
+
+                    return {
+                        slotName: slot.name,
+                        uploadId: result.upload_id,
+                        densityResults: result.density_results,
+                        thicknessResults: result.thickness_results,
+                        analysisResults: result.analysis_results,
+                        success: true
+                    };
+
+                } catch (error) {
+                    console.error('Analysis error:', error);
+                    this.logEvent('Image analysis failed', { 
+                        error: error.message,
+                        slotName: slot.name
+                    });
+                    throw error;
+                }
+            }
+
+            displayAnalysisResults(analysisResults) {
+                const resultsSection = document.getElementById('analysisResultsSection');
+                const resultsContent = document.getElementById('analysisResultsContent');
+                
+                if (!resultsSection || !resultsContent) {
+                    console.error('Analysis results elements not found');
+                    return;
+                }
+
+                // Show the results section
+                resultsSection.style.display = 'block';
+
+                // Generate results HTML
+                let resultsHtml = '';
+                
+                analysisResults.forEach(result => {
+                    if (result.success) {
+                        resultsHtml += `
+                            <div class="analysis-result-item mb-3">
+                                <h6 class="text-success">
+                                    <i class="fas fa-check-circle"></i> ${result.slotName}
+                                </h6>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <small class="text-muted">Upload ID: ${result.uploadId}</small>
+                                    </div>
+                                </div>
+                        `;
+
+                        // Display density results
+                        if (result.densityResults) {
+                            resultsHtml += `
+                                <div class="mt-2">
+                                    <strong>Density Analysis:</strong>
+                                    <ul class="list-unstyled mt-1">
+                                        <li><small>FU Count: ${result.densityResults.fu_count || 'N/A'}</small></li>
+                                        <li><small>FU Density: ${result.densityResults.fu_density || 'N/A'} FU/cm²</small></li>
+                                        <li><small>Total Hair: ${result.densityResults.total_hair || 'N/A'}</small></li>
+                                    </ul>
+                                </div>
+                            `;
+                        }
+
+                        // Display thickness results
+                        if (result.thicknessResults) {
+                            resultsHtml += `
+                                <div class="mt-2">
+                                    <strong>Thickness Analysis:</strong>
+                                    <ul class="list-unstyled mt-1">
+                                        <li><small>Average Thickness: ${result.thicknessResults.average_thickness || 'N/A'} μm</small></li>
+                                        <li><small>Thickness Distribution: ${result.thicknessResults.thickness_distribution || 'N/A'}</small></li>
+                                    </ul>
+                                </div>
+                            `;
+                        }
+
+                        resultsHtml += '</div>';
+                    } else {
+                        resultsHtml += `
+                            <div class="analysis-result-item mb-3">
+                                <h6 class="text-danger">
+                                    <i class="fas fa-exclamation-circle"></i> ${result.slotName} - Analysis Failed
+                                </h6>
+                                <small class="text-muted">Error: ${result.error || 'Unknown error'}</small>
+                            </div>
+                        `;
+                    }
+                });
+
+                resultsContent.innerHTML = resultsHtml;
             }
 
             showCaptureComplete() {
