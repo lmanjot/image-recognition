@@ -143,6 +143,30 @@ MIT License - see LICENSE file for details
 - **Deployment**: Vercel Dashboard
 - **API**: Use "Test Connection" button
 
+## 📱 Applications
+
+### Homepage (`/`)
+- Image upload and analysis
+- Density and thickness model processing
+- Real-time results display
+- Overlay toggle functionality
+
+### Camera App (`/camera`)
+- Live camera feed
+- Image capture and upload
+- Same analysis as homepage
+- PostgreSQL storage integration
+- Contact ID management
+
+### Data Consistency
+Both applications use identical:
+- API endpoints (`/api/upload`)
+- Model parameters (homepage defaults)
+- Data processing logic
+- Field mapping for results
+
 ---
 
 **Built with ❤️ for fast, reliable image recognition**
+
+*Last updated: September 25, 2025 - Both homepage and camera app fully functional*
