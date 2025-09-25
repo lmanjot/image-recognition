@@ -2179,6 +2179,9 @@
 
                     const result = await response.json();
                     
+                    // Debug: Log the complete API response
+                    console.log('Complete API response:', result);
+                    
                     if (!result.success) {
                         throw new Error(`Analysis failed: ${result.message || 'Unknown error'}`);
                     }
@@ -2193,8 +2196,9 @@
                     return {
                         slotName: slot.name,
                         uploadId: result.upload_id,
-                        densityResults: result.density_results,
-                        thicknessResults: result.thickness_results,
+                        densityResults: result.density_results ? result.density_results.follicular_metrics : null,
+                        thicknessResults: result.thickness_results ? result.thickness_results.thickness_metrics : null,
+                        combinedMetrics: result.combined_metrics,
                         analysisResults: result.analysis_results,
                         success: true
                     };
@@ -2244,9 +2248,9 @@
                                 <div class="mt-2">
                                     <strong>Density Analysis:</strong>
                                     <ul class="list-unstyled mt-1">
-                                        <li><small>FU Count: ${result.densityResults.fu_count || 'N/A'}</small></li>
-                                        <li><small>FU Density: ${result.densityResults.fu_density || 'N/A'} FU/cm²</small></li>
-                                        <li><small>Total Hair: ${result.densityResults.total_hair || 'N/A'}</small></li>
+                                        <li><small>FU Count: ${result.densityResults.total_follicular_units || 'N/A'}</small></li>
+                                        <li><small>FU Density: ${result.densityResults.follicular_density_per_cm2 || 'N/A'} FU/cm²</small></li>
+                                        <li><small>Total Hair: ${result.densityResults.total_hairs || 'N/A'}</small></li>
                                     </ul>
                                 </div>
                             `;
@@ -2258,8 +2262,25 @@
                                 <div class="mt-2">
                                     <strong>Thickness Analysis:</strong>
                                     <ul class="list-unstyled mt-1">
-                                        <li><small>Average Thickness: ${result.thicknessResults.average_thickness || 'N/A'} μm</small></li>
-                                        <li><small>Thickness Distribution: ${result.thicknessResults.thickness_distribution || 'N/A'}</small></li>
+                                        <li><small>Strong Hairs: ${result.thicknessResults.strong || 'N/A'}</small></li>
+                                        <li><small>Medium Hairs: ${result.thicknessResults.medium || 'N/A'}</small></li>
+                                        <li><small>Weak Hairs: ${result.thicknessResults.weak || 'N/A'}</small></li>
+                                        <li><small>Total Detections: ${result.thicknessResults.total_detections || 'N/A'}</small></li>
+                                    </ul>
+                                </div>
+                            `;
+                        }
+
+                        // Display combined metrics (most important analysis results)
+                        if (result.combinedMetrics) {
+                            resultsHtml += `
+                                <div class="mt-2">
+                                    <strong>Combined Analysis:</strong>
+                                    <ul class="list-unstyled mt-1">
+                                        <li><small>Hairs per cm²: ${result.combinedMetrics.hairs_per_cm2 || 'N/A'}</small></li>
+                                        <li><small>Hair Caliber Index: ${result.combinedMetrics.hair_caliber_index || 'N/A'}</small></li>
+                                        <li><small>Effective Hair Density: ${result.combinedMetrics.effective_hair_density || 'N/A'}</small></li>
+                                        <li><small>Overall Hair Score: ${result.combinedMetrics.overall_hair_score || 'N/A'}% (${result.combinedMetrics.ohs_interpretation || 'N/A'})</small></li>
                                     </ul>
                                 </div>
                             `;
